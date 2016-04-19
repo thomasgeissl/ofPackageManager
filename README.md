@@ -13,11 +13,14 @@
 * Search package in database: ``` ofPackageManager search ofxHTTP ```
 * Search package on github by name: ``` ofPackageManager search --name ofxSyphon ```
 * Search package on github by user: ``` ofPackageManager search --user arturoc ```
-* Install package by id: ``` ofPackageManager install ofxMidi ````
+* Install package by id: ``` ofPackageManager install ofxMidi ```
 * Install package by github shortcut: ``` ofPackageManager install arturoc/ofxAruco ```
 * Install package by url: ``` ofPackageManager install https://github.com/kylemcdonald/ofxCv.git ```
-* Add already cloned repositories: ``` ofPackageManager add -A local_addons```
+* Add already cloned repositories: ``` ofPackageManager add -A local_addons ```
 * Install dependencies of a package: ``` ofPackageManager install ```
+* Generate project: ``` ofPackageManager generate ```
+* Generate readme: ``` ofPackageManager generate readme ```
+* Generate database entry file: ``` ofPackageManager generate database ```
 
 ### Package manager update
 * Check for updates: ``` ofPackageManager doctor ```
