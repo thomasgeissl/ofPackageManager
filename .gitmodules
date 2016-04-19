@@ -1,0 +1,3 @@
+[submodule "bin/data/ofPackages"]
+	path = bin/data/ofPackages
+	url = https://github.com/thomasgeissl/ofPackages.git

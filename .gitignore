@@ -1,0 +1,6 @@
+obj/*
+bin/*
+!bin/data
+*qbs*
+
+.DS_Store
