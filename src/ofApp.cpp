@@ -60,7 +60,7 @@ void ofPackageManager::addPackageToPackageFile(string path, bool all, bool globa
             dependency["checkout"] = checkoutResult.substr(0,checkoutResult.size()-1);
             if(global)
             {
-                dependency["path"] = ofFilePath::join(_configJson["ofPath"], path);
+                dependency["path"] = ofFilePath::getEnclosingDirectory(ofFilePath::makeRelative(_configJson["ofPath"], path), false);
             }
             else
             {

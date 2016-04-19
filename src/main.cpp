@@ -130,7 +130,7 @@ int main(int argc, char** argv)
                 string option = argv[2];
                 if(option == "-g" || option == "--globally")
                 {
-                    destinationPath = "addons";
+                    destinationPath = ofFilePath::join(app.getOfPath(),"addons");
                     global = true;
                 }
                 package = argv[3];
