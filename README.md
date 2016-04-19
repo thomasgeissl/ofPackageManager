@@ -4,6 +4,7 @@
 
 ## Usage
 ### Installation
+* clone ofPackageManager to openframeworks/app/ (or any other location): ``` git clone --recursive https://github.com/thomasgeissl/ofPackageManager.git ```
 * Export path, otherwise you have to type the full path
 * Run the configuration task globally: ``` ofPackageManager config -g ```
 
@@ -27,7 +28,8 @@
 * replace system calls by libgit2 calls
 * add support for makefiles
 * command line syntax
-* console output, color
+* global addons
+* better console output, color
 * optimize
 
 ## License
