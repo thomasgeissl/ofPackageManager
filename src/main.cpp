@@ -39,8 +39,8 @@ int main(int argc, char** argv)
         }
         else if(argc == 4)
         {
-            string allOption = "-A";
-            if(argv[2] == allOption)
+            string option = argv[2];
+            if(option == "-A" || option == "--all")
             {
                 app.addPackageToPackageFile(argv[3], true);
             }
@@ -58,8 +58,8 @@ int main(int argc, char** argv)
         }
         if(argc == 3)
         {
-            string globally = argv[2];
-            if(globally == "globally" || globally == "-g")
+            string option = argv[2];
+            if(option == "-g" || option == "--global")
             {
                 app.configurePackageManager(true);
             }
@@ -128,7 +128,7 @@ int main(int argc, char** argv)
             else if(argc == 4)
             {
                 string option = argv[2];
-                if(option == "-g" || option == "--globally")
+                if(option == "-g" || option == "--global")
                 {
                     destinationPath = ofFilePath::join(app.getOfPath(),"addons");
                     global = true;
@@ -169,7 +169,7 @@ int main(int argc, char** argv)
             if(subtask == "github")
             {
                 string option = argv[3];
-                if(option == "--user" || option=="-u")
+                if(option == "-u" || option=="--user")
                 {
                     app.searchPackageOnGithubByUser(argv[4]);
                 }
