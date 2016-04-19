@@ -11,8 +11,8 @@
 ### Package management
 * Init a project: ``` ofPackageManager init ```
 * Search package in database: ``` ofPackageManager search ofxHTTP ```
-* Search package on github by name: ``` ofPackageManager search --name ofxSyphon ```
-* Search package on github by user: ``` ofPackageManager search --user arturoc ```
+* Search package on github by name: ``` ofPackageManager search github ofxSyphon ```
+* Search package on github by user: ``` ofPackageManager search github --user arturoc ```
 * Install package by id: ``` ofPackageManager install ofxMidi ```
 * Install package by github shortcut: ``` ofPackageManager install arturoc/ofxAruco ```
 * Install package by url: ``` ofPackageManager install https://github.com/kylemcdonald/ofxCv.git ```

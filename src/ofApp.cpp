@@ -363,7 +363,7 @@ void ofPackageManager::searchPackageById(string name)
             if(found!=std::string::npos)
             {
                 foundPackage = true;
-                ofLogNotice("search")<<packageJson["github"];
+                ofLogNotice("search")<<packageJson["cloneUrl"];
             }
             else{
     //            TODO: check tags

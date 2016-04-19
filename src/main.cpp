@@ -157,18 +157,23 @@ int main(int argc, char** argv)
         }
         else if(argc == 4)
         {
-            string type = argv[2];
-            if(type == "--user" || type == "-u"){
-                app.searchPackageOnGithubByUser(argv[3]);
-            }
-            else if(type == "--name" || type == "-n")
+            string subtask = argv[2];
+            if(subtask == "github")
             {
                 app.searchPackageOnGithubByName(argv[3]);
             }
         }
-        else
+        else if(argc == 5)
         {
-
+            string subtask = argv[2];
+            if(subtask == "github")
+            {
+                string option = argv[3];
+                if(option == "--user" || option=="-u")
+                {
+                    app.searchPackageOnGithubByUser(argv[4]);
+                }
+            }
         }
     }
 
