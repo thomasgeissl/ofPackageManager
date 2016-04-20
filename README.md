@@ -33,7 +33,7 @@
 * replace system calls by libgit2 calls
 * add support for makefiles
 * command line syntax
-* better console output, color
+* better console output
 * optimize
 
 ## License

@@ -1,3 +1,4 @@
+ofxUnitTests
 local_addons/ofxHTTP
 local_addons/ofxIO
 local_addons/ofxMediaType
