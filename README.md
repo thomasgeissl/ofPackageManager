@@ -31,7 +31,6 @@
 * replace system calls by libgit2 calls
 * add support for makefiles
 * command line syntax
-* global addons
 * better console output, color
 * optimize
 
