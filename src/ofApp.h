@@ -46,6 +46,7 @@ private:
     ofJson getLocalConfigJson();
     ofJson getGlobalConfigJson();
     string generateGithubUrl(string github);
+    string extractRepositoryName(string cloneUrl);
     string getAbsolutePath(string path);
 
     bool hasConfig(string path);

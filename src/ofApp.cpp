@@ -391,25 +391,37 @@ void ofPackageManager::generateProject()
     string ofPath = _configJson["ofPath"];
     string addonsList;
     ofJson packageJson = getPackageJson();
+
+    vector<string> addonsVec;
     if(!packageJson.is_null())
     {
-        ofLogNotice("generate project")<<packageJson["dependencies"].dump(4);
-
         for(auto dependency : packageJson["dependencies"]["global"])
         {
-//            addonsList += dependency["name"]+", ";
+            if(dependency["path"] == "addons" || dependency["path"] == "addons/")
+            {
+                addonsVec.push_back(extractRepositoryName(dependency["url"]));
+            }
         }
         for(auto dependency : packageJson["dependencies"]["local"])
         {
-//            addonsList += dependency["path"]+dependency["name"]+", ";
+            string path = dependency["path"];
+            addonsVec.push_back(path+extractRepositoryName(dependency["url"]));
+        }
+        for(int i = 0; i < addonsVec.size() -1; i++)
+        {
+            addonsList += addonsVec[i] +", ";
+        }
+        if(addonsVec.size()> 0)
+        {
+            addonsList += addonsVec.back();
         }
     }
     else
     {
     }
-    string command = pgPath+" --ofPath "+ofPath+" --addons ofxMidi";
+    string command = pgPath+" --ofPath "+ofPath+" --addons "+addonsList;
     ofSystem(command);
-    ofLogNotice("generate project")<<command;
+//    ofLogNotice("generate project")<<command;
 }
 
 void ofPackageManager::generateReadme()
@@ -764,6 +776,12 @@ ofJson ofPackageManager::getGlobalConfigJson()
 string ofPackageManager::generateGithubUrl(string github)
 {
     return "http://github.com/"+github+".git";
+}
+
+string ofPackageManager::extractRepositoryName(string cloneUrl)
+{
+    auto name = ofSplitString(cloneUrl, "/").back(); name = name.substr(0, name.size()-4);
+    return name;
 }
 
 string ofPackageManager::getAbsolutePath(string path)
