@@ -15,7 +15,7 @@ public:
     }
 
     void addPackageToPackageFile(string path, bool all = false, bool global = false);
-    void configurePackageManager(bool globally = false);
+    void configurePackageManager(bool global = false);
     void doctor();
     void generateDatabaseEntryFile();
     void generateProject();
@@ -31,7 +31,7 @@ public:
     void printAvailablePackages();
     void printVersion();
     void removePackageFromPackageFile(string path, bool all = false, bool global = false);
-    void searchPackageById(string id);
+    void searchPackageInDatabaseById(string id);
     void searchPackageOnGithubByName(string name);
     void searchPackageOnGithubByUser(string user);
     void updatePackagesDatabase();

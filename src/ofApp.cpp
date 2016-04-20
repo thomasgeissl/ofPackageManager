@@ -98,11 +98,11 @@ void ofPackageManager::addPackageToPackageFile(string path, bool all, bool globa
 
 }
 
-void ofPackageManager::configurePackageManager(bool globally)
+void ofPackageManager::configurePackageManager(bool global)
 {
     auto configPath = ofFilePath::join(_cwdPath, "ofPackageManager.json");
     string relativeOrAbsolute = "relative";
-    if(globally)
+    if(global)
     {
         configPath = ofFilePath::join(ofFilePath::getUserHomeDir(), ".ofPackageManager.json");
         relativeOrAbsolute = "absolute";
@@ -346,7 +346,7 @@ void ofPackageManager::removePackageFromPackageFile(string path, bool all, bool 
     //TODO: remove package from the dependency list, ask if user wants to remove it from the filesystem too
 }
 
-void ofPackageManager::searchPackageById(string name)
+void ofPackageManager::searchPackageInDatabaseById(string name)
 {
     ofDirectory ofPackagesDirectory(ofToDataPath("ofPackages"));
     ofPackagesDirectory.listDir();
