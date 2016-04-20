@@ -479,9 +479,36 @@ void ofPackageManager::installDependenciesFromPackageFile()
             {
                 url = generateGithubUrl(github);
             }
-          installPackageByUrl(url, checkout, false, path);
+          installPackageByUrl(url, checkout, false, path, false);
         }
-//        TODO: global depenencies
+        for (auto package : packageJson["dependencies"]["global"]) {
+            string url;
+            string github;
+            string checkout;
+            string path;
+
+            if(!package["github"].empty())
+            {
+                github = package["github"];
+            }
+            if(!package["url"].empty())
+            {
+                url = package["url"];
+            }
+            if(!package["path"].empty())
+            {
+                path = package["path"];
+            }
+            if(!package["checkout"].empty())
+            {
+                checkout = package["checkout"];
+            }
+            if(!github.empty())
+            {
+                url = generateGithubUrl(github);
+            }
+          installPackageByUrl(url, checkout, false, ofFilePath::join(getOfPath(), path), true);
+        }
     }
 }
 void ofPackageManager::installDependencies()
