@@ -389,7 +389,27 @@ void ofPackageManager::generateProject()
     ofLogWarning("TODO")<<"generate project";
     string pgPath = _configJson["pgPath"];
     string ofPath = _configJson["ofPath"];
-    ofSystem(pgPath+" --ofPath "+ofPath+" --addons ofxMidi");
+    string addonsList;
+    ofJson packageJson = getPackageJson();
+    if(!packageJson.is_null())
+    {
+        ofLogNotice("generate project")<<packageJson["dependencies"].dump(4);
+
+        for(auto dependency : packageJson["dependencies"]["global"])
+        {
+//            addonsList += dependency["name"]+", ";
+        }
+        for(auto dependency : packageJson["dependencies"]["local"])
+        {
+//            addonsList += dependency["path"]+dependency["name"]+", ";
+        }
+    }
+    else
+    {
+    }
+    string command = pgPath+" --ofPath "+ofPath+" --addons ofxMidi";
+    ofSystem(command);
+    ofLogNotice("generate project")<<command;
 }
 
 void ofPackageManager::generateReadme()
