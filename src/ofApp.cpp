@@ -302,7 +302,7 @@ void ofPackageManager::searchPackageOnGithubByUser(string user)
 }
 void ofPackageManager::installPackageByGithub(string github, string checkout, bool addToPackageFileB, string destinationPath, bool global)
 {
-    installPackageByUrl(generateGithubUrl(github), checkout, addToPackageFileB, destinationPath);
+    installPackageByUrl(generateGithubUrl(github), checkout, addToPackageFileB, destinationPath, global);
 }
 
 void ofPackageManager::installPackageByUrl(string url, string checkout, bool addToPackageFileB, string destinationPath, bool global)
