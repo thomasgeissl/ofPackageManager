@@ -27,7 +27,7 @@ int main(int argc, char** argv)
     }
     else
     {
-        app.searchPackageById("ofxHTTP");
+        app.searchPackageInDatabaseById("ofxHTTP");
 //        app.printManual();
     }
 
@@ -149,11 +149,32 @@ int main(int argc, char** argv)
             }
         }
     }
+    else if(task == "print")
+    {
+        string subtask = "packages";
+        if(argc == 3)
+        {
+            subtask = argv[2];
+        }
+        if(subtask == "packages")
+        {
+            app.printAvailablePackages();
+        }
+        else if(subtask == "manual" || subtask == "man" || subtask == "help")
+        {
+            app.printManual();
+        }
+        else if(subtask == "version")
+        {
+            app.printVersion();
+        }
+
+    }
     else if(task == "search")
     {
         if(argc == 3)
         {
-            app.searchPackageById(argv[2]);
+            app.searchPackageInDatabaseById(argv[2]);
         }
         else if(argc == 4)
         {

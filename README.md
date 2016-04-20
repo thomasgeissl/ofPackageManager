@@ -22,10 +22,12 @@
 * Generate readme: ``` ofPackageManager generate readme ```
 * Generate database entry file: ``` ofPackageManager generate database ```
 
-### Package manager update
+### Package manager update/info
 * Check for updates: ``` ofPackageManager doctor ```
 * Upate packages database: ``` ofPackageManager update ```
-
+* Print available packages: ``` ofPackageManager print packages ```
+* Print version: ``` ofPackageManager print version ```
+* Print help/manual: ``` ofPackageManager print manual ```
 
 ## TODOs
 * replace system calls by libgit2 calls

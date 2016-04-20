@@ -436,7 +436,34 @@ void ofPackageManager::printManual()
 
 void ofPackageManager::printAvailablePackages()
 {
-    ofLogError("TODO")<<"print available packages";
+    ofDirectory ofPackagesDirectory(ofToDataPath("ofPackages"));
+    ofPackagesDirectory.listDir();
+    for(auto file : ofPackagesDirectory.getFiles())
+    {
+        if(file.getExtension() == "json")
+        {
+            ofJson packageJson;
+            file.open(file.getAbsolutePath());
+            file >> packageJson;
+
+            std::cout<<"# "<<packageJson["name"]<<std::endl;
+            std::cout<<"## Description"<<std::endl;
+            std::cout<<packageJson["description"]<<std::endl;
+            std::cout<<"## Author"<<std::endl;
+            std::cout<<packageJson["author"]<<std::endl;
+            std::cout<<"## cloneUrl"<<std::endl;
+            std::cout<<packageJson["cloneUrl"]<<std::endl;
+            std::cout<<"## License"<<std::endl;
+            std::cout<<packageJson["license"]<<std::endl;
+            std::cout<<std::endl;
+
+
+
+
+            file.close();
+        }
+    }
+
 }
 
 void ofPackageManager::installDependenciesFromPackageFile()
