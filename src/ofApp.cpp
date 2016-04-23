@@ -386,7 +386,6 @@ void ofPackageManager::searchPackageInDatabaseById(string name)
 
 void ofPackageManager::generateProject()
 {
-    ofLogWarning("TODO")<<"generate project";
     string pgPath = _configJson["pgPath"];
     string ofPath = _configJson["ofPath"];
     string addonsList;
@@ -418,8 +417,11 @@ void ofPackageManager::generateProject()
     }
     else
     {
+        ofLogError("generate project")<<"ofPackage.json is null";
+//        TODO: use makefiles instead
     }
-    string command = pgPath+" --ofPath "+ofPath+" --addons "+addonsList;
+//    string path = getAbsolutePath(getPackageJson()["name"]);
+    string command = pgPath+" --ofPath=\""+ofPath+"\" --addons=\""+addonsList+"\" .";
     ofSystem(command);
 //    ofLogNotice("generate project")<<command;
 }
