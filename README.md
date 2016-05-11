@@ -7,6 +7,7 @@
 * clone ofPackageManager to openframeworks/app/ (or any other location): ``` git clone --recursive https://github.com/thomasgeissl/ofPackageManager.git ```
 * Export path, otherwise you have to type the full path
 * Run the configuration task globally: ``` ofPackageManager config -g ```
+* Update packages database: ``` ofPackageManager update ```
 
 ### Package management
 * Init a project: ``` ofPackageManager init ```
