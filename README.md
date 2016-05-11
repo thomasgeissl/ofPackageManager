@@ -16,6 +16,7 @@
 * Install package by id: ``` ofPackageManager install ofxMidi ```
 * Install package by github shortcut: ``` ofPackageManager install arturoc/ofxAruco ```
 * Install package by url: ``` ofPackageManager install https://github.com/kylemcdonald/ofxCv.git ```
+* Install addons globally: ``` ofPackageManager install -g kylemcdonald/ofxCv ```
 * Add already cloned repositories: ``` ofPackageManager add -A local_addons ```
 * Install dependencies of a package: ``` ofPackageManager install ```
 * Generate project: ``` ofPackageManager generate ```
