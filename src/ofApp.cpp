@@ -320,7 +320,7 @@ void ofPackageManager::installPackageByUrl(string url, string checkout, bool add
         destinationDirectory.create();
     }
 
-    ofSystem("cd "+destinationPath+" && git clone "+url);
+    ofSystem("cd "+destinationPath+" && git clone --recursive "+url);
     if(!checkout.empty())
     {
         ofSystem("cd "+ofFilePath::join(destinationPath, name)+" && git checkout "+checkout);
