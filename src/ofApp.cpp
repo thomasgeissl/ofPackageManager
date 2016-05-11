@@ -337,7 +337,14 @@ void ofPackageManager::installPackageByUrl(string url, string checkout, bool add
 
     if(addToPackageFileB)
     {
-        addPackageToPackageFile(ofFilePath::join(destinationPath, name),false, global);
+        if(!hasPackageFile(_cwdPath))
+        {
+            ofLogWarning("install")<<_cwdPath<<"is not a valid ofPackage. The package will not be added as a dependency.";
+        }
+        else
+        {
+            addPackageToPackageFile(ofFilePath::join(destinationPath, name),false, global);
+        }
     }
 }
 
