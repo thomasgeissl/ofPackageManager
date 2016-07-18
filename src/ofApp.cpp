@@ -274,7 +274,7 @@ void ofPackageManager::searchPackageOnGithubByName(string name)
 }
 void ofPackageManager::searchPackageOnGithubByUser(string user)
 {
-    std::string url = "https://api.github.com/users/"+user+"/repos";
+    std::string url = "https://api.github.com/users/"+user+"/repos?per_page=100";
 
     ofx::HTTP::DefaultClient client;
     ofx::HTTP::Context context;
