@@ -5,7 +5,7 @@ ofPackageManager is an experimental package manager for openFrameworks. It is no
 
 ## Usage
 ### Installation
-* Clone ofPackageManager to openframeworks/app/ (or any other location): ``` git clone --recursive https://github.com/thomasgeissl/ofPackageManager.git ```
+* Clone ofPackageManager to openframeworks/apps/ (or any other location): ``` git clone --recursive https://github.com/thomasgeissl/ofPackageManager.git ```
 * Clone build dependencies: ``` cd ofPackageManage/scripts && ./clone_dependencies.sh ```
 * The release packages do not include ofxUnitTests. Copy the addon manually from the oF repo to your global addons, if you are not using the github version.
 * Compile project. I had problems using the makefile system, but I could compile it using the qt creator and x-code.
