@@ -1,15 +1,15 @@
 {
-    "author": "author of package",
-    "cloneUrl": "cloneUrl",
-    "dependencies": {
-        "global": [],
-        "local": []
-    },
-    "description": "description of package",
-    "license": "MIT",
-    "name": "name of package",
-    "type": "app",
-    "version": "0.0.0",
-    "visible": true,
-    "website": "website of package"
+	"author" : "author of package",
+	"cloneUrl" : "cloneUrl",
+	"dependencies" : {
+		"global" :[],
+		"local" :[]
+	},
+	"description" : "description of package",
+	"license" : "MIT",
+	"name" : "name of package",
+	"type" : "app",
+	"version" : "0.0.0",
+	"visible" : true,
+	"url" : "web url of package"
 }

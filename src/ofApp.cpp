@@ -146,7 +146,7 @@ void ofPackageManager::generateDatabaseEntryFile(){
 		ofLogNotice("marker");
 		dataBaseEntryJson["name"] = packageJson["name"];
 		dataBaseEntryJson["author"] = packageJson["author"];
-		dataBaseEntryJson["website"] = packageJson["website"];
+		dataBaseEntryJson["url"] = packageJson["url"];
 		dataBaseEntryJson["cloneUrl"] = packageJson["cloneUrl"];
 		dataBaseEntryJson["license"] = packageJson["license"];
 		dataBaseEntryJson["type"] = packageJson["type"];
@@ -154,7 +154,7 @@ void ofPackageManager::generateDatabaseEntryFile(){
 	}else{
 		dataBaseEntryJson["name"] = getStringAnswer("package name?");
 		dataBaseEntryJson["author"] = getStringAnswer("author?");
-		dataBaseEntryJson["website"] = getStringAnswer("website?");
+		dataBaseEntryJson["url"] = getStringAnswer("url?");
 		dataBaseEntryJson["cloneUrl"] = getStringAnswer("cloneUrl?");
 		dataBaseEntryJson["license"] = getStringAnswer("license?");
 		dataBaseEntryJson["type"] = getOptionAnswer("type", {"app", "addon"});
@@ -192,7 +192,7 @@ void ofPackageManager::initPackage(){
 	packageJson["name"] = getStringAnswer("package name?", ofFilePath::getBaseName(_cwdPath)); // packageJson["name"]);
 	packageJson["author"] = getStringAnswer("author?", packageJson["author"]);
 	packageJson["version"] = getStringAnswer("version?", packageJson["version"]);
-	packageJson["website"] = getStringAnswer("website?", packageJson["website"]);
+	packageJson["url"] = getStringAnswer("url?", packageJson["url"]);
 	packageJson["cloneUrl"] = getStringAnswer("cloneUrl?", packageJson["cloneUrl"]);
 	packageJson["license"] = getStringAnswer("license?", packageJson["license"]);
 	packageJson["visible"] = getBoolAnswer("visible?", packageJson["visible"]);
@@ -398,20 +398,30 @@ void ofPackageManager::generateReadme(){
 	}
 
 	readmeFile.open(getAbsolutePath("README.md"), ofFile::ReadWrite);
-	{
-//        TODO: remove surrounding ""
-		ofJson packageJson = getPackageJson();
-		readmeFile << "# " << packageJson["name"] << std::endl;
-		readmeFile << "## " << "author" << std::endl;
-		readmeFile << packageJson["author"] << std::endl;
-		readmeFile << "## " << "description" << std::endl;
-		readmeFile << packageJson["description"] << std::endl;
-		readmeFile << "## " << "dependencies" << std::endl;
-//        readmeFile << packageJson["dependencies"].dump(4) << std::endl;
-		readmeFile << "## " << "license" << std::endl;
-		readmeFile << packageJson["license"] << std::endl;
-		readmeFile << "## " << "changelog" << std::endl;
-	}
+	ofJson packageJson = getPackageJson();
+	std::string name = packageJson["name"];
+	std::string url = packageJson["url"];
+	std::string author = packageJson["author"];
+	std::string description = packageJson["description"];
+	std::string license = packageJson["license"];
+
+	readmeFile << "# " << "[" << name << "](" << url << ")" << std::endl;
+	readmeFile << "## " << "description" << std::endl;
+	readmeFile << description << std::endl;
+	readmeFile << std::endl;
+
+	readmeFile << "## " << "author" << std::endl;
+	readmeFile << author << std::endl;
+	readmeFile << std::endl;
+
+	readmeFile << "## " << "dependencies" << std::endl;
+	readmeFile << std::endl;
+
+	readmeFile << "## " << "license" << std::endl;
+	readmeFile << license << std::endl;
+	readmeFile << std::endl;
+
+	readmeFile << "## " << "changelog" << std::endl;
 }
 void ofPackageManager::printManual(){
 	ofLogWarning("TODO") << "print manual";
