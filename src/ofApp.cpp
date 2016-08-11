@@ -18,6 +18,10 @@ void ofPackageManager::setConfig(string configPath){
 
 }
 
+string ofPackageManager::getOfPath(){
+	return _configJson["ofPath"];
+}
+
 void ofPackageManager::addPackageToPackageFile(string path, bool all, bool global){
 	path = getAbsolutePath(path);
 	ofDirectory directory(path);
@@ -108,8 +112,27 @@ void ofPackageManager::configurePackageManager(bool global){
 }
 
 void ofPackageManager::doctor(){
-	ofLogError("TODO") << "doctor:" << "check if there is a newer ofPackageManager version and check if there is a newer version ofPackages";
 	printVersion();
+
+//    check version of ofPackageManager
+	ofHttpResponse request = ofLoadURL("https://raw.githubusercontent.com/thomasgeissl/ofPackageManager/master/bin/data/version.json");
+	ofJson mostRecentVersionJson;
+	mostRecentVersionJson = ofJson::parse(request.data.getText());
+	ofJson currentVersion = getVersionJson();
+	if(
+		mostRecentVersionJson["major"].get <int>() > currentVersion["major"].get <int>() ||
+		mostRecentVersionJson["minor"].get <int>() > currentVersion["minor"].get <int>() ||
+		mostRecentVersionJson["patch"].get <int>() > currentVersion["patch"].get <int>()
+		){
+		ofLogNotice("doctor") << "there is a new version of ofPackageManager available";
+		ofLog::setAutoSpace(false);
+		ofLogNotice("doctor") << "the most recent version is " << mostRecentVersionJson["major"] << "." << mostRecentVersionJson["minor"] << "." << mostRecentVersionJson["patch"];
+		ofLog::setAutoSpace(true);
+	}else{
+		ofLogNotice("doctor") << "there is no new version of ofPackageManager available";
+	}
+
+//    check version of ofPackages
 }
 
 void ofPackageManager::generateDatabaseEntryFile(){
@@ -166,7 +189,7 @@ void ofPackageManager::initPackage(){
 	packageFile.open(packageFile.getAbsolutePath(), ofFile::ReadWrite);
 	packageJson << packageFile;
 
-	packageJson["name"] = getStringAnswer("package name?", packageJson["name"]);
+	packageJson["name"] = getStringAnswer("package name?", ofFilePath::getBaseName(_cwdPath)); // packageJson["name"]);
 	packageJson["author"] = getStringAnswer("author?", packageJson["author"]);
 	packageJson["version"] = getStringAnswer("version?", packageJson["version"]);
 	packageJson["website"] = getStringAnswer("website?", packageJson["website"]);
@@ -636,6 +659,14 @@ ofJson ofPackageManager::getGlobalConfigJson(){
 		packageManagerConfigJson << packageManagerConfigFile;
 	}
 	return packageManagerConfigJson;
+}
+
+ofJson ofPackageManager::getVersionJson(){
+	ofFile versionFile(ofToDataPath("version.json"));
+	ofJson versionJson;
+	versionJson << versionFile;
+	versionFile.close();
+	return versionJson;
 }
 
 string ofPackageManager::generateGithubUrl(string github){

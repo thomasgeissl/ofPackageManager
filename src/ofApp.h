@@ -7,10 +7,7 @@ class ofPackageManager {
 		ofPackageManager(string cwdPath);
 		void setCwdPath(string cwdPath);
 		void setConfig(string configPath);
-
-		string getOfPath(){
-			return _configJson["ofPath"];
-		}
+		string getOfPath();
 
 		void addPackageToPackageFile(string path, bool all = false, bool global = false);
 		void configurePackageManager(bool global = false);
@@ -43,6 +40,7 @@ class ofPackageManager {
 		ofJson getPackageManagerJson();
 		ofJson getLocalConfigJson();
 		ofJson getGlobalConfigJson();
+		ofJson getVersionJson();
 		string generateGithubUrl(string github);
 		string extractRepositoryName(string cloneUrl);
 		string getAbsolutePath(string path);
