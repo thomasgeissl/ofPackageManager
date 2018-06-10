@@ -1,7 +1,7 @@
 # ofPackageManager
 
 ## Description
-ofPackageManager is an experimental package manager for openFrameworks. It is not compatible with version 0.9.3 or lower and it does not support windows yet.
+ofPackageManager is an experimental package manager for openFrameworks. It is compatible with version 0.10.0 or higher and it does not support windows yet.
 
 ## Usage
 ### Installation

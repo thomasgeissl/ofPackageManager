@@ -1,8 +1,2 @@
 ofxUnitTests
-local_addons/ofxHTTP
-local_addons/ofxIO
-local_addons/ofxMediaType
-local_addons/ofxNetworkUtils
-local_addons/ofxSSLManager
-local_addons/ofxTaskQueue
 local_addons/ofxCommandLineUtils

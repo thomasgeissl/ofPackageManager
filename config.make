@@ -6,9 +6,9 @@
 ################################################################################
 # OF ROOT
 #   The location of your root openFrameworks installation
-#       (default) OF_ROOT = ../.. 
+#       (default) OF_ROOT = ../../.. 
 ################################################################################
-OF_ROOT = ../..
+# OF_ROOT = ../../..
 
 ################################################################################
 # PROJECT ROOT
@@ -62,7 +62,6 @@ OF_ROOT = ../..
 #   Note: Leave a leading space when adding list items with the += operator
 ################################################################################
 # PROJECT_EXCLUSIONS =
-PROJECT_EXCLUSIONS=$(PROJECT_ROOT)/local_addons/%
 
 ################################################################################
 # PROJECT LINKER FLAGS
@@ -71,12 +70,13 @@ PROJECT_EXCLUSIONS=$(PROJECT_ROOT)/local_addons/%
 #		(default) PROJECT_LDFLAGS = -Wl,-rpath=./libs
 #
 #   Note: Leave a leading space when adding list items with the += operator
-#
+################################################################################
+
 # Currently, shared libraries that are needed are copied to the 
 # $(PROJECT_ROOT)/bin/libs directory.  The following LDFLAGS tell the linker to
 # add a runtime path to search for those shared libraries, since they aren't 
 # incorporated directly into the final executable application binary.
-################################################################################
+# TODO: should this be a default setting?
 # PROJECT_LDFLAGS=-Wl,-rpath=./libs
 
 ################################################################################
@@ -140,4 +140,3 @@ PROJECT_EXCLUSIONS=$(PROJECT_ROOT)/local_addons/%
 ################################################################################
 # PROJECT_CXX = 
 # PROJECT_CC = 
-

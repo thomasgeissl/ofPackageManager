@@ -1,7 +1,7 @@
 #include "ofApp.h"
 
 #include "ofxCommandLineUtils.h"
-#include "ofxHTTP.h"
+// #include "ofxHTTP.h"
 //#include "ofxGit.h"
 
 ofPackageManager::ofPackageManager(string cwdPath) :
@@ -50,7 +50,8 @@ void ofPackageManager::addPackageToPackageFile(string path, bool all, bool globa
 			string checkoutResult = ofSystem("cd " + directory.getAbsolutePath() + " && git rev-parse HEAD && cd ..");
 			dependency["checkout"] = checkoutResult.substr(0, checkoutResult.size() - 1);
 			if(global){
-				dependency["path"] = ofFilePath::getEnclosingDirectory(ofFilePath::makeRelative(_configJson["ofPath"], path), false);
+				// dependency["path"] = ofFilePath::getEnclosingDirectory(ofFilePath::makeRelative(_configJson["ofPath"], path), false);
+				dependency["path"] = "test"; //ofFilePath::getEnclosingDirectory(ofFilePath::makeRelative(_configJson["ofPath"], path), false);
 			}else{
 				dependency["path"] = ofFilePath::getEnclosingDirectory(ofFilePath::makeRelative(_cwdPath, path), false);
 			}
@@ -100,7 +101,7 @@ void ofPackageManager::configurePackageManager(bool global){
 
 	ofJson configJson;
 	configJson["ofPath"] = getStringAnswer(relativeOrAbsolute + " path to openFrameworks?", ofFilePath::getAbsolutePath(getAbsolutePath("../../.."), false));
-	configJson["pgPath"] = getStringAnswer(relativeOrAbsolute + " path to the executable of projectGenerator?", ofFilePath::join(configJson["ofPath"], "apps/projectGenerator/commandLine/bin/projectGenerator.app/Contents/MacOS/projectGenerator"));
+	// configJson["pgPath"] = getStringAnswer(relativeOrAbsolute + " path to the executable of projectGenerator?", ofFilePath::join(configJson["ofPath"], "apps/projectGenerator/commandLine/bin/projectGenerator.app/Contents/MacOS/projectGenerator"));
 	configJson["packagesPath"] = getStringAnswer("absolute path to packages directory?", ofToDataPath("ofPackages", true));
 	configJson["localAddonsPath"] = getStringAnswer("local addons directory?", "local_addons");
 
@@ -230,54 +231,38 @@ void ofPackageManager::initPackage(){
 
 void ofPackageManager::searchPackageOnGithubByName(string name){
 	ofLogNotice("ofPackageManager") << "search";
-	string url = "https://api.github.com/search/repositories?q=" + name;
-
-	ofx::HTTP::DefaultClient client;
-	ofx::HTTP::Context context;
-	ofx::HTTP::BaseResponse response;
-	ofx::HTTP::GetRequest request(url, Poco::Net::HTTPMessage::HTTP_1_1);
-
-	try{
-		std::istream & responseStream = client.execute(request, response, context);
-		ofJson resultJson;
-		resultJson << responseStream;
-		string outputString;
-		outputString += "repositories containing " + name + ":\n";
-		for(auto repo : resultJson["items"]){
-			outputString += repo["full_name"];
-			outputString += "\n";
-		}
-		ofLogNotice("search") << outputString;
-
+	std::string url = "https://api.github.com/search/repositories?q=" + name;
+	ofHttpRequest request(url, "TODO: check name");
+	request.headers["User-Agent"] = "ofPackageManager";
+	ofURLFileLoader loader;
+	auto response = loader.handleRequest(request);
+	auto resultJson = ofJson::parse(response.data.getText());
+	std::string outputString;
+	outputString += "repositories containing " + name + ":\n";
+	for(auto repo : resultJson["items"]){
+		std::string name = repo["full_name"];
+		outputString += name;
+		outputString += "\n";
 	}
-	catch(const Poco::Exception & exc){
-		ofLogError("search") << "Got Exception " << exc.displayText() << " " << exc.code();
-	}
+	ofLogNotice("search") << outputString;
 }
 void ofPackageManager::searchPackageOnGithubByUser(string user){
 	std::string url = "https://api.github.com/users/" + user + "/repos?per_page=100";
-
-	ofx::HTTP::DefaultClient client;
-	ofx::HTTP::Context context;
-	ofx::HTTP::BaseResponse response;
-	ofx::HTTP::GetRequest request(url, Poco::Net::HTTPMessage::HTTP_1_1);
-
-	try{
-		std::istream & responseStream = client.execute(request, response, context);
-		ofJson resultJson;
-		resultJson << responseStream;
-		string outputString;
-		outputString += "repositories by " + user + ":\n";
-		for(auto repo : resultJson){
-			outputString += repo["full_name"];
-			outputString += "\n";
-		}
-		ofLogNotice("search") << outputString;
+	ofHttpRequest request(url, "TODO: check name");
+	request.headers["User-Agent"] = "ofPackageManager";
+	ofURLFileLoader loader;
+	auto response = loader.handleRequest(request);
+	auto resultJson = ofJson::parse(response.data.getText());
+	std::string outputString;
+	outputString += "repositories by" + user + ":\n";
+	for(auto repo : resultJson["items"]){
+		std::string name = repo["full_name"];
+		outputString += name;
+		outputString += "\n";
 	}
-	catch(const Poco::Exception & exc){
-		ofLogError("search") << "Got Exception " << exc.displayText() << " " << exc.code();
-	}
+	ofLogNotice("search") << outputString;
 }
+
 void ofPackageManager::installPackageByGithub(string github, string checkout, bool addToPackageFileB, string destinationPath, bool global){
 	installPackageByUrl(generateGithubUrl(github), checkout, addToPackageFileB, destinationPath, global);
 }

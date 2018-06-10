@@ -1,3 +1,4 @@
+local_addons/*
 obj/*
 bin/*
 !bin/data
