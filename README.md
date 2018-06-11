@@ -37,7 +37,7 @@ ofPackageManager is an experimental package manager for openFrameworks. It is co
 
 ## TODOs
 * replace system calls by libgit2 calls
-* add support for makefiles
+* find solution for addon dependencies
 * command line syntax
 * better console output
 * optimize

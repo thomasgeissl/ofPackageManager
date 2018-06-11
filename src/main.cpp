@@ -23,22 +23,18 @@ int main(int argc, char * * argv){
 	cwdPath = getcwd(buff, PATH_MAX + 1);
 	ofPackageManager app(cwdPath);
 
-	string task;
+	std::string task;
 	if(argc > 1){
 		task = argv[1];
-		ofLogVerbose("main") << argc;
-	}else{
-		app.searchPackageInDatabaseById("ofxHTTP");
-//        app.printManual();
 	}
 
 	if(task == "add"){
 		if(argc == 3){
-			app.addPackageToPackageFile(argv[2]);
+			app.addPackageToAddonsMakeFile(argv[2]);
 		}else if(argc == 4){
 			string option = argv[2];
 			if(option == "-A" || option == "--all"){
-				app.addPackageToPackageFile(argv[3], true);
+			app.addPackagesToAddonsMakeFile(argv[3]);
 			}
 		}else{
 			ofLogError("main") << "invalid syntax";
@@ -81,16 +77,15 @@ int main(int argc, char * * argv){
 		app.initPackage();
 	}else if(task == "install"){
 		if(argc == 2){
-			app.installDependencies();
+			app.installPackagesFromAddonsMakeFile();
 		}else if(argc >= 3){
-			string package;
-			string destinationPath = "local_addons";
+			std::string package;
+			std::string destinationPath = "local_addons";
 			bool global = false;
 			if(argc == 3){
 				package = argv[2];
-
 			}else if(argc == 4){
-				string option = argv[2];
+				std::string option = argv[2];
 				if(option == "-g" || option == "--global"){
 					destinationPath = ofFilePath::join(app.getOfPath(), "addons");
 					global = true;
@@ -98,15 +93,20 @@ int main(int argc, char * * argv){
 				package = argv[3];
 			}
 			if(isCloneUrl(package)){
-				app.installPackageByUrl(package, "", true, destinationPath, global);
+				auto installedPackage = app.installPackageByUrl(package, "", destinationPath);
+				app.addPackageToAddonsMakeFile(installedPackage);
 			}else if(isGithub(package)){
-				app.installPackageByGithub(package, "", true, destinationPath, global);
+				auto installedPackage = app.installPackageByGithub(package, "", destinationPath);
+				app.addPackageToAddonsMakeFile(installedPackage);
 			}else{
-				app.installPackageById(package, "", true, destinationPath, global);
+				auto installedPackage = app.installPackageById(package, "", destinationPath);
+				if (!installedPackage._path.empty()) {
+					app.addPackageToAddonsMakeFile(installedPackage);
+				}
 			}
 		}
 	}else if(task == "print"){
-		string subtask = "packages";
+		std::string subtask = "packages";
 		if(argc == 3){
 			subtask = argv[2];
 		}

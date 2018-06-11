@@ -1,10 +1,9 @@
 #!/bin/sh
 
-if [ ! -e "~/.profile" ] ; then
-    touch "~/.profile"
-fi
+SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
 
-
-#PATH=/Users/thomasgeissl/programming/of/ofTG/apps/ofPackageManager/bin/ofPackageManager_debug.app/Contents/MacOS:$PATH
+STRINGTOADD="PATH="$SCRIPTPATH"/../bin/ofPackageManager_debug.app/Contents/MacOS:""$""PATH"
+echo $STRINGTOADD >> ~/.bash_profile
+echo "export PATH">> ~/.bash_profile
 
 

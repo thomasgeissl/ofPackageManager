@@ -5,3 +5,4 @@ bin/*
 *qbs*
 
 .DS_Store
+.vscode

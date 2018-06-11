@@ -1,39 +1,38 @@
 #pragma once
 
 #include "ofMain.h"
+#include "ofPackage.h"
 
 class ofPackageManager {
 	public:
-		ofPackageManager(string cwdPath);
-		void setCwdPath(string cwdPath);
-		void setConfig(string configPath);
-		string getOfPath();
+		ofPackageManager(std::string cwdPath);
+		void setCwdPath(std::string cwdPath);
+		void setConfig(std::string configPath);
+		std::string getOfPath();
 
-		void addPackageToPackageFile(string path, bool all = false, bool global = false);
+		void addPackageToAddonsMakeFile(ofPackage package);
+		void addPackageToAddonsMakeFile(std::string path);
+		void addPackagesToAddonsMakeFile(std::string path);
 		void configurePackageManager(bool global = false);
 		void doctor();
 		void generateDatabaseEntryFile();
 		void generateProject();
 		void generateReadme();
 		void initPackage();
-		void installDependencies();
-		void installDependenciesFromPackageFile();
-		void installDependenciesFromAddonsMakeFile(string destinationPath);
-		void installPackageById(string id, string checkout = "", bool addToPackageFileB = true, string destinationPath = "", bool global = false);
-		void installPackageByGithub(string github, string checkout = "", bool addToPackageFileB = true, string destinationPath = "", bool global = false);
-		void installPackageByUrl(string url, string checkout = "", bool addPackageToPackageFile = true, string destinationPath = "", bool global = false);
+		void installPackagesFromAddonsMakeFile();
+		ofPackage installPackageById(std::string id, std::string checkout = "", std::string destinationPath = "");
+		ofPackage installPackageByGithub(std::string github, std::string checkout = "", std::string destinationPath = "");
+		ofPackage installPackageByUrl(std::string url, std::string checkout = "", std::string destinationPath = "");
 		void printManual();
 		void printAvailablePackages();
 		void printVersion();
-		void removePackageFromPackageFile(string path, bool all = false, bool global = false);
-		void searchPackageInDatabaseById(string id);
-		void searchPackageOnGithubByName(string name);
-		void searchPackageOnGithubByUser(string user);
+		void searchPackageInDatabaseById(std::string id);
+		void searchPackageOnGithubByName(std::string name);
+		void searchPackageOnGithubByUser(std::string user);
 		void updatePackagesDatabase();
 
-		void installDependencies(string path, string destination);
-		void installDependenciesFromPackageFile(string path, string destination);
-		void installDependenciesFromAddonConfig(string path, string destination);
+		void installDependenciesFromAddonConfig(std::string path, std::string destination);
+
 	protected:
 	private:
 		ofJson getPackageJson();
@@ -41,17 +40,21 @@ class ofPackageManager {
 		ofJson getLocalConfigJson();
 		ofJson getGlobalConfigJson();
 		ofJson getVersionJson();
-		string generateGithubUrl(string github);
-		string extractRepositoryName(string cloneUrl);
-		string getAbsolutePath(string path);
+		std::string generateGithubUrl(std::string github);
+		std::string extractRepositoryName(std::string cloneUrl);
+		std::string getAbsolutePath(std::string path);
+		std::pair<std::string, std::string> getPathAndName(std::string name);
 
-		bool hasConfig(string path);
-		bool hasReadme(string path);
-		bool isGitRepository(string path);
-		bool hasPackageFile(string path);
-		bool hasAddonsMakeFile(string path);
-		bool hasAddonsConfigFile(string path);
+		bool hasConfig(std::string path);
+		bool hasReadme(std::string path);
+		bool isGitRepository(std::string path);
+		bool isGitUrl(std::string path);
+		bool isGithubPair(std::string path);
+		bool hasPackageFile(std::string path);
+		bool hasAddonsMakeFile(std::string path);
+		bool hasAddonsConfigFile(std::string path);
+
 	private:
-		string _cwdPath;
+		std::string _cwdPath;
 		ofJson _configJson;
 };
