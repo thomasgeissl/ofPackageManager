@@ -1,2 +1,3 @@
 ofxUnitTests
+local_addons/ofxGit2
 local_addons/ofxCommandLineUtils

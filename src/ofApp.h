@@ -7,7 +7,6 @@ class ofPackageManager {
 	public:
 		ofPackageManager(std::string cwdPath);
 		void setCwdPath(std::string cwdPath);
-		void setConfig(std::string configPath);
 		std::string getOfPath();
 
 		void addPackageToAddonsMakeFile(ofPackage package);

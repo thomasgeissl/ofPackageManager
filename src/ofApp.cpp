@@ -1,17 +1,16 @@
 #include "ofApp.h"
 
 #include "ofxCommandLineUtils.h"
+#include "ofxGit2.h"
 
-ofPackageManager::ofPackageManager(string cwdPath) :
+ofPackageManager::ofPackageManager(std::string cwdPath) :
 	_cwdPath(cwdPath),
 	_configJson(getPackageManagerJson()){
 	ofLog::setAutoSpace(true);
 }
-void ofPackageManager::setCwdPath(string cwdPath){
-	_cwdPath = cwdPath;
-}
 
-void ofPackageManager::setConfig(string configPath){
+void ofPackageManager::setCwdPath(std::string cwdPath){
+	_cwdPath = cwdPath;
 }
 
 std::string ofPackageManager::getOfPath(){
@@ -75,7 +74,7 @@ void ofPackageManager::addPackagesToAddonsMakeFile(std::string path) {
 
 void ofPackageManager::configurePackageManager(bool global){
 	auto configPath = ofFilePath::join(_cwdPath, "ofPackageManager.json");
-	string relativeOrAbsolute = "relative";
+	std::string relativeOrAbsolute = "relative";
 	if(global){
 		configPath = ofFilePath::join(ofFilePath::getUserHomeDir(), ".ofPackageManager.json");
 		relativeOrAbsolute = "absolute";
@@ -94,7 +93,6 @@ void ofPackageManager::configurePackageManager(bool global){
 	configJson["packagesPath"] = getStringAnswer("absolute path to packages directory?", ofToDataPath("ofPackages", true));
 	configJson["localAddonsPath"] = getStringAnswer("local addons directory?", "local_addons");
 
-
 	configFile.create();
 	configFile.open(configPath, ofFile::WriteOnly);
 	configFile << configJson.dump(4);
@@ -104,7 +102,7 @@ void ofPackageManager::configurePackageManager(bool global){
 void ofPackageManager::doctor(){
 	printVersion();
 
-//    check version of ofPackageManager
+	// check version of ofPackageManager
 	ofHttpResponse request = ofLoadURL("https://raw.githubusercontent.com/thomasgeissl/ofPackageManager/master/bin/data/version.json");
 	ofJson mostRecentVersionJson;
 	mostRecentVersionJson = ofJson::parse(request.data.getText());
@@ -122,18 +120,17 @@ void ofPackageManager::doctor(){
 		ofLogNotice("doctor") << "there is no new version of ofPackageManager available";
 	}
 
-//    check version of ofPackages
+	// check version of ofPackages
 }
 
 void ofPackageManager::generateDatabaseEntryFile(){
 	ofJson dataBaseEntryJson;
 
-	if(hasPackageFile(getAbsolutePath(_cwdPath))){
+	if (hasPackageFile(getAbsolutePath(_cwdPath))) {
 		ofFile packageFile(getAbsolutePath(_cwdPath));
 		ofJson packageJson;
 		packageJson << packageFile;
 
-		ofLogNotice("marker");
 		dataBaseEntryJson["name"] = packageJson["name"];
 		dataBaseEntryJson["author"] = packageJson["author"];
 		dataBaseEntryJson["url"] = packageJson["url"];
@@ -141,18 +138,16 @@ void ofPackageManager::generateDatabaseEntryFile(){
 		dataBaseEntryJson["license"] = packageJson["license"];
 		dataBaseEntryJson["type"] = packageJson["type"];
 
-	}else{
+	} else {
 		dataBaseEntryJson["name"] = getStringAnswer("package name?");
 		dataBaseEntryJson["author"] = getStringAnswer("author?");
 		dataBaseEntryJson["url"] = getStringAnswer("url?");
 		dataBaseEntryJson["cloneUrl"] = getStringAnswer("cloneUrl?");
 		dataBaseEntryJson["license"] = getStringAnswer("license?");
 		dataBaseEntryJson["type"] = getOptionAnswer("type", {"app", "addon"});
-
-
 	}
 
-	string name = dataBaseEntryJson["name"];
+	std::string name = dataBaseEntryJson["name"];
 	ofFile dataBaseEntryFile(ofFilePath::addTrailingSlash(getAbsolutePath(_cwdPath)) + name + ".json", ofFile::ReadWrite);
 	if(!dataBaseEntryFile.exists()){
 		dataBaseEntryFile.create();
@@ -165,7 +160,7 @@ void ofPackageManager::initPackage(){
 	ofFile packageFile(packagePath);
 	ofJson packageJson;
 
-	if(packageFile.exists()){
+	if (packageFile.exists()) {
 		ofLogWarning("init") << "This package is already initialised.";
 		if(!getBoolAnswer("Do you want to reinitialise the package?")){
 			return;
@@ -205,7 +200,6 @@ void ofPackageManager::initPackage(){
 
 
 void ofPackageManager::searchPackageOnGithubByName(string name){
-	ofLogNotice("ofPackageManager") << "search";
 	std::string url = "https://api.github.com/search/repositories?q=" + name;
 	ofHttpRequest request(url, "TODO: check name");
 	request.headers["User-Agent"] = "ofPackageManager";
@@ -221,7 +215,8 @@ void ofPackageManager::searchPackageOnGithubByName(string name){
 	}
 	ofLogNotice("search") << outputString;
 }
-void ofPackageManager::searchPackageOnGithubByUser(string user){
+
+void ofPackageManager::searchPackageOnGithubByUser(std::string user){
 	std::string url = "https://api.github.com/users/" + user + "/repos?per_page=100";
 	ofHttpRequest request(url, "TODO: check name");
 	request.headers["User-Agent"] = "ofPackageManager";
@@ -255,7 +250,11 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 		destinationDirectory.create();
 	}
 
-	ofSystem("cd " + destinationPath + " && git clone --recursive " + url);
+	// ofSystem("cd " + destinationPath + " && git clone --recursive " + url);
+	ofxGit::repository repo(ofFilePath::join(destinationPath, name));
+	if(repo.clone(url)) {
+		ofLogNotice("") << " successfully cloned repo via libgit";
+	}
 	if(!checkout.empty()){
 		// checkout the version
 		ofSystem("cd " + ofFilePath::join(destinationPath, name) + " && git checkout " + checkout);
@@ -268,26 +267,14 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 		installDependenciesFromAddonConfig(ofFilePath::join(destinationPath, name), destinationPath);
 	}
 
-	// TODO: make path relative
-	// ofFilePath::getEnclosingDirectory(
 	return ofPackage(ofFilePath::join(ofFilePath::makeRelative(_cwdPath, destinationPath), name), url, checkout);
-
-	// if (addToPackageFileB) {
-	// 	if(!hasAddonsMakeFile(".")) {
-	// 		ofLogWarning("install") << _cwdPath << "does not have an addons.make file. The package will not be added as a dependency.";
-	// 	} else {
-	// 		auto entry = destinationPath+"/"+name+"#"+url+"#"+checkout;
-	// 		ofLogNotice()<<"add entry"<<entry;
-
-	// 	}
-	// }
 }
 
 
-void ofPackageManager::searchPackageInDatabaseById(string name){
+void ofPackageManager::searchPackageInDatabaseById(std::string name){
 	ofDirectory ofPackagesDirectory(ofToDataPath("ofPackages"));
 	ofPackagesDirectory.listDir();
-	bool foundPackage = false;
+	auto foundPackage = false;
 	for(auto file : ofPackagesDirectory.getFiles()){
 		if(file.getExtension() == "json"){
 			ofJson packageJson;
@@ -313,37 +300,15 @@ void ofPackageManager::searchPackageInDatabaseById(string name){
 	}
 }
 
-void ofPackageManager::generateProject(){
-	string pgPath = _configJson["pgPath"];
-	string ofPath = _configJson["ofPath"];
-	string addonsList;
-	ofJson packageJson = getPackageJson();
+void ofPackageManager::generateProject() {
+	std::string pgPath = _configJson["pgPath"];
+	std::string ofPath = _configJson["ofPath"];
+	std::string addonsList;
+	auto packageJson = getPackageJson();
 
-	vector <string> addonsVec;
-	if(!packageJson.is_null()){
-		for(auto dependency : packageJson["dependencies"]["global"]){
-			if(dependency["path"] == "addons" || dependency["path"] == "addons/"){
-				addonsVec.push_back(extractRepositoryName(dependency["url"]));
-			}
-		}
-		for(auto dependency : packageJson["dependencies"]["local"]){
-			string path = dependency["path"];
-			addonsVec.push_back(path + extractRepositoryName(dependency["url"]));
-		}
-		for(int i = 0; i < addonsVec.size() - 1; i++){
-			addonsList += addonsVec[i] + ", ";
-		}
-		if(addonsVec.size() > 0){
-			addonsList += addonsVec.back();
-		}
-	}else{
-		ofLogError("generate project") << "ofPackage.json is null";
-//        TODO: use makefiles instead
-	}
-//    string path = getAbsolutePath(getPackageJson()["name"]);
-	string command = pgPath + " --ofPath=\"" + ofPath + "\" --addons=\"" + addonsList + "\" .";
+	vector <std::string> addonsVec;
+	auto command = pgPath + " --ofPath=\"" + ofPath + "\" --addons=\"" + addonsList + "\" .";
 	ofSystem(command);
-//    ofLogNotice("generate project")<<command;
 }
 
 void ofPackageManager::generateReadme(){
@@ -559,6 +524,7 @@ ofJson ofPackageManager::getLocalConfigJson(){
 	}
 	return packageManagerConfigJson;
 }
+
 ofJson ofPackageManager::getGlobalConfigJson(){
 	ofJson packageManagerConfigJson;
 	ofFile packageManagerConfigFile(ofFilePath::join(ofFilePath::getUserHomeDir(), ".ofPackageManager.json"));
