@@ -3,6 +3,10 @@
 ## Description
 ofPackageManager is an experimental package manager for openFrameworks. It is compatible with version 0.10.0 or higher and it does not support windows yet.
 
+## Build status
+[![Build Status](https://travis-ci.org/thomasgeissl/ofPackageManager.svg?branch=master)](https://travis-ci.org/thomasgeissl/ofPackageManager)
+
+
 ## Usage
 ### Installation
 
@@ -39,6 +43,9 @@ Run the global configuration in order to install addons globally. `ofPackageMana
 * Upate packages database: ``` ofPackageManager update ```
 * Print available packages: ``` ofPackageManager print packages ```
 * Print version: ``` ofPackageManager print version ```
+
+## Known issues
+* The current version of the project generator does not support comments in the addons.make file
 
 ## TODOs
 * replace system calls by libgit2 calls
