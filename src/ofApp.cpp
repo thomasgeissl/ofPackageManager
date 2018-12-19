@@ -351,6 +351,15 @@ void ofPackageManager::generateReadme(){
 
 	readmeFile << "## " << "changelog" << std::endl;
 }
+void ofPackageManager::printInfo(){
+	ofLogNotice("ofPackageManager") << "info";
+	printVersion();
+	printPaths();
+}
+void ofPackageManager::printPaths(){
+	ofLogNotice("path") << "TODO";
+	ofLogNotice("global config path") << ofFilePath::join(ofFilePath::getUserHomeDir(), ".ofPackageManager.json");
+}
 void ofPackageManager::printManual(){
 	ofLogWarning("TODO") << "print manual";
 }

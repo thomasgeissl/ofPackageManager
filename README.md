@@ -6,16 +6,17 @@ ofPackageManager is an experimental package manager for openFrameworks. It is co
 ## Usage
 ### Installation
 
-You can download a fresh version of openFrameworks, as well as ofPackageManager and its depedencies via the following command.
-
+You can download a fresh version of openFrameworks, as well as ofPackageManager and its depedencies via the following commands.
+cd into your preferred installation directory, e.g. `mkdir ~/.ofPackageMananger && cd ~./ofPackageManager`
 ```
 sh -c "$(curl -sSL https://raw.githubusercontent.com/thomasgeissl/ofPackageManager/master/scripts/install.sh)"
 ```
 
 It is recommended to add the path your bash profile. Have a look at the `add_to_path.sh`script.
 
+Run the global configuration in order to install addons globally. `ofPackageManager config -g`
+
 ### Package management
-* Init a project: ``` ofPackageManager init ```
 * Search package in database: ``` ofPackageManager search ofxHTTP ```
 * Search package on github by name: ``` ofPackageManager search github ofxSyphon ```
 * Search package on github by user: ``` ofPackageManager search github --user arturoc ```
@@ -30,11 +31,12 @@ It is recommended to add the path your bash profile. Have a look at the `add_to_
 * Generate database entry file: ``` ofPackageManager generate database ```
 
 ### Package manager update/info
+* Info: `ofPackageManager info`
+* Help/man: `ofPackageManager help`
 * Check for updates: ``` ofPackageManager doctor ```
 * Upate packages database: ``` ofPackageManager update ```
 * Print available packages: ``` ofPackageManager print packages ```
 * Print version: ``` ofPackageManager print version ```
-* Print help/manual: ``` ofPackageManager print manual ```
 
 ## TODOs
 * replace system calls by libgit2 calls

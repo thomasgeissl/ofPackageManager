@@ -10,7 +10,8 @@ bool isGithub(string github){
 	return ofSplitString(github, "/").size() == 2;
 }
 
-int main(int argc, char * * argv){
+int main(int argc, char** argv){
+	ofLogNotice()<<argv[0];
 	#if defined(TARGET_OSX) || defined(TARGET_LINUX)
 		std::shared_ptr <ofColorsLoggerChannel> logger {
 			new ofColorsLoggerChannel
@@ -73,8 +74,8 @@ int main(int argc, char * * argv){
 		}
 	}else if(task == "help"){
 		app.printManual();
-	}else if(task == "init"){
-		app.initPackage();
+	}else if(task == "info"){
+		app.printInfo();
 	}else if(task == "install"){
 		if(argc == 2){
 			app.installPackagesFromAddonsMakeFile();
@@ -92,14 +93,21 @@ int main(int argc, char * * argv){
 				}
 				package = argv[3];
 			}
+			auto parts = ofSplitString(package, "@");
+			std::string checkout = "";
+			if(parts.size() > 1){
+				package = parts[0];
+				checkout = parts[1];
+			}
+			
 			if(isCloneUrl(package)){
-				auto installedPackage = app.installPackageByUrl(package, "", destinationPath);
+				auto installedPackage = app.installPackageByUrl(package, checkout, destinationPath);
 				app.addPackageToAddonsMakeFile(installedPackage);
 			}else if(isGithub(package)){
-				auto installedPackage = app.installPackageByGithub(package, "", destinationPath);
+				auto installedPackage = app.installPackageByGithub(package, checkout, destinationPath);
 				app.addPackageToAddonsMakeFile(installedPackage);
 			}else{
-				auto installedPackage = app.installPackageById(package, "", destinationPath);
+				auto installedPackage = app.installPackageById(package, checkout, destinationPath);
 				if (!installedPackage._path.empty()) {
 					app.addPackageToAddonsMakeFile(installedPackage);
 				}
