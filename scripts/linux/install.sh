@@ -7,7 +7,7 @@ sudo of_v0.10.1_linux64gcc6_release/scripts/linux/ubuntu/install_dependencies.sh
 sudo apt install libgit2
 cd of_v0.10.1_linux64gcc6_release/apps
 mkdir ofPackageManager && cd ofPackageManager
-git clone https://github.com/thomasgeissl/ofxPackageManager.git
+git clone https://github.com/thomasgeissl/ofPackageManager.git
 cd ofPackageManager/scripts
 ./install_dependencies.sh
 cd ..
