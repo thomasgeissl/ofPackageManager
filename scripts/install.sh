@@ -19,7 +19,6 @@ then
         cd of_v0.10.1_linux64gcc6_release/apps
         mkdir packageManager
         cd packageManager
-elif [ $OS = 1 ]
 else echo "windows support is not yet implemented" && exit
 fi
 
