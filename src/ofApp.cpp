@@ -52,8 +52,9 @@ void ofPackageManager::addPackageToAddonsMakeFile(ofPackage package) {
 }
 
 void ofPackageManager::addPackageToAddonsMakeFile(std::string path) {
-	auto url = ofTrim(ofSystem("cd " + path +" && git config --get remote.origin.url"));
-	auto checkout = ofSystem("cd " + path + " && git log -n 1 --pretty=format:\"%H\" ");
+	ofxGit::repository repo(path);
+	auto url = repo.getRemoteUrl();
+	auto checkout = repo.getCommitHash();
 	ofLogNotice()<<path<<url<<checkout;
 	addPackageToAddonsMakeFile(ofPackage(path, url, checkout));
 }
@@ -250,17 +251,16 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 		destinationDirectory.create();
 	}
 
-	// ofSystem("cd " + destinationPath + " && git clone --recursive " + url);
 	ofxGit::repository repo(ofFilePath::join(destinationPath, name));
 	if(repo.clone(url)) {
 		ofLogNotice("") << " successfully cloned repo via libgit";
 	}
 	if(!checkout.empty()){
 		// checkout the version
-		ofSystem("cd " + ofFilePath::join(destinationPath, name) + " && git checkout " + checkout);
+		repo.checkout(checkout);
 	} else {
 		// get commit hash
-		checkout = ofSystem("cd " + ofFilePath::join(destinationPath, name) + " && git log -n 1 --pretty=format:\"%H\" ");
+		checkout = repo.getCommitHash();
 	}
 
 	if(hasAddonsConfigFile(ofFilePath::join(destinationPath, name))){
