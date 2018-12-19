@@ -6,6 +6,8 @@ ofPackageManager is an experimental package manager for openFrameworks. It is co
 ## Usage
 ### Installation
 
+On Linux you need to install libgit: `sudo apt install libgit`.
+
 You can download a fresh version of openFrameworks, as well as ofPackageManager and its depedencies via the following commands.
 cd into your preferred installation directory, e.g. `mkdir ~/.ofPackageMananger && cd ~./ofPackageManager`
 ```
