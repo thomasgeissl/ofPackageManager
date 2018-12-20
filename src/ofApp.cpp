@@ -1,8 +1,5 @@
 #include "ofApp.h"
 
-#include "ofxCommandLineUtils.h"
-#include "ofxGit2.h"
-
 ofPackageManager::ofPackageManager(std::string cwdPath) :
 	_cwdPath(cwdPath),
 	_configJson(getPackageManagerJson()){
