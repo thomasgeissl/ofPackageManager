@@ -256,7 +256,7 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 	if(repo.clone(url)) {
 		ofLogNotice("ofPackageManager") << "successfully cloned repo" << url << "via libgit";
 	}
-	if(!checkout.empty()){
+	if(checkout != "latest"){
 		// checkout the version
 		repo.checkout(checkout);
 	} else {
@@ -405,12 +405,12 @@ void ofPackageManager::installPackagesFromAddonsMakeFile(){
 			}
 			switch (words.size()) {
 				case 1: {
-					installPackageById(words[0],"", path);
+					installPackageById(words[0],"latest", path);
 					break;
 				}
 				case 2: {
 					std::vector<std::string> packageParts = ofSplitString(words[1], "@");
-					std::string checkout = "";
+					std::string checkout = "latest";
 					std::string package = packageParts[0];
 					if(packageParts.size() > 1){
 						checkout = packageParts[1];
@@ -434,7 +434,7 @@ void ofPackageManager::installPackagesFromAddonsMakeFile(){
 }
 ofPackage ofPackageManager::installPackage(std::string key, std::string destinationPath){
 	auto parts = ofSplitString(key, "@");
-	std::string checkout = "";
+	std::string checkout = "latest";
 	if(parts.size() > 1){
 		checkout = parts[1];
 	}
