@@ -11,7 +11,7 @@ The current command line interface is very similar to npm, but I am open for sug
 ## Usage
 ### Installation
 
-On Linux you need to install libgit: `sudo apt install libgit`.
+On Linux you need to install libgit: `sudo apt install libgit2-dev`.
 
 You can download a fresh version of openFrameworks, as well as ofPackageManager and its depedencies via the following commands.
 cd into your preferred installation directory, e.g. `mkdir ~/.ofPackageMananger && cd ~./ofPackageManager`
