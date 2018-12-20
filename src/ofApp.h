@@ -7,11 +7,11 @@ class ofPackageManager {
 	public:
 		ofPackageManager(std::string cwdPath);
 		void setCwdPath(std::string cwdPath);
-		std::string getOfPath();
 
 		void addPackageToAddonsMakeFile(ofPackage package);
 		void addPackageToAddonsMakeFile(std::string path);
 		void addPackagesToAddonsMakeFile(std::string path);
+		void addPackagesToAddonsMakeFile(std::vector<std::string> paths);
 		void configurePackageManager(bool global = false);
 		void doctor();
 		void generateDatabaseEntryFile();
@@ -19,6 +19,7 @@ class ofPackageManager {
 		void generateReadme();
 		void initPackage();
 		void installPackagesFromAddonsMakeFile();
+		ofPackage installPackage(std::string key, std::string destinationPath = "");
 		ofPackage installPackageById(std::string id, std::string checkout = "", std::string destinationPath = "");
 		ofPackage installPackageByGithub(std::string github, std::string checkout = "", std::string destinationPath = "");
 		ofPackage installPackageByUrl(std::string url, std::string checkout = "", std::string destinationPath = "");
@@ -31,11 +32,9 @@ class ofPackageManager {
 		void searchPackageOnGithubByName(std::string name);
 		void searchPackageOnGithubByUser(std::string user);
 		void updatePackagesDatabase();
-
 		void installDependenciesFromAddonConfig(std::string path, std::string destination);
 
-	protected:
-	private:
+		std::string getOfPath();
 		ofJson getPackageJson();
 		ofJson getPackageManagerJson();
 		ofJson getLocalConfigJson();
@@ -55,7 +54,6 @@ class ofPackageManager {
 		bool hasAddonsMakeFile(std::string path);
 		bool hasAddonsConfigFile(std::string path);
 
-	private:
 		std::string _cwdPath;
 		ofJson _configJson;
 };

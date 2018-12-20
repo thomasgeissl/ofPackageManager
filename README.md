@@ -2,6 +2,7 @@
 
 ## Description
 ofPackageManager is an experimental package manager for openFrameworks. It is compatible with version 0.10.0 or higher and it does not support windows yet.
+The current command line interface is very similar to npm, but I am open for suggestions.
 
 ## Build status
 [![Build Status](https://travis-ci.org/thomasgeissl/ofPackageManager.svg?branch=master)](https://travis-ci.org/thomasgeissl/ofPackageManager)
@@ -29,7 +30,9 @@ Run the global configuration in order to install addons globally. `ofPackageMana
 * Install package by id: ``` ofPackageManager install ofxMidi ```
 * Install package by github name (user/repo): ``` ofPackageManager install arturoc/ofxAruco ```
 * Install package by url: ``` ofPackageManager install https://github.com/kylemcdonald/ofxCv.git ```
+* Installing an addon will also install its dependencies: ` ofPackageManager install https://github.com/thomasgeissl/ofxPackageManageableExampleAddon.git `
 * Install addons globally: ``` ofPackageManager install -g kylemcdonald/ofxCv ```
+* Install specific commit, tag or branch by appending an @ followed by the hash, tag name or branch name: e.g. ` ofPackageManager install ofxMidi@2f0e6343c817a4f5a33b60339c82b5d10be8af01 `
 * Add already cloned repositories: ``` ofPackageManager add -A local_addons ```
 * Install dependencies of a package: ``` ofPackageManager install ```
 * Generate project: ``` ofPackageManager generate ```

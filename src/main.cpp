@@ -2,16 +2,16 @@
 #include "ofxUnitTests.h"
 #include "ofApp.h"
 
-bool isCloneUrl(string url){
-	ofLogNotice("clone") << url.substr(0, 8);
-	return ((url.substr(0, 8) == "https://" || url.substr(0, 7) == "http://") && url.substr(url.size() - 4, url.size()) == ".git");
-}
-bool isGithub(string github){
-	return ofSplitString(github, "/").size() == 2;
+void printInputError(int argc, char** argv){
+	std::string input;
+	for(auto i = 1; i < argc -1; i++){
+		input += argv[i];
+		input += "";
+	}
+	ofLogError("ofPackageManager") << "unkown command:" << input;
 }
 
 int main(int argc, char** argv){
-	ofLogNotice()<<argv[0];
 	#if defined(TARGET_OSX) || defined(TARGET_LINUX)
 		std::shared_ptr <ofColorsLoggerChannel> logger {
 			new ofColorsLoggerChannel
@@ -38,31 +38,31 @@ int main(int argc, char** argv){
 			app.addPackagesToAddonsMakeFile(argv[3]);
 			}
 		}else{
-			ofLogError("main") << "invalid syntax";
+			ofLogError("ofPackageManager") << "invalid syntax";
 		}
 	}else if(task == "config"){
 		if(argc == 2){
 			app.configurePackageManager();
 		}
 		if(argc == 3){
-			string option = argv[2];
+			std::string option = argv[2];
 			if(option == "-g" || option == "--global"){
 				app.configurePackageManager(true);
 			}
 		}
-
 	}else if(task == "doctor"){
 		app.doctor();
 	}else if(task == "generate"){
-
-		string subtask = "project";
+		std::string subtask = "project";
 
 		if(argc == 3){
 			subtask = argv[2];
 		}else if(argc > 3){
-			ofLogError("TODO") << " error counter" << argc;
+			printInputError(argc, argv);
+			app.printManual();
 			return -1;
 		}
+
 		if(subtask == "project"){
 			app.generateProject();
 		}else if(subtask == "readme"){
@@ -70,7 +70,9 @@ int main(int argc, char** argv){
 		}else if(subtask == "database"){
 			app.generateDatabaseEntryFile();
 		}else{
-
+			printInputError(argc, argv);
+			app.printManual();
+			return -1;
 		}
 	}else if(task == "help"){
 		app.printManual();
@@ -92,26 +94,17 @@ int main(int argc, char** argv){
 					global = true;
 				}
 				package = argv[3];
-			}
-			auto parts = ofSplitString(package, "@");
-			std::string checkout = "";
-			if(parts.size() > 1){
-				package = parts[0];
-				checkout = parts[1];
-			}
-			
-			if(isCloneUrl(package)){
-				auto installedPackage = app.installPackageByUrl(package, checkout, destinationPath);
-				app.addPackageToAddonsMakeFile(installedPackage);
-			}else if(isGithub(package)){
-				auto installedPackage = app.installPackageByGithub(package, checkout, destinationPath);
-				app.addPackageToAddonsMakeFile(installedPackage);
 			}else{
-				auto installedPackage = app.installPackageById(package, checkout, destinationPath);
-				if (!installedPackage._path.empty()) {
-					app.addPackageToAddonsMakeFile(installedPackage);
-				}
+				printInputError(argc, argv);
+				app.printManual();
+				return -1;
 			}
+
+			auto installedPackage = app.installPackage(package, destinationPath);
+			// TODO: move to app
+			if (!installedPackage._path.empty()) {
+				app.addPackageToAddonsMakeFile(installedPackage);
+			}	
 		}
 	}else if(task == "print"){
 		std::string subtask = "packages";
@@ -124,29 +117,38 @@ int main(int argc, char** argv){
 			app.printManual();
 		}else if(subtask == "version"){
 			app.printVersion();
+		}else{
+			printInputError(argc, argv);
+			app.printManual();
+			return -1;
 		}
 
 	}else if(task == "search"){
 		if(argc == 3){
 			app.searchPackageInDatabaseById(argv[2]);
 		}else if(argc == 4){
-			string subtask = argv[2];
+			std::string subtask = argv[2];
 			if(subtask == "github"){
 				app.searchPackageOnGithubByName(argv[3]);
 			}
 		}else if(argc == 5){
-			string subtask = argv[2];
+			std::string subtask = argv[2];
 			if(subtask == "github"){
 				string option = argv[3];
 				if(option == "-u" || option == "--user"){
 					app.searchPackageOnGithubByUser(argv[4]);
 				}
 			}
+		}else{
+			printInputError(argc, argv);
+			app.printManual();
+			return -1;
 		}
 	}else if(task == "update"){
 		app.updatePackagesDatabase();
 	}else{
 		ofLogError("ofPackageManager") << "unkown task" << task;
+		app.printInfo();
 		app.printManual();
 	}
 	return 0;
