@@ -1,4 +1,5 @@
 #include "ofApp.h"
+#include "ofxCommandLineUtils.h"
 
 ofPackageManager::ofPackageManager(std::string cwdPath) :
 	_cwdPath(cwdPath),

@@ -2,7 +2,6 @@
 
 #include "ofMain.h"
 #include "ofPackage.h"
-#include "ofxCommandLineUtils.h"
 #include "ofxGit2.h"
 
 class ofPackageManager {
