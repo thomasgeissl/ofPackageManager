@@ -26,4 +26,7 @@ git clone --recursive https://github.com/thomasgeissl/ofPackageManager.git
 cd ofPackageManager/scripts
 ./install_dependencies.sh
 cd .. && make -j4
+if [ $OS = 0 ]
+then 
 cd scripts && ./fix_dylib.sh
+fi
