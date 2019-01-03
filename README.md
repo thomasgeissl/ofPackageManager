@@ -47,6 +47,12 @@ Run the global configuration in order to install addons globally. `ofPackageMana
 * Print available packages: ``` ofPackageManager print packages ```
 * Print version: ``` ofPackageManager print version ```
 
+You can also use the online version if you do not have the package manager installed on your machine. e.g. `cd into/your/project/app` and execute the following to install its dependencies.
+
+```
+bash -c "$(curl -sSL https://raw.githubusercontent.com/thomasgeissl/ofPackageManager/master/scripts/ofPackageManager.sh)" install
+```
+
 ## Known issues
 * The current version of the project generator does not support comments in the addons.make file
 
