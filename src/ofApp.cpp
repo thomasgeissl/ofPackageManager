@@ -26,8 +26,10 @@ void ofPackageManager::addPackageToAddonsMakeFile(ofPackage package) {
 		// if path addon already listed in addon.make
 		// then update it
 		// else append a new line
-		if (words[0] == package._path) {
+		if (ofTrim(words[0]) == package._path) {
 			foundPackage = true;
+			content += stringToAdd;
+			content += "\n";
 		} else {
 			content += line+"\n";
 		}
@@ -40,14 +42,14 @@ void ofPackageManager::addPackageToAddonsMakeFile(ofPackage package) {
 	addonConfigFile.close();
 	ofFile newAddonsMakeFile(getAbsolutePath("addons.make"), ofFile::ReadWrite);
 	if(newAddonsMakeFile.writeFromBuffer(fileBuffer)) {
-		ofLogNotice()<<"successfully updated addons.make";
+		ofLogNotice("ofPackageManager")<<"successfully updated addons.make";
 	} else {
-		ofLogError()<<"Could not update addons.make";
+		ofLogError("ofPackageManager")<<"Could not update addons.make";
 	}
 }
 
 void ofPackageManager::addPackageToAddonsMakeFile(std::string path) {
-	ofxGit::repository repo(path);
+	ofxGit::repository repo(ofFilePath::join(_cwdPath, path));
 	auto url = repo.getRemoteUrl();
 	auto checkout = repo.getCommitHash();
 	ofLogNotice()<<path<<url<<checkout;

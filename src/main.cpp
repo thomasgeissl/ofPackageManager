@@ -102,7 +102,7 @@ int main(int argc, char** argv){
 
 			auto installedPackage = app.installPackage(package, destinationPath);
 			// TODO: move to app
-			if (!installedPackage._path.empty()) {
+			if (!global && !installedPackage._path.empty()) {
 				app.addPackageToAddonsMakeFile(installedPackage);
 			}	
 		}
