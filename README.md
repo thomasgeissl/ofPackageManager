@@ -8,19 +8,27 @@ The current command line interface is very similar to npm, but I am open for sug
 [![Build Status](https://travis-ci.org/thomasgeissl/ofPackageManager.svg?branch=master)](https://travis-ci.org/thomasgeissl/ofPackageManager)
 
 
-## Usage
-### Installation
+## Installation
+### OSX
+On OSX you can install it via brew.
+```
+brew tap thomasgeissl/tools
+brew install ofpackagemanager
+```
+This will download the most recent version of the package manager and add it to your search path.
 
-On Linux you need to install libgit: `sudo apt install libgit2-dev`.
-
-You can download a fresh version of openFrameworks, as well as ofPackageManager and its depedencies via the following commands.
+### Building
+* You can download a fresh version of openFrameworks, as well as ofPackageManager and its depedencies via the following commands.
 cd into your preferred installation directory, e.g. `mkdir ~/.ofPackageMananger && cd ~./ofPackageManager`
 ```
 sh -c "$(curl -sSL https://raw.githubusercontent.com/thomasgeissl/ofPackageManager/master/scripts/install.sh)"
 ```
+* Or you can clone it manually along with the packages database: `git clone --recursive https://github.com/thomasgeissl/ofPackageManager.git`. Its dependencies can be cloned via the provided `install_dependencies.sh` script or the online version of the package manager.
 
 It is recommended to add the path your bash profile. Have a look at the `add_to_path.sh`script.
 
+
+## Usage
 Run the global configuration in order to install addons globally. `ofPackageManager config -g`
 
 ### Package management
@@ -35,9 +43,6 @@ Run the global configuration in order to install addons globally. `ofPackageMana
 * Install specific commit, tag or branch by appending an @ followed by the hash, tag name or branch name: e.g. ` ofPackageManager install ofxMidi@2f0e6343c817a4f5a33b60339c82b5d10be8af01 `
 * Add already cloned repositories: ``` ofPackageManager add -A local_addons ```
 * Install dependencies of a package: ``` ofPackageManager install ```
-* Generate project: ``` ofPackageManager generate ```
-* Generate readme: ``` ofPackageManager generate readme ```
-* Generate database entry file: ``` ofPackageManager generate database ```
 
 ### Package manager update/info
 * Info: `ofPackageManager info`
@@ -57,10 +62,10 @@ bash -c "$(curl -sSL https://raw.githubusercontent.com/thomasgeissl/ofPackageMan
 * The current version of the project generator does not support comments in the addons.make file
 
 ## TODOs
-* replace system calls by libgit2 calls
-* find solution for addon dependencies
+* fix linux and windows version
 * command line syntax
 * better console output
+* move logic to ofApp.* instead of main.cpp
 * optimize
 
 ## License
