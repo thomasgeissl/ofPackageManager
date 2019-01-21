@@ -40,7 +40,7 @@ Run the global configuration in order to install addons globally. `ofPackageMana
 * Install package by url: ``` ofPackageManager install https://github.com/kylemcdonald/ofxCv.git ```
 * Installing an addon will also install its dependencies: ` ofPackageManager install https://github.com/thomasgeissl/ofxPackageManageableExampleAddon.git `
 * Install addons globally: ``` ofPackageManager install -g kylemcdonald/ofxCv ```
-* Install specific commit, tag or branch by appending an @ followed by the hash, tag name or branch name: e.g. ` ofPackageManager install ofxMidi@2f0e6343c817a4f5a33b60339c82b5d10be8af01 `
+* Install specific commit, tag or branch by appending an @ followed by the hash or tag name: e.g. ` ofPackageManager install ofxMidi@2f0e6343c817a4f5a33b60339c82b5d10be8af01 `
 * Add already cloned repositories: ``` ofPackageManager add -A local_addons ```
 * Install dependencies of a package: ``` ofPackageManager install ```
 
