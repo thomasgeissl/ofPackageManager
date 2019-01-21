@@ -212,7 +212,7 @@ void ofPackageManager::searchPackageOnGithubByUser(std::string user){
 	auto resultJson = ofJson::parse(response.data.getText());
 	std::string outputString;
 	outputString += "repositories by" + user + ":\n";
-	for(auto repo : resultJson["items"]){
+	for(auto repo : resultJson){
 		std::string name = repo["full_name"];
 		outputString += name;
 		outputString += "\n";
