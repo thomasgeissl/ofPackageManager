@@ -92,13 +92,21 @@ void ofPackageManager::configurePackageManager(bool global){
 	ofJson configJson;
 	configJson["ofPath"] = getStringAnswer(relativeOrAbsolute + " path to openFrameworks?", ofFilePath::getAbsolutePath(getAbsolutePath("../../.."), false));
 	// configJson["pgPath"] = getStringAnswer(relativeOrAbsolute + " path to the executable of projectGenerator?", ofFilePath::join(configJson["ofPath"], "apps/projectGenerator/commandLine/bin/projectGenerator.app/Contents/MacOS/projectGenerator"));
-	configJson["packagesPath"] = getStringAnswer("absolute path to packages directory?", ofFilePath::join(ofFilePath::getUserHomeDir(), ".ofPackages"));
+	auto packagesPath = getStringAnswer("absolute path to packages directory?", ofFilePath::join(ofFilePath::getUserHomeDir(), ".ofPackages"));
+	configJson["packagesPath"] = packagesPath;
 	configJson["localAddonsPath"] = getStringAnswer("local addons directory?", "local_addons");
 
 	configFile.create();
 	configFile.open(configPath, ofFile::WriteOnly);
 	configFile << configJson.dump(4);
 	configFile.close();
+
+	if(ofDirectory::doesDirectoryExist(packagesPath, false)){
+
+	}else{
+		ofxGit::repository repo(packagesPath);
+		repo.clone("https://github.com/thomasgeissl/ofPackages.git");
+	}
 }
 
 void ofPackageManager::doctor(){
