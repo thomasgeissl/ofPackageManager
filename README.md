@@ -19,11 +19,11 @@ This will download the most recent version of the package manager and add it to 
 
 ### Building
 * You can download a fresh version of openFrameworks, as well as ofPackageManager and its depedencies via the following commands.
-cd into your preferred installation directory, e.g. `mkdir ~/.ofPackageMananger && cd ~./ofPackageManager`
+cd into your preferred installation directory, e.g. `mkdir ~/.ofPackageManager && cd ~/.ofPackageManager`
 ```
 sh -c "$(curl -sSL https://raw.githubusercontent.com/thomasgeissl/ofPackageManager/master/scripts/install.sh)"
 ```
-* Or you can clone it manually along with the packages database: `git clone --recursive https://github.com/thomasgeissl/ofPackageManager.git`. Its dependencies can be cloned via the provided `install_dependencies.sh` script or the online version of the package manager.
+* Or you can clone it manually: `git clone https://github.com/thomasgeissl/ofPackageManager.git`. Its dependencies can be cloned via the provided `install_dependencies.sh` script or the online version of the package manager.
 
 It is recommended to add the path your bash profile. Have a look at the `add_to_path.sh`script.
 
