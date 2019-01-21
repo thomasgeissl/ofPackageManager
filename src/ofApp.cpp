@@ -476,9 +476,8 @@ void ofPackageManager::updatePackagesDatabase(){
 }
 
 void ofPackageManager::printVersion(){
-	auto versionJson = getVersionJson();
 	ofLog::setAutoSpace(false);
-	ofLogNotice("version") << versionJson["major"] << "." << versionJson["minor"] << "." << versionJson["patch"];
+	ofLogNotice("version") << OFAPP_MAJOR_VERSION << "." << OFAPP_MINOR_VERSION << "." << OFAPP_PATCH_VERSION;
 	ofLog::setAutoSpace(true);
 }
 
