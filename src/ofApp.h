@@ -1,5 +1,6 @@
 #pragma once
 
+#include "defines.h"
 #include "ofMain.h"
 #include "ofPackage.h"
 #include "ofxGit2.h"
@@ -18,7 +19,6 @@ class ofPackageManager {
 		void generateDatabaseEntryFile();
 		void generateProject();
 		void generateReadme();
-		void initPackage();
 		void installPackagesFromAddonsMakeFile();
 		ofPackage installPackage(std::string key, std::string destinationPath = "");
 		ofPackage installPackageById(std::string id, std::string checkout = "", std::string destinationPath = "");

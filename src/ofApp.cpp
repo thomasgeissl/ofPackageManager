@@ -92,7 +92,7 @@ void ofPackageManager::configurePackageManager(bool global){
 	ofJson configJson;
 	configJson["ofPath"] = getStringAnswer(relativeOrAbsolute + " path to openFrameworks?", ofFilePath::getAbsolutePath(getAbsolutePath("../../.."), false));
 	// configJson["pgPath"] = getStringAnswer(relativeOrAbsolute + " path to the executable of projectGenerator?", ofFilePath::join(configJson["ofPath"], "apps/projectGenerator/commandLine/bin/projectGenerator.app/Contents/MacOS/projectGenerator"));
-	configJson["packagesPath"] = getStringAnswer("absolute path to packages directory?", ofToDataPath("ofPackages", true));
+	configJson["packagesPath"] = getStringAnswer("absolute path to packages directory?", ofFilePath::join(ofFilePath::getUserHomeDir(), ".ofPackages"));
 	configJson["localAddonsPath"] = getStringAnswer("local addons directory?", "local_addons");
 
 	configFile.create();
@@ -105,9 +105,30 @@ void ofPackageManager::doctor(){
 	printVersion();
 
 	// check version of ofPackageManager
-	ofHttpResponse request = ofLoadURL("https://raw.githubusercontent.com/thomasgeissl/ofPackageManager/master/bin/data/version.json");
+	ofHttpResponse request = ofLoadURL("https://raw.githubusercontent.com/thomasgeissl/ofPackageManager/master/defines.h");
+	auto defines = request.data.getText();
+	int majorVersion = 0;
+	int minorVersion = 0;
+	int patchVersion = 0;
+	auto lines = ofSplitString(defines, "\n");
+	for(auto line : lines){
+		auto parts = ofSplitString(line, " ");
+		if(parts.size() == 3){
+			if(parts[1] == "major"){
+				majorVersion = ofToInt(parts[2]);
+			} else if(parts[1] == "minor"){
+				minorVersion = ofToInt(parts[2]);
+			} else if(parts[1] == "patch"){
+				patchVersion = ofToInt(parts[2]);
+			}
+
+		}
+	}
 	ofJson mostRecentVersionJson;
-	mostRecentVersionJson = ofJson::parse(request.data.getText());
+	// mostRecentVersionJson = ofJson::parse(request.data.getText());
+	mostRecentVersionJson["major"] = majorVersion;
+	mostRecentVersionJson["minor"] = minorVersion;
+	mostRecentVersionJson["patch"] = patchVersion;
 	ofJson currentVersion = getVersionJson();
 	if(
 		mostRecentVersionJson["major"].get <int>() > currentVersion["major"].get <int>() ||
@@ -156,50 +177,6 @@ void ofPackageManager::generateDatabaseEntryFile(){
 	}
 	dataBaseEntryFile << dataBaseEntryJson.dump(4);
 }
-
-void ofPackageManager::initPackage(){
-	auto packagePath = getAbsolutePath("ofPackage.json");
-	ofFile packageFile(packagePath);
-	ofJson packageJson;
-
-	if (packageFile.exists()) {
-		ofLogWarning("init") << "This package is already initialised.";
-		if(!getBoolAnswer("Do you want to reinitialise the package?")){
-			return;
-		}
-	}else{
-		ofFile defaultPackageFile(ofToDataPath("ofPackage.json"));
-		defaultPackageFile.copyTo(packageFile.getAbsolutePath());
-		defaultPackageFile.close();
-	}
-
-	packageFile.open(packageFile.getAbsolutePath(), ofFile::ReadWrite);
-	packageJson << packageFile;
-
-	packageJson["name"] = getStringAnswer("package name?", ofFilePath::getBaseName(_cwdPath)); // packageJson["name"]);
-	packageJson["author"] = getStringAnswer("author?", packageJson["author"]);
-	packageJson["version"] = getStringAnswer("version?", packageJson["version"]);
-	packageJson["url"] = getStringAnswer("url?", packageJson["url"]);
-	packageJson["cloneUrl"] = getStringAnswer("cloneUrl?", packageJson["cloneUrl"]);
-	packageJson["license"] = getStringAnswer("license?", packageJson["license"]);
-	packageJson["visible"] = getBoolAnswer("visible?", packageJson["visible"]);
-	packageJson["type"] = getOptionAnswer("type", {"app", "addon"});
-
-	packageFile.open(packagePath, ofFile::WriteOnly);
-	packageFile << packageJson.dump(4);
-	packageFile.close();
-
-	ofDirectory cwd(_cwdPath);
-	cwd.listDir();
-
-	if(!hasReadme(_cwdPath) && getBoolAnswer("Do you want to generate a readme file?", true)){
-		generateReadme();
-	}
-	// if(!hasConfig(_cwdPath) && getBoolAnswer("Do you want to configure the package manager locally?"), true) {
-	// 		configurePackageManager();
-	// }
-}
-
 
 void ofPackageManager::searchPackageOnGithubByName(string name){
 	std::string url = "https://api.github.com/search/repositories?q=" + name;
@@ -273,7 +250,8 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 
 
 void ofPackageManager::searchPackageInDatabaseById(std::string name){
-	ofDirectory ofPackagesDirectory(ofToDataPath("ofPackages"));
+	std::string databasePath = _configJson["packagesPath"];
+	ofDirectory ofPackagesDirectory(databasePath);
 	ofPackagesDirectory.listDir();
 	auto foundPackage = false;
 	for(auto file : ofPackagesDirectory.getFiles()){
@@ -366,7 +344,8 @@ void ofPackageManager::printManual(){
 }
 
 void ofPackageManager::printAvailablePackages(){
-	ofDirectory ofPackagesDirectory(ofToDataPath("ofPackages"));
+	std::string databasePath = _configJson["packagesPath"];
+	ofDirectory ofPackagesDirectory(databasePath);
 	ofPackagesDirectory.listDir();
 	for(auto file : ofPackagesDirectory.getFiles()){
 		if(file.getExtension() == "json"){
@@ -388,7 +367,6 @@ void ofPackageManager::printAvailablePackages(){
 			file.close();
 		}
 	}
-
 }
 
 void ofPackageManager::installPackagesFromAddonsMakeFile(){
@@ -485,14 +463,11 @@ ofPackage ofPackageManager::installPackageById(std::string id, std::string check
 }
 
 void ofPackageManager::updatePackagesDatabase(){
-	ofSystem("cd " + ofToDataPath("ofPackages") + " && git pull origin master && cd " + _cwdPath);
+	// ofSystem("cd " + ofToDataPath("ofPackages") + " && git pull origin master && cd " + _cwdPath);
 }
 
 void ofPackageManager::printVersion(){
-	ofFile versionFile(ofToDataPath("version.json"));
-	ofJson versionJson;
-	versionJson << versionFile;
-	versionFile.close();
+	auto versionJson = getVersionJson();
 	ofLog::setAutoSpace(false);
 	ofLogNotice("version") << versionJson["major"] << "." << versionJson["minor"] << "." << versionJson["patch"];
 	ofLog::setAutoSpace(true);
@@ -566,10 +541,16 @@ ofJson ofPackageManager::getGlobalConfigJson(){
 }
 
 ofJson ofPackageManager::getVersionJson(){
-	ofFile versionFile(ofToDataPath("version.json"));
+	// ofFile versionFile(ofToDataPath("version.json"));
 	ofJson versionJson;
-	versionJson << versionFile;
-	versionFile.close();
+	// versionJson << versionFile;
+	// versionFile.close();
+	int major = OFAPP_MAJOR_VERSION;
+	int minor = OFAPP_MINOR_VERSION;
+	int patch = OFAPP_PATCH_VERSION;
+	versionJson["major"] = major;
+	versionJson["minor"] = minor;
+	versionJson["patch"] = patch;
 	return versionJson;
 }
 
