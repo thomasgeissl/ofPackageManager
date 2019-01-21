@@ -435,12 +435,13 @@ ofPackage ofPackageManager::installPackage(std::string key, std::string destinat
 	}
 }
 ofPackage ofPackageManager::installPackageById(std::string id, std::string checkout, std::string destinationPath){
-	ofLogNotice()<<"install package by id" << id;
+	ofLogNotice("ofPackageManager")<<"install package by id" << id;
 	if(destinationPath.empty()){
 		destinationPath = _configJson["localAddonsPath"];
 	}
 	destinationPath = getAbsolutePath(destinationPath);
-	ofDirectory packagesDirectory("ofPackages");
+	std::string packagesPath = _configJson["packagesPath"];
+	ofDirectory packagesDirectory(packagesPath);
 	packagesDirectory.listDir();
 	bool foundPackage = false;
 	for(auto file : packagesDirectory.getFiles()){
