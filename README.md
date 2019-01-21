@@ -14,6 +14,7 @@ On OSX you can install it via brew.
 ```
 brew tap thomasgeissl/tools
 brew install ofpackagemanager
+# brew upgrade ofpackagemanager
 ```
 This will download the most recent version of the package manager and add it to your search path.
 
