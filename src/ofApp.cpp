@@ -186,7 +186,7 @@ void ofPackageManager::generateDatabaseEntryFile(){
 	dataBaseEntryFile << dataBaseEntryJson.dump(4);
 }
 
-void ofPackageManager::searchPackageOnGithubByName(string name){
+ofJson ofPackageManager::searchPackageOnGithubByName(string name){
 	std::string url = "https://api.github.com/search/repositories?q=" + name;
 	ofHttpRequest request(url, "TODO: check name");
 	request.headers["User-Agent"] = "ofPackageManager";
@@ -195,15 +195,19 @@ void ofPackageManager::searchPackageOnGithubByName(string name){
 	auto resultJson = ofJson::parse(response.data.getText());
 	std::string outputString;
 	outputString += "repositories containing " + name + ":\n";
+	auto counter = 0;
 	for(auto repo : resultJson["items"]){
 		std::string name = repo["full_name"];
+		outputString += ofToString(counter++);
+		outputString += ": ";
 		outputString += name;
 		outputString += "\n";
 	}
 	ofLogNotice("search") << outputString;
+	return resultJson;
 }
 
-void ofPackageManager::searchPackageOnGithubByUser(std::string user){
+ofJson ofPackageManager::searchPackageOnGithubByUser(std::string user){
 	std::string url = "https://api.github.com/users/" + user + "/repos?per_page=100";
 	ofHttpRequest request(url, "TODO: check name");
 	request.headers["User-Agent"] = "ofPackageManager";
@@ -212,12 +216,16 @@ void ofPackageManager::searchPackageOnGithubByUser(std::string user){
 	auto resultJson = ofJson::parse(response.data.getText());
 	std::string outputString;
 	outputString += "repositories by" + user + ":\n";
+	auto counter = 0;
 	for(auto repo : resultJson){
+		outputString += ofToString(counter++);
+		outputString += ": ";
 		std::string name = repo["full_name"];
 		outputString += name;
 		outputString += "\n";
 	}
 	ofLogNotice("search") << outputString;
+	return resultJson;
 }
 
 ofPackage ofPackageManager::installPackageByGithub(std::string github, std::string checkout, std::string destinationPath){
@@ -233,20 +241,23 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 	name = name.substr(0, name.size() - 4);
 
 	ofDirectory destinationDirectory(destinationPath);
-	if(!destinationDirectory.exists()){
-		destinationDirectory.create();
-	}
-
 	ofxGit::repository repo(ofFilePath::join(destinationPath, name));
-	if(repo.clone(url)) {
-		ofLogNotice("ofPackageManager") << "successfully cloned repo" << url << "via libgit";
-	}
-	if(checkout != "latest"){
-		// checkout the version
-		repo.checkout(checkout);
-	} else {
-		// get commit hash
-		checkout = repo.getCommitHash();
+	if(destinationDirectory.exists()){
+		if(getBoolAnswer(destinationPath + " already exists. Do you want to pull and checkout the specified commit?", true)){
+			// TODO: pull and checkout, pull still does not work in ofxGit2
+		}
+	}else{
+		destinationDirectory.create();
+		if(repo.clone(url)) {
+			ofLogNotice("ofPackageManager") << "successfully cloned repo" << url << "via libgit";
+		}
+		if(checkout != "latest"){
+			// checkout the version
+			repo.checkout(checkout);
+		} else {
+			// get commit hash
+			checkout = repo.getCommitHash();
+		}
 	}
 
 	if(hasAddonsConfigFile(ofFilePath::join(destinationPath, name))){
@@ -489,6 +500,10 @@ void ofPackageManager::installDependenciesFromAddonConfig(std::string path, std:
 	if(addonConfigFile.exists()){
 		ofBuffer fileBuffer = addonConfigFile.readToBuffer();
 		for(auto line :fileBuffer.getLines()){
+			/*
+			TODO: e.g.
+				ADDON_DEPENDENCIES = ofxMidi #https://github.com/danomatika/ofxMidi@1.1.1
+			*/
 			if(ofTrim(ofSplitString(ofTrim(line), "=").front()) == "ADDON_DEPENDENCIES"){
 				for(auto id : ofSplitString(ofTrim(ofSplitString(ofTrim(line), "=").back()), " ")){
 					installPackage(ofTrim(id), destination);

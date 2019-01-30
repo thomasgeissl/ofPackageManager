@@ -30,8 +30,8 @@ class ofPackageManager {
 		void printAvailablePackages();
 		void printVersion();
 		void searchPackageInDatabaseById(std::string id);
-		void searchPackageOnGithubByName(std::string name);
-		void searchPackageOnGithubByUser(std::string user);
+		ofJson searchPackageOnGithubByName(std::string name);
+		ofJson searchPackageOnGithubByUser(std::string user);
 		void updatePackagesDatabase();
 		void installDependenciesFromAddonConfig(std::string path, std::string destination);
 
