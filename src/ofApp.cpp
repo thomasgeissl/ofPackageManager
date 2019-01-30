@@ -243,7 +243,7 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 	ofDirectory destinationDirectory(destinationPath);
 	ofxGit::repository repo(ofFilePath::join(destinationPath, name));
 	if(destinationDirectory.exists()){
-		if(getBoolAnswer(destinationPath + " already exists. Do you want to pull and checkout the specified commit?", true)){
+		if(getBoolAnswer(destinationPath + "/" + name + " already exists. Do you want to pull and checkout the specified commit?", true)){
 			// TODO: pull and checkout, pull still does not work in ofxGit2
 		}
 	}else{
@@ -267,6 +267,21 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 	return ofPackage(ofFilePath::join(ofFilePath::makeRelative(_cwdPath, destinationPath), name), url, checkout);
 }
 
+ofPackage ofPackageManager::maybeInstallPackage(ofJson packages){
+	if(getBoolAnswer("Do you wanna install any of them?")){
+		auto index = getIntAnswer("Which one? Please enter the corresponding number.", 0);
+		if(index < packages["items"].size()){
+			ofLogNotice() << packages["items"][index]["name"];
+			auto destinationPath = ofFilePath::join(getOfPath(), "addons");
+			if(getBoolAnswer("locally?")){
+				destinationPath = _configJson["localAddonsPath"];
+				destinationPath = getAbsolutePath(destinationPath);
+			}
+			return installPackageByGithub(packages["items"][index]["name"], "latest", destinationPath);
+		}
+	}
+	return ofPackage("", "", "");
+}
 
 void ofPackageManager::searchPackageInDatabaseById(std::string name){
 	std::string databasePath = _configJson["packagesPath"];
@@ -293,7 +308,7 @@ void ofPackageManager::searchPackageInDatabaseById(std::string name){
 	if(!foundPackage){
 		ofLogError("search") << "No package found";
 		if(getBoolAnswer("Do you want to search on github?")){
-			searchPackageOnGithubByName(name);
+			// maybeInstallPackage(searchPackageOnGithubByName(name));
 		}
 	}
 }
@@ -476,7 +491,7 @@ ofPackage ofPackageManager::installPackageById(std::string id, std::string check
 	}
 	if(!foundPackage){
 		if(getBoolAnswer("Do you want to search on github?")){
-			searchPackageOnGithubByName(id);
+			maybeInstallPackage(searchPackageOnGithubByName(id));
 		}
 	}
 	return ofPackage("", "", "");

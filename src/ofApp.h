@@ -24,6 +24,7 @@ class ofPackageManager {
 		ofPackage installPackageById(std::string id, std::string checkout = "", std::string destinationPath = "");
 		ofPackage installPackageByGithub(std::string github, std::string checkout = "", std::string destinationPath = "");
 		ofPackage installPackageByUrl(std::string url, std::string checkout = "", std::string destinationPath = "");
+		ofPackage maybeInstallPackage(ofJson package);
 		void printInfo();
 		void printPaths();
 		void printManual();
