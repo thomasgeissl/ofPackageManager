@@ -151,5 +151,7 @@ int main(int argc, char** argv){
 		app.printInfo();
 		app.printManual();
 	}
+
+	ofLogNotice() << "Thanks for using ofPackageManager. If you find a bug then please report it on the github issue tracker (https://github.com/thomasgeissl/ofPackageManager/issues).";
 	return 0;
 }

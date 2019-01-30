@@ -105,7 +105,11 @@ void ofPackageManager::configurePackageManager(bool global){
 
 	}else{
 		ofxGit::repository repo(packagesPath);
-		repo.clone("https://github.com/thomasgeissl/ofPackages.git");
+		if(repo.clone("https://github.com/thomasgeissl/ofPackages.git")){
+			ofLogNotice("config") << "Successfully cloned packages database";
+		}else{
+			ofLogError("config") << "Could not clone packages database";
+		}
 	}
 }
 
@@ -143,12 +147,12 @@ void ofPackageManager::doctor(){
 		mostRecentVersionJson["minor"].get <int>() > currentVersion["minor"].get <int>() ||
 		mostRecentVersionJson["patch"].get <int>() > currentVersion["patch"].get <int>()
 		){
-		ofLogNotice("doctor") << "there is a new version of ofPackageManager available";
+		ofLogNotice("doctor") << "There is a new version of ofPackageManager available";
 		ofLog::setAutoSpace(false);
-		ofLogNotice("doctor") << "the most recent version is " << mostRecentVersionJson["major"] << "." << mostRecentVersionJson["minor"] << "." << mostRecentVersionJson["patch"];
+		ofLogNotice("doctor") << "The most recent version is " << mostRecentVersionJson["major"] << "." << mostRecentVersionJson["minor"] << "." << mostRecentVersionJson["patch"];
 		ofLog::setAutoSpace(true);
 	}else{
-		ofLogNotice("doctor") << "there is no new version of ofPackageManager available";
+		ofLogNotice("doctor") << "You are up to date. Currently there is no newer version of ofPackageManager available";
 	}
 
 	// check version of ofPackages
@@ -194,7 +198,7 @@ ofJson ofPackageManager::searchPackageOnGithubByName(string name){
 	auto response = loader.handleRequest(request);
 	auto resultJson = ofJson::parse(response.data.getText());
 	std::string outputString;
-	outputString += "repositories containing " + name + ":\n";
+	outputString += "The following repositories contain" + name + ":\n";
 	auto counter = 0;
 	for(auto repo : resultJson["items"]){
 		std::string name = repo["full_name"];
@@ -215,7 +219,7 @@ ofJson ofPackageManager::searchPackageOnGithubByUser(std::string user){
 	auto response = loader.handleRequest(request);
 	auto resultJson = ofJson::parse(response.data.getText());
 	std::string outputString;
-	outputString += "repositories by" + user + ":\n";
+	outputString += "These are the first 100 repositories by" + user + ":\n";
 	auto counter = 0;
 	for(auto repo : resultJson){
 		outputString += ofToString(counter++);
@@ -238,18 +242,20 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 	}
 	destinationPath = getAbsolutePath(destinationPath);
 	auto name = ofSplitString(url, "/").back();
+	// TODO: check if url ends with .git
 	name = name.substr(0, name.size() - 4);
 
 	ofDirectory destinationDirectory(destinationPath);
 	ofxGit::repository repo(ofFilePath::join(destinationPath, name));
 	if(destinationDirectory.exists()){
 		if(getBoolAnswer(destinationPath + "/" + name + " already exists. Do you want to pull and checkout the specified commit?", true)){
+			ofLogNotice("TODO") << "Unfortunately it is not yet implemented due to missing ofxGit::repo::pull";
 			// TODO: pull and checkout, pull still does not work in ofxGit2
 		}
 	}else{
 		destinationDirectory.create();
 		if(repo.clone(url)) {
-			ofLogNotice("ofPackageManager") << "successfully cloned repo" << url << "via libgit";
+			ofLogNotice("install") << "Successfully cloned repo" << url;
 		}
 		if(checkout != "latest"){
 			// checkout the version
@@ -306,9 +312,9 @@ void ofPackageManager::searchPackageInDatabaseById(std::string name){
 		}
 	}
 	if(!foundPackage){
-		ofLogError("search") << "No package found";
-		if(getBoolAnswer("Do you want to search on github?")){
-			// maybeInstallPackage(searchPackageOnGithubByName(name));
+		ofLogError("search") << "Unfortunately this package was not found in the database.";
+		if(getBoolAnswer("But it is probably available on github. Wanna give it a try?")){
+			maybeInstallPackage(searchPackageOnGithubByName(name));
 		}
 	}
 }
@@ -441,7 +447,7 @@ void ofPackageManager::installPackagesFromAddonsMakeFile(){
 			}
 		}
 	}else{
-		ofLogError("install") << "Package does not contain an addons.make file";
+		ofLogError("install") << "Sorry, but there is no addons.make file in this directory.";
 	}
 }
 ofPackage ofPackageManager::installPackage(std::string key, std::string destinationPath){
@@ -461,7 +467,7 @@ ofPackage ofPackageManager::installPackage(std::string key, std::string destinat
 	}
 }
 ofPackage ofPackageManager::installPackageById(std::string id, std::string checkout, std::string destinationPath){
-	ofLogNotice("ofPackageManager")<<"install package by id" << id;
+	ofLogNotice("install")<<"trying to find" << id <<"in the database.";
 	if(destinationPath.empty()){
 		destinationPath = _configJson["localAddonsPath"];
 	}
@@ -490,7 +496,8 @@ ofPackage ofPackageManager::installPackageById(std::string id, std::string check
 		}
 	}
 	if(!foundPackage){
-		if(getBoolAnswer("Do you want to search on github?")){
+		ofLogError("search") << "Unfortunately this package was not found in the database.";
+		if(getBoolAnswer("But it is probably available on github. Wanna give it a try?")){
 			maybeInstallPackage(searchPackageOnGithubByName(id));
 		}
 	}
@@ -529,7 +536,7 @@ void ofPackageManager::installDependenciesFromAddonConfig(std::string path, std:
 			}
 		}
 	}else{
-		ofLogError("install") << "Package does not contain a addon_config file" << path;
+		ofLogError("install") << "Package does not contain an addon_config file" << path;
 	}
 }
 
