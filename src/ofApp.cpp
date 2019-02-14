@@ -255,6 +255,17 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 				ofLogNotice("TODO") << "Unfortunately it is not yet implemented due to missing ofxGit::repo::pull";
 				// TODO: pull and checkout, pull still does not work in ofxGit2
 			}
+		}else{
+			if(repo.clone(url)) {
+				ofLogNotice("install") << "Successfully cloned repo" << url;
+			}
+			if(checkout != "latest"){
+				// checkout the version
+				repo.checkout(checkout);
+			} else {
+				// get commit hash
+				checkout = repo.getCommitHash();
+			}
 		}
 	}else{
 		destinationDirectory.create();
