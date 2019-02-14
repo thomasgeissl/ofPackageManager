@@ -246,11 +246,15 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 	name = name.substr(0, name.size() - 4);
 
 	ofDirectory destinationDirectory(destinationPath);
+	auto repoPath = ofFilePath::join(destinationPath, name);
+	ofDirectory repoDirectory(repoPath);
 	ofxGit::repository repo(ofFilePath::join(destinationPath, name));
 	if(destinationDirectory.exists()){
-		if(getBoolAnswer(destinationPath + "/" + name + " already exists. Do you want to pull and checkout the specified commit?", true)){
-			ofLogNotice("TODO") << "Unfortunately it is not yet implemented due to missing ofxGit::repo::pull";
-			// TODO: pull and checkout, pull still does not work in ofxGit2
+		if(repoDirectory.exists()){
+			if(getBoolAnswer(destinationPath + "/" + name + " already exists. Do you want to pull and checkout the specified commit?", true)){
+				ofLogNotice("TODO") << "Unfortunately it is not yet implemented due to missing ofxGit::repo::pull";
+				// TODO: pull and checkout, pull still does not work in ofxGit2
+			}
 		}
 	}else{
 		destinationDirectory.create();
