@@ -80,3 +80,8 @@ echo ""
 echo "congratulations. successfully run the test."
 
 # TODO: search tasks, global install
+
+
+# $APP install -g ofxPoco
+# $APP install ofxPoco
+# $APP install https://github.com/thomasgeissl/ofxPackageManageableExampleAddon.git

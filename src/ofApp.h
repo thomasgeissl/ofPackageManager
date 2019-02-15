@@ -35,6 +35,7 @@ class ofPackageManager {
 		ofJson searchPackageOnGithubByUser(std::string user);
 		void updatePackagesDatabase();
 		void installDependenciesFromAddonConfig(std::string path, std::string destination);
+		bool isCoreAddon(std::string id);
 
 		std::string getOfPath();
 		ofJson getPackageJson();

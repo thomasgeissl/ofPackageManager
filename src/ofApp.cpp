@@ -467,6 +467,10 @@ ofPackage ofPackageManager::installPackage(std::string key, std::string destinat
 		checkout = parts[1];
 	}
 	key = parts[0];
+	if(isCoreAddon(key)){
+		ofLogNotice("install") << key <<"seems to be a core addon.";
+		return ofPackage("", "", "");
+	}
 
 	if(isGitUrl(key)){
 		return installPackageByUrl(key, checkout, destinationPath);
@@ -538,17 +542,37 @@ void ofPackageManager::installDependenciesFromAddonConfig(std::string path, std:
 			*/
 			if(ofTrim(ofSplitString(ofTrim(line), "=").front()) == "ADDON_DEPENDENCIES"){
 				for(auto id : ofSplitString(ofTrim(ofSplitString(ofTrim(line), "=").back()), " ")){
-					installPackage(ofTrim(id), destination);
+					if(!isCoreAddon(id)){
+						installPackage(ofTrim(id), destination);
+					}
 				}
 			}else if(ofTrim(ofSplitString(ofTrim(line), "+=").front()) == "ADDON_DEPENDENCIES"){
 				auto key  = ofSplitString(ofTrim(line), "+=").back();
-				installPackage(ofTrim(key), destination);
+					if(!isCoreAddon(key)){
+						installPackage(ofTrim(key), destination);
+					}
 			}
 		}
 	}else{
 		ofLogError("install") << "Package does not contain an addon_config file" << path;
 	}
 }
+
+bool ofPackageManager::isCoreAddon(std::string id){
+	auto globalAddonsDir = ofDirectory(ofFilePath::join(getOfPath(), "addons"));
+	globalAddonsDir.listDir();
+	for(auto file : globalAddonsDir.getFiles()){
+		auto path = file.getAbsolutePath();
+		if(file.getFileName() == id && file.isDirectory()){ //starts with ofx
+			ofxGit::repository addon(path);
+			if(!addon.isRepository()){
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 
 std::string ofPackageManager::getOfPath(){
 	return _configJson["ofPath"];
