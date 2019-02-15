@@ -288,17 +288,12 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 	return ofPackage(ofFilePath::join(ofFilePath::makeRelative(_cwdPath, destinationPath), name), url, checkout);
 }
 
-ofPackage ofPackageManager::maybeInstallPackage(ofJson packages){
+ofPackage ofPackageManager::maybeInstallPackage(ofJson packages, std::string destinationPath){
 	if(getBoolAnswer("Do you wanna install any of them?")){
 		auto index = getIntAnswer("Which one? Please enter the corresponding number.", 0);
 		if(index < packages["items"].size()){
 			ofLogNotice() << packages["items"][index]["name"];
-			auto destinationPath = ofFilePath::join(getOfPath(), "addons");
-			if(getBoolAnswer("locally?")){
-				destinationPath = _configJson["localAddonsPath"];
-				destinationPath = getAbsolutePath(destinationPath);
-			}
-			return installPackageByGithub(packages["items"][index]["name"], "latest", destinationPath);
+			return installPackageByUrl(packages["items"][index]["clone_url"], "latest", destinationPath);
 		}
 	}
 	return ofPackage("", "", "");
@@ -329,7 +324,7 @@ void ofPackageManager::searchPackageInDatabaseById(std::string name){
 	if(!foundPackage){
 		ofLogError("search") << "Unfortunately this package was not found in the database.";
 		if(getBoolAnswer("But it is probably available on github. Wanna give it a try?")){
-			maybeInstallPackage(searchPackageOnGithubByName(name));
+			searchPackageOnGithubByName(name);
 		}
 	}
 }
@@ -513,7 +508,7 @@ ofPackage ofPackageManager::installPackageById(std::string id, std::string check
 	if(!foundPackage){
 		ofLogError("search") << "Unfortunately this package was not found in the database.";
 		if(getBoolAnswer("But it is probably available on github. Wanna give it a try?")){
-			maybeInstallPackage(searchPackageOnGithubByName(id));
+			return maybeInstallPackage(searchPackageOnGithubByName(id), destinationPath);
 		}
 	}
 	return ofPackage("", "", "");
