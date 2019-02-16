@@ -1,5 +1,5 @@
 #!/bin/sh
-cd "$(dirname "$0")"
+cd "$(dirnameyy "$0")"
 
 mkdir test 
 cd test
@@ -77,11 +77,13 @@ sleep 2
 echo ""
 echo ""
 
+echo "testing install task with core addons"
+$APP install -g ofxPoco
+$APP install ofxPoco
+# $APP install https://github.com/thomasgeissl/ofxPackageManageableExampleAddon.git
+
 echo "congratulations. successfully run the test."
 
 # TODO: search tasks, global install
 
 
-# $APP install -g ofxPoco
-# $APP install ofxPoco
-# $APP install https://github.com/thomasgeissl/ofxPackageManageableExampleAddon.git
