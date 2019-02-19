@@ -535,22 +535,44 @@ void ofPackageManager::installDependenciesFromAddonConfig(std::string path, std:
 	ofFile addonConfigFile(ofFilePath::join(path, "addon_config.mk"));
 	if(addonConfigFile.exists()){
 		ofBuffer fileBuffer = addonConfigFile.readToBuffer();
-		for(auto line :fileBuffer.getLines()){
-			/*
-			TODO: e.g.
-				ADDON_DEPENDENCIES = ofxMidi #https://github.com/danomatika/ofxMidi@1.1.1
-			*/
-			if(ofTrim(ofSplitString(ofTrim(line), "=").front()) == "ADDON_DEPENDENCIES"){
-				for(auto id : ofSplitString(ofTrim(ofSplitString(ofTrim(line), "=").back()), " ")){
-					if(!isCoreAddon(id)){
-						installPackage(ofTrim(id), destination);
+		for(auto line : fileBuffer.getLines()){
+			line = ofTrim(line);
+			// check if line starts with ADDON_DEPENDENCIES =
+			if(ofTrim(ofSplitString(line, "=").front()) == "ADDON_DEPENDENCIES"){
+				auto rightSide = ofSplitString(line, "=").back();
+				// check if right side contains a comment
+				auto parts = ofSplitString(rightSide, "#");
+				if(parts.size() > 1){ // contains a comment
+					auto key = parts[1];
+					if(!isCoreAddon(key)){
+						installPackage(key, destination);
+					}
+				}else{ // does not contain a comment
+					for(auto key : ofSplitString(ofTrim(rightSide), " ")){
+						if(!isCoreAddon(key)){
+							installPackage(ofTrim(key), destination);
+						}
 					}
 				}
-			}else if(ofTrim(ofSplitString(ofTrim(line), "+=").front()) == "ADDON_DEPENDENCIES"){
-				auto key  = ofSplitString(ofTrim(line), "+=").back();
+
+			// check if line starts with ADDON_DEPENDENCIES +=
+			}else if(ofTrim(ofSplitString(line, "+=").front()) == "ADDON_DEPENDENCIES"){
+				auto rightSide = ofSplitString(line, "+=").back();
+				// check if right side contains a comment
+				auto parts = ofSplitString(rightSide, "#");
+				if(parts.size() > 1){ //contains a comment
+					auto key = parts[1];
+					ofLogNotice("install key") << key;
+					if(!isCoreAddon(key)){
+						installPackage(key, destination);
+					}
+				}else{
+					auto key = ofSplitString(line, "+=").back();
+					// TODO: multiple ids
 					if(!isCoreAddon(key)){
 						installPackage(ofTrim(key), destination);
 					}
+				}
 			}
 		}
 	}else{
@@ -559,6 +581,7 @@ void ofPackageManager::installDependenciesFromAddonConfig(std::string path, std:
 }
 
 bool ofPackageManager::isCoreAddon(std::string id){
+	id = ofSplitString(id, "@").front();
 	auto globalAddonsDir = ofDirectory(ofFilePath::join(getOfPath(), "addons"));
 	globalAddonsDir.listDir();
 	for(auto file : globalAddonsDir.getFiles()){

@@ -1,5 +1,5 @@
 #!/bin/sh
-cd "$(dirnameyy "$0")"
+cd "$(dirname "$0")"
 
 mkdir test 
 cd test
@@ -14,7 +14,7 @@ $APP install ofxMidi@1.1.1 > /dev/null
 
 
 echo "testing install task with github name"
-$APP install arturoc/ofxEasing > /dev/null
+$APP install arturoc/ofxAruco > /dev/null
 echo ""
 
 
@@ -69,7 +69,7 @@ sleep 5
 $APP install https://github.com/thomasgeissl/ofxPackageManageableExampleAddon.git
 COUNTER=$(ls local_addons | wc -l)
 echo $COUNTER
-if [ "$COUNTER" -ne 6 ]
+if [ "$COUNTER" -ne 7 ]
 then
     exit -1
 fi
