@@ -1,90 +1,111 @@
 #include "ofApp.h"
 #include "ofxCommandLineUtils.h"
 
-ofPackageManager::ofPackageManager(std::string cwdPath) :
-	_cwdPath(cwdPath),
-	_configJson(getPackageManagerJson()){
+ofPackageManager::ofPackageManager(std::string cwdPath) : _cwdPath(cwdPath),
+														  _configJson(getPackageManagerJson())
+{
 	ofLog::setAutoSpace(true);
 }
 
-void ofPackageManager::setCwdPath(std::string cwdPath){
+void ofPackageManager::setCwdPath(std::string cwdPath)
+{
 	_cwdPath = cwdPath;
 }
 
-
-void ofPackageManager::addPackageToAddonsMakeFile(ofPackage package) {
+void ofPackageManager::addPackageToAddonsMakeFile(ofPackage package)
+{
 	ofFile addonConfigFile(getAbsolutePath("addons.make"), ofFile::ReadOnly);
-	if(!addonConfigFile.exists()){
+	if (!addonConfigFile.exists())
+	{
 		addonConfigFile.create();
 	}
-	auto stringToAdd = package._path+" #"+package._url+"@"+package._checkout;
+	auto stringToAdd = package._path + " #" + package._url + "@" + package._checkout;
 	ofBuffer fileBuffer = addonConfigFile.readToBuffer();
 	std::string content;
 	auto foundPackage = false;
-	for(auto line : fileBuffer.getLines()){
+	for (auto line : fileBuffer.getLines())
+	{
 		auto words = ofSplitString(ofTrim(line), "#");
 		// if path addon already listed in addon.make
 		// then update it
 		// else append a new line
-		if (ofTrim(words[0]) == package._path) {
+		if (ofTrim(words[0]) == package._path)
+		{
 			foundPackage = true;
 			content += stringToAdd;
 			content += "\n";
-		} else {
-			content += line+"\n";
+		}
+		else
+		{
+			content += line + "\n";
 		}
 		// ofLogNotice() << content;
 	}
-	if (!foundPackage) {
+	if (!foundPackage)
+	{
 		content += stringToAdd;
 	}
 	fileBuffer.set(content.c_str(), content.size());
 	addonConfigFile.close();
 	ofFile newAddonsMakeFile(getAbsolutePath("addons.make"), ofFile::ReadWrite);
-	if(newAddonsMakeFile.writeFromBuffer(fileBuffer)) {
-		ofLogNotice("ofPackageManager")<<"successfully updated addons.make";
-	} else {
-		ofLogError("ofPackageManager")<<"Could not update addons.make";
+	if (newAddonsMakeFile.writeFromBuffer(fileBuffer))
+	{
+		ofLogNotice("ofPackageManager") << "successfully updated addons.make";
+	}
+	else
+	{
+		ofLogError("ofPackageManager") << "Could not update addons.make";
 	}
 }
 
-void ofPackageManager::addPackageToAddonsMakeFile(std::string path) {
+void ofPackageManager::addPackageToAddonsMakeFile(std::string path)
+{
 	ofxGit::repository repo(ofFilePath::join(_cwdPath, path));
 	auto url = repo.getRemoteUrl();
 	auto checkout = repo.getCommitHash();
-	ofLogNotice()<<path<<url<<checkout;
+	ofLogNotice() << path << url << checkout;
 	addPackageToAddonsMakeFile(ofPackage(path, url, checkout));
 }
 
-void ofPackageManager::addPackagesToAddonsMakeFile(std::string path) {
+void ofPackageManager::addPackagesToAddonsMakeFile(std::string path)
+{
 	ofDirectory directory(ofFilePath::join(_cwdPath, path));
-	if(!directory.exists()){
+	if (!directory.exists())
+	{
 		ofLogError() << "directory does not exit";
 		return;
 	}
 	directory.listDir();
-	for(auto file : directory.getFiles()){
-		if(file.isDirectory()){
+	for (auto file : directory.getFiles())
+	{
+		if (file.isDirectory())
+		{
 			addPackageToAddonsMakeFile(ofFilePath::join(path, file.getFileName()));
 		}
 	}
 }
-void ofPackageManager::addPackagesToAddonsMakeFile(std::vector<std::string> paths) {
-	for(auto path : paths){
+void ofPackageManager::addPackagesToAddonsMakeFile(std::vector<std::string> paths)
+{
+	for (auto path : paths)
+	{
 		addPackageToAddonsMakeFile(ofFilePath::join(_cwdPath, path));
 	}
 }
-void ofPackageManager::configurePackageManager(bool global){
+void ofPackageManager::configurePackageManager(bool global)
+{
 	auto configPath = ofFilePath::join(_cwdPath, "ofPackageManager.json");
 	std::string relativeOrAbsolute = "relative";
-	if(global){
+	if (global)
+	{
 		configPath = ofFilePath::join(ofFilePath::getUserHomeDir(), ".ofPackageManager.json");
 		relativeOrAbsolute = "absolute";
 	}
 	ofFile configFile(configPath);
-	if(configFile.exists()){
+	if (configFile.exists())
+	{
 		ofLogWarning("config") << "Config file already exits.";
-		if(!getBoolAnswer("Do you want to override it?")){
+		if (!getBoolAnswer("Do you want to override it?"))
+		{
 			return;
 		}
 	}
@@ -101,19 +122,25 @@ void ofPackageManager::configurePackageManager(bool global){
 	configFile << configJson.dump(4);
 	configFile.close();
 
-	if(ofDirectory::doesDirectoryExist(packagesPath, false)){
-
-	}else{
+	if (ofDirectory::doesDirectoryExist(packagesPath, false))
+	{
+	}
+	else
+	{
 		ofxGit::repository repo(packagesPath);
-		if(repo.clone("https://github.com/thomasgeissl/ofPackages.git")){
+		if (repo.clone("https://github.com/thomasgeissl/ofPackages.git"))
+		{
 			ofLogNotice("config") << "Successfully cloned packages database";
-		}else{
+		}
+		else
+		{
 			ofLogError("config") << "Could not clone packages database";
 		}
 	}
 }
 
-void ofPackageManager::doctor(){
+void ofPackageManager::doctor()
+{
 	printVersion();
 
 	// check version of ofPackageManager
@@ -123,17 +150,23 @@ void ofPackageManager::doctor(){
 	int minorVersion = 0;
 	int patchVersion = 0;
 	auto lines = ofSplitString(defines, "\n");
-	for(auto line : lines){
+	for (auto line : lines)
+	{
 		auto parts = ofSplitString(line, " ");
-		if(parts.size() == 3){
-			if(parts[1] == "major"){
+		if (parts.size() == 3)
+		{
+			if (parts[1] == "major")
+			{
 				majorVersion = ofToInt(parts[2]);
-			} else if(parts[1] == "minor"){
+			}
+			else if (parts[1] == "minor")
+			{
 				minorVersion = ofToInt(parts[2]);
-			} else if(parts[1] == "patch"){
+			}
+			else if (parts[1] == "patch")
+			{
 				patchVersion = ofToInt(parts[2]);
 			}
-
 		}
 	}
 	ofJson mostRecentVersionJson;
@@ -142,26 +175,30 @@ void ofPackageManager::doctor(){
 	mostRecentVersionJson["minor"] = minorVersion;
 	mostRecentVersionJson["patch"] = patchVersion;
 	ofJson currentVersion = getVersionJson();
-	if(
-		mostRecentVersionJson["major"].get <int>() > currentVersion["major"].get <int>() ||
-		mostRecentVersionJson["minor"].get <int>() > currentVersion["minor"].get <int>() ||
-		mostRecentVersionJson["patch"].get <int>() > currentVersion["patch"].get <int>()
-		){
+	if (
+		mostRecentVersionJson["major"].get<int>() > currentVersion["major"].get<int>() ||
+		mostRecentVersionJson["minor"].get<int>() > currentVersion["minor"].get<int>() ||
+		mostRecentVersionJson["patch"].get<int>() > currentVersion["patch"].get<int>())
+	{
 		ofLogNotice("doctor") << "There is a new version of ofPackageManager available";
 		ofLog::setAutoSpace(false);
 		ofLogNotice("doctor") << "The most recent version is " << mostRecentVersionJson["major"] << "." << mostRecentVersionJson["minor"] << "." << mostRecentVersionJson["patch"];
 		ofLog::setAutoSpace(true);
-	}else{
+	}
+	else
+	{
 		ofLogNotice("doctor") << "You are up to date. Currently there is no newer version of ofPackageManager available";
 	}
 
 	// check version of ofPackages
 }
 
-void ofPackageManager::generateDatabaseEntryFile(){
+void ofPackageManager::generateDatabaseEntryFile()
+{
 	ofJson dataBaseEntryJson;
 
-	if (hasPackageFile(getAbsolutePath(_cwdPath))) {
+	if (hasPackageFile(getAbsolutePath(_cwdPath)))
+	{
 		ofFile packageFile(getAbsolutePath(_cwdPath));
 		ofJson packageJson;
 		packageJson << packageFile;
@@ -172,8 +209,9 @@ void ofPackageManager::generateDatabaseEntryFile(){
 		dataBaseEntryJson["cloneUrl"] = packageJson["cloneUrl"];
 		dataBaseEntryJson["license"] = packageJson["license"];
 		dataBaseEntryJson["type"] = packageJson["type"];
-
-	} else {
+	}
+	else
+	{
 		dataBaseEntryJson["name"] = getStringAnswer("package name?");
 		dataBaseEntryJson["author"] = getStringAnswer("author?");
 		dataBaseEntryJson["url"] = getStringAnswer("url?");
@@ -184,13 +222,15 @@ void ofPackageManager::generateDatabaseEntryFile(){
 
 	std::string name = dataBaseEntryJson["name"];
 	ofFile dataBaseEntryFile(ofFilePath::addTrailingSlash(getAbsolutePath(_cwdPath)) + name + ".json", ofFile::ReadWrite);
-	if(!dataBaseEntryFile.exists()){
+	if (!dataBaseEntryFile.exists())
+	{
 		dataBaseEntryFile.create();
 	}
 	dataBaseEntryFile << dataBaseEntryJson.dump(4);
 }
 
-ofJson ofPackageManager::searchPackageOnGithubByName(string name){
+ofJson ofPackageManager::searchPackageOnGithubByName(string name)
+{
 	std::string url = "https://api.github.com/search/repositories?q=" + name;
 	ofHttpRequest request(url, "TODO: check name");
 	request.headers["User-Agent"] = "ofPackageManager";
@@ -200,7 +240,8 @@ ofJson ofPackageManager::searchPackageOnGithubByName(string name){
 	std::string outputString;
 	outputString += "The following repositories contain" + name + ":\n";
 	auto counter = 0;
-	for(auto repo : resultJson["items"]){
+	for (auto repo : resultJson["items"])
+	{
 		std::string name = repo["full_name"];
 		outputString += ofToString(counter++);
 		outputString += ": ";
@@ -211,7 +252,8 @@ ofJson ofPackageManager::searchPackageOnGithubByName(string name){
 	return resultJson;
 }
 
-ofJson ofPackageManager::searchPackageOnGithubByUser(std::string user){
+ofJson ofPackageManager::searchPackageOnGithubByUser(std::string user)
+{
 	std::string url = "https://api.github.com/users/" + user + "/repos?per_page=100";
 	ofHttpRequest request(url, "TODO: check name");
 	request.headers["User-Agent"] = "ofPackageManager";
@@ -221,7 +263,8 @@ ofJson ofPackageManager::searchPackageOnGithubByUser(std::string user){
 	std::string outputString;
 	outputString += "These are the first 100 repositories by" + user + ":\n";
 	auto counter = 0;
-	for(auto repo : resultJson){
+	for (auto repo : resultJson)
+	{
 		outputString += ofToString(counter++);
 		outputString += ": ";
 		std::string name = repo["full_name"];
@@ -232,12 +275,15 @@ ofJson ofPackageManager::searchPackageOnGithubByUser(std::string user){
 	return resultJson;
 }
 
-ofPackage ofPackageManager::installPackageByGithub(std::string github, std::string checkout, std::string destinationPath){
+ofPackage ofPackageManager::installPackageByGithub(std::string github, std::string checkout, std::string destinationPath)
+{
 	return installPackageByUrl(generateGithubUrl(github), checkout, destinationPath);
 }
 
-ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string checkout, std::string destinationPath){
-	if(destinationPath.empty()){
+ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string checkout, std::string destinationPath)
+{
+	if (destinationPath.empty())
+	{
 		destinationPath = _configJson["localAddonsPath"];
 	}
 	destinationPath = getAbsolutePath(destinationPath);
@@ -249,49 +295,68 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 	auto repoPath = ofFilePath::join(destinationPath, name);
 	ofDirectory repoDirectory(repoPath);
 	ofxGit::repository repo(ofFilePath::join(destinationPath, name));
-	if(destinationDirectory.exists()){
-		if(repoDirectory.exists()){
-			if(getBoolAnswer(destinationPath + "/" + name + " already exists. Do you want to pull and checkout the specified commit?", true)){
+	if (destinationDirectory.exists())
+	{
+		if (repoDirectory.exists())
+		{
+			if (getBoolAnswer(destinationPath + "/" + name + " already exists. Do you want to pull and checkout the specified commit?", true))
+			{
 				ofLogNotice("TODO") << "Unfortunately it is not yet implemented due to missing ofxGit::repo::pull";
 				// TODO: pull and checkout, pull still does not work in ofxGit2
 			}
-		}else{
-			if(repo.clone(url)) {
+		}
+		else
+		{
+			if (repo.clone(url))
+			{
 				ofLogNotice("install") << "Successfully cloned repo" << url;
 			}
-			if(checkout != "latest"){
+			if (checkout != "latest")
+			{
 				// checkout the version
 				repo.checkout(checkout);
-			} else {
+			}
+			else
+			{
 				// get commit hash
 				checkout = repo.getCommitHash();
 			}
 		}
-	}else{
+	}
+	else
+	{
 		destinationDirectory.create();
-		if(repo.clone(url)) {
+		if (repo.clone(url))
+		{
 			ofLogNotice("install") << "Successfully cloned repo" << url;
 		}
-		if(checkout != "latest"){
+		if (checkout != "latest")
+		{
 			// checkout the version
 			repo.checkout(checkout);
-		} else {
+		}
+		else
+		{
 			// get commit hash
 			checkout = repo.getCommitHash();
 		}
 	}
 
-	if(hasAddonsConfigFile(ofFilePath::join(destinationPath, name))){
+	if (hasAddonsConfigFile(ofFilePath::join(destinationPath, name)))
+	{
 		installDependenciesFromAddonConfig(ofFilePath::join(destinationPath, name), destinationPath);
 	}
 
 	return ofPackage(ofFilePath::join(ofFilePath::makeRelative(_cwdPath, destinationPath), name), url, checkout);
 }
 
-ofPackage ofPackageManager::maybeInstallPackage(ofJson packages, std::string destinationPath){
-	if(getBoolAnswer("Do you wanna install any of them?")){
+ofPackage ofPackageManager::maybeInstallPackage(ofJson packages, std::string destinationPath)
+{
+	if (getBoolAnswer("Do you wanna install any of them?"))
+	{
 		auto index = getIntAnswer("Which one? Please enter the corresponding number.", 0);
-		if(index < packages["items"].size()){
+		if (index < packages["items"].size())
+		{
 			ofLogNotice() << packages["items"][index]["name"];
 			return installPackageByUrl(packages["items"][index]["clone_url"], "latest", destinationPath);
 		}
@@ -299,58 +364,74 @@ ofPackage ofPackageManager::maybeInstallPackage(ofJson packages, std::string des
 	return ofPackage("", "", "");
 }
 
-void ofPackageManager::searchPackageInDatabaseById(std::string name){
+void ofPackageManager::searchPackageInDatabaseById(std::string name)
+{
 	std::string databasePath = _configJson["packagesPath"];
 	ofDirectory ofPackagesDirectory(databasePath);
 	ofPackagesDirectory.listDir();
 	auto foundPackage = false;
-	for(auto file : ofPackagesDirectory.getFiles()){
-		if(file.getExtension() == "json"){
+	for (auto file : ofPackagesDirectory.getFiles())
+	{
+		if (file.getExtension() == "json")
+		{
 			ofJson packageJson;
 			file.open(file.getAbsolutePath());
 			file >> packageJson;
 
 			std::size_t found = ofToLower(file.getFileName()).find(ofToLower(name));
-			if(found != std::string::npos){
+			if (found != std::string::npos)
+			{
 				foundPackage = true;
 				ofLogNotice("search") << packageJson["cloneUrl"];
-			}else{
+			}
+			else
+			{
 				//            TODO: check tags
 				//            ofLogNotice("tags")<<packageJson["tags"];
 			}
 			file.close();
 		}
 	}
-	if(!foundPackage){
+	if (!foundPackage)
+	{
 		ofLogError("search") << "Unfortunately this package was not found in the database.";
-		if(getBoolAnswer("But it is probably available on github. Wanna give it a try?")){
+		if (getBoolAnswer("But it is probably available on github. Wanna give it a try?"))
+		{
 			searchPackageOnGithubByName(name);
 		}
 	}
 }
 
-void ofPackageManager::generateProject() {
+void ofPackageManager::generateProject()
+{
 	std::string pgPath = _configJson["pgPath"];
 	std::string ofPath = _configJson["ofPath"];
 	std::string addonsList;
 	auto packageJson = getPackageJson();
 
-	vector <std::string> addonsVec;
+	vector<std::string> addonsVec;
 	auto command = pgPath + " --ofPath=\"" + ofPath + "\" --addons=\"" + addonsList + "\" .";
 	ofSystem(command);
 }
 
-void ofPackageManager::generateReadme(){
+void ofPackageManager::generateReadme()
+{
 	ofFile readmeFile(getAbsolutePath("README.md"));
-	if(hasReadme(_cwdPath)){
+	if (hasReadme(_cwdPath))
+	{
 		ofLogWarning("generate") << "readme already exists.";
-		if(!getBoolAnswer("Do you want to override it?", false)){
+		if (!getBoolAnswer("Do you want to override it?", false))
+		{
 			return;
-		}else{
+		}
+		else
+		{
 			readmeFile.open(readmeFile.getAbsolutePath(), ofFile::ReadWrite);
 			readmeFile.clear();
 		}
-	}else{
+	}
+	else
+	{
 		readmeFile.create();
 	}
 
@@ -362,43 +443,55 @@ void ofPackageManager::generateReadme(){
 	std::string description = packageJson["description"];
 	std::string license = packageJson["license"];
 
-	readmeFile << "# " << "[" << name << "](" << url << ")" << std::endl;
-	readmeFile << "## " << "description" << std::endl;
+	readmeFile << "# "
+			   << "[" << name << "](" << url << ")" << std::endl;
+	readmeFile << "## "
+			   << "description" << std::endl;
 	readmeFile << description << std::endl;
 	readmeFile << std::endl;
 
-	readmeFile << "## " << "author" << std::endl;
+	readmeFile << "## "
+			   << "author" << std::endl;
 	readmeFile << author << std::endl;
 	readmeFile << std::endl;
 
-	readmeFile << "## " << "dependencies" << std::endl;
+	readmeFile << "## "
+			   << "dependencies" << std::endl;
 	readmeFile << std::endl;
 
-	readmeFile << "## " << "license" << std::endl;
+	readmeFile << "## "
+			   << "license" << std::endl;
 	readmeFile << license << std::endl;
 	readmeFile << std::endl;
 
-	readmeFile << "## " << "changelog" << std::endl;
+	readmeFile << "## "
+			   << "changelog" << std::endl;
 }
-void ofPackageManager::printInfo(){
+void ofPackageManager::printInfo()
+{
 	ofLogNotice("ofPackageManager") << "info";
 	printVersion();
 	printPaths();
 }
-void ofPackageManager::printPaths(){
+void ofPackageManager::printPaths()
+{
 	ofLogNotice("path") << "TODO";
 	ofLogNotice("global config path") << ofFilePath::join(ofFilePath::getUserHomeDir(), ".ofPackageManager.json");
 }
-void ofPackageManager::printManual(){
+void ofPackageManager::printManual()
+{
 	ofLogWarning("TODO") << "print manual";
 }
 
-void ofPackageManager::printAvailablePackages(){
+void ofPackageManager::printAvailablePackages()
+{
 	std::string databasePath = _configJson["packagesPath"];
 	ofDirectory ofPackagesDirectory(databasePath);
 	ofPackagesDirectory.listDir();
-	for(auto file : ofPackagesDirectory.getFiles()){
-		if(file.getExtension() == "json"){
+	for (auto file : ofPackagesDirectory.getFiles())
+	{
+		if (file.getExtension() == "json")
+		{
 			ofJson packageJson;
 			file.open(file.getAbsolutePath());
 			file >> packageJson;
@@ -419,70 +512,102 @@ void ofPackageManager::printAvailablePackages(){
 	}
 }
 
-void ofPackageManager::installPackagesFromAddonsMakeFile(){
+void ofPackageManager::installPackagesFromAddonsMakeFile()
+{
 	ofFile addonConfigFile(getAbsolutePath("addons.make"));
-	if(addonConfigFile.exists()){
+	if (addonConfigFile.exists())
+	{
 		ofBuffer fileBuffer = addonConfigFile.readToBuffer();
-		for(auto line :fileBuffer.getLines()){
+		for (auto line : fileBuffer.getLines())
+		{
 			auto words = ofSplitString(ofTrim(line), "#");
 			auto path = getPathAndName(words[0]).first;
 			auto name = getPathAndName(words[0]).second;
 
-			if (path.empty()) {
+			if (path.empty())
+			{
 				path = ofFilePath::join(getOfPath(), "addons");
 			}
-			switch (words.size()) {
-				case 1: {
-					installPackageById(words[0],"latest", path);
-					break;
+			switch (words.size())
+			{
+			case 1:
+			{
+				if (!isCoreAddon(words[0]))
+				{
+					installPackageById(words[0], "latest", path);
 				}
-				case 2: {
-					std::vector<std::string> packageParts = ofSplitString(words[1], "@");
-					std::string checkout = "latest";
-					std::string package = packageParts[0];
-					if(packageParts.size() > 1){
-						checkout = packageParts[1];
-					}
-					if(isGitUrl(words[1])) {
-						installPackageByUrl(package, checkout, path);
-					} else if ( isGithubPair(package) ) {
-						auto url = "https://github.com/"+package+".git";
-						installPackageByUrl(url, checkout, path);
-					} else {
+				break;
+			}
+			case 2:
+			{
+				std::vector<std::string> packageParts = ofSplitString(words[1], "@");
+				std::string checkout = "latest";
+				std::string package = packageParts[0];
+				if (packageParts.size() > 1)
+				{
+					checkout = packageParts[1];
+				}
+				if (isGitUrl(words[1]))
+				{
+					installPackageByUrl(package, checkout, path);
+				}
+				else if (isGithubPair(package))
+				{
+					auto url = "https://github.com/" + package + ".git";
+					installPackageByUrl(url, checkout, path);
+				}
+				else
+				{
+					if (!isCoreAddon(package))
+					{
 						installPackageById(package, checkout, path);
 					}
-					break;
 				}
-				default: break;
+				break;
+			}
+			default:
+				break;
 			}
 		}
-	}else{
+	}
+	else
+	{
 		ofLogError("install") << "Sorry, but there is no addons.make file in this directory.";
 	}
 }
-ofPackage ofPackageManager::installPackage(std::string key, std::string destinationPath){
+ofPackage ofPackageManager::installPackage(std::string key, std::string destinationPath)
+{
 	auto parts = ofSplitString(key, "@");
 	std::string checkout = "latest";
-	if(parts.size() > 1){
+	if (parts.size() > 1)
+	{
 		checkout = parts[1];
 	}
 	key = parts[0];
-	if(isCoreAddon(key)){
-		ofLogNotice("install") << key <<"seems to be a core addon.";
+	if (isCoreAddon(key))
+	{
+		ofLogNotice("install") << key << "seems to be a core addon.";
 		return ofPackage("", "", "");
 	}
 
-	if(isGitUrl(key)){
+	if (isGitUrl(key))
+	{
 		return installPackageByUrl(key, checkout, destinationPath);
-	}else if(isGithubPair(key)){
+	}
+	else if (isGithubPair(key))
+	{
 		return installPackageByGithub(key, checkout, destinationPath);
-	}else{
+	}
+	else
+	{
 		return installPackageById(key, checkout, destinationPath);
 	}
 }
-ofPackage ofPackageManager::installPackageById(std::string id, std::string checkout, std::string destinationPath){
-	ofLogNotice("install")<<"trying to find" << id <<"in the database.";
-	if(destinationPath.empty()){
+ofPackage ofPackageManager::installPackageById(std::string id, std::string checkout, std::string destinationPath)
+{
+	ofLogNotice("install") << "trying to find" << id << "in the database.";
+	if (destinationPath.empty())
+	{
 		destinationPath = _configJson["localAddonsPath"];
 	}
 	destinationPath = getAbsolutePath(destinationPath);
@@ -490,105 +615,139 @@ ofPackage ofPackageManager::installPackageById(std::string id, std::string check
 	ofDirectory packagesDirectory(packagesPath);
 	packagesDirectory.listDir();
 	bool foundPackage = false;
-	for(auto file : packagesDirectory.getFiles()){
-		if(file.getFileName() == id + ".json"){
+	for (auto file : packagesDirectory.getFiles())
+	{
+		if (file.getFileName() == id + ".json")
+		{
 			foundPackage = true;
 			ofJson packageJson;
 			file.open(file.getAbsolutePath());
 			file >> packageJson;
 			ofDirectory directory(ofFilePath::join(_cwdPath, ofFilePath::addTrailingSlash(destinationPath) + id));
-			if(directory.exists()){
+			if (directory.exists())
+			{
 				directory.remove(true);
 			}
 			std::string url;
-			if(!packageJson["cloneUrl"].empty()){
+			if (!packageJson["cloneUrl"].empty())
+			{
 				url = packageJson["cloneUrl"];
-			}else if(!packageJson["github"].empty()){
+			}
+			else if (!packageJson["github"].empty())
+			{
 				url = generateGithubUrl(packageJson["github"]);
 			}
 			return installPackageByUrl(url, checkout, destinationPath);
 		}
 	}
-	if(!foundPackage){
+	if (!foundPackage)
+	{
 		ofLogError("search") << "Unfortunately this package was not found in the database.";
-		if(getBoolAnswer("But it is probably available on github. Wanna give it a try?")){
+		if (getBoolAnswer("But it is probably available on github. Wanna give it a try?"))
+		{
 			return maybeInstallPackage(searchPackageOnGithubByName(id), destinationPath);
 		}
 	}
 	return ofPackage("", "", "");
 }
 
-void ofPackageManager::updatePackagesDatabase(){
+void ofPackageManager::updatePackagesDatabase()
+{
 	// ofSystem("cd " + ofToDataPath("ofPackages") + " && git pull origin master && cd " + _cwdPath);
 }
 
-void ofPackageManager::printVersion(){
+void ofPackageManager::printVersion()
+{
 	ofLog::setAutoSpace(false);
 	ofLogNotice("version") << OFAPP_MAJOR_VERSION << "." << OFAPP_MINOR_VERSION << "." << OFAPP_PATCH_VERSION;
 	ofLog::setAutoSpace(true);
 }
 
-void ofPackageManager::installDependenciesFromAddonConfig(std::string path, std::string destination){
-	if(!ofFilePath::isAbsolute(path)){
+void ofPackageManager::installDependenciesFromAddonConfig(std::string path, std::string destination)
+{
+	if (!ofFilePath::isAbsolute(path))
+	{
 		path = ofFilePath::join(_cwdPath, path);
 	}
 	ofFile addonConfigFile(ofFilePath::join(path, "addon_config.mk"));
-	if(addonConfigFile.exists()){
+	if (addonConfigFile.exists())
+	{
 		ofBuffer fileBuffer = addonConfigFile.readToBuffer();
-		for(auto line : fileBuffer.getLines()){
+		for (auto line : fileBuffer.getLines())
+		{
 			line = ofTrim(line);
 			// check if line starts with ADDON_DEPENDENCIES =
-			if(ofTrim(ofSplitString(line, "=").front()) == "ADDON_DEPENDENCIES"){
+			if (ofTrim(ofSplitString(line, "=").front()) == "ADDON_DEPENDENCIES")
+			{
 				auto rightSide = ofSplitString(line, "=").back();
 				// check if right side contains a comment
 				auto parts = ofSplitString(rightSide, "#");
-				if(parts.size() > 1){ // contains a comment
+				if (parts.size() > 1)
+				{ // contains a comment
 					auto key = parts[1];
-					if(!isCoreAddon(key)){
+					if (!isCoreAddon(key))
+					{
 						installPackage(key, destination);
 					}
-				}else{ // does not contain a comment
-					for(auto key : ofSplitString(ofTrim(rightSide), " ")){
-						if(!isCoreAddon(key)){
+				}
+				else
+				{ // does not contain a comment
+					for (auto key : ofSplitString(ofTrim(rightSide), " "))
+					{
+						if (!isCoreAddon(key))
+						{
 							installPackage(ofTrim(key), destination);
 						}
 					}
 				}
 
-			// check if line starts with ADDON_DEPENDENCIES +=
-			}else if(ofTrim(ofSplitString(line, "+=").front()) == "ADDON_DEPENDENCIES"){
+				// check if line starts with ADDON_DEPENDENCIES +=
+			}
+			else if (ofTrim(ofSplitString(line, "+=").front()) == "ADDON_DEPENDENCIES")
+			{
 				auto rightSide = ofSplitString(line, "+=").back();
 				// check if right side contains a comment
 				auto parts = ofSplitString(rightSide, "#");
-				if(parts.size() > 1){ //contains a comment
+				if (parts.size() > 1)
+				{ //contains a comment
 					auto key = parts[1];
 					ofLogNotice("install key") << key;
-					if(!isCoreAddon(key)){
+					if (!isCoreAddon(key))
+					{
 						installPackage(key, destination);
 					}
-				}else{
+				}
+				else
+				{
 					auto key = ofSplitString(line, "+=").back();
 					// TODO: multiple ids
-					if(!isCoreAddon(key)){
+					if (!isCoreAddon(key))
+					{
 						installPackage(ofTrim(key), destination);
 					}
 				}
 			}
 		}
-	}else{
+	}
+	else
+	{
 		ofLogError("install") << "Package does not contain an addon_config file" << path;
 	}
 }
 
-bool ofPackageManager::isCoreAddon(std::string id){
+bool ofPackageManager::isCoreAddon(std::string id)
+{
 	id = ofSplitString(id, "@").front();
 	auto globalAddonsDir = ofDirectory(ofFilePath::join(getOfPath(), "addons"));
 	globalAddonsDir.listDir();
-	for(auto file : globalAddonsDir.getFiles()){
+	for (auto file : globalAddonsDir.getFiles())
+	{
 		auto path = file.getAbsolutePath();
-		if(file.getFileName() == id && file.isDirectory()){ //starts with ofx
+		if (file.getFileName() == id && file.isDirectory())
+		{ //starts with ofx
 			ofxGit::repository addon(path);
-			if(!addon.isRepository()){
+			if (!addon.isRepository())
+			{
 				return true;
 			}
 		}
@@ -596,53 +755,65 @@ bool ofPackageManager::isCoreAddon(std::string id){
 	return false;
 }
 
-
-std::string ofPackageManager::getOfPath(){
+std::string ofPackageManager::getOfPath()
+{
 	return _configJson["ofPath"];
 }
 
-ofJson ofPackageManager::getPackageJson(){
+ofJson ofPackageManager::getPackageJson()
+{
 	ofJson packageJson;
 	ofFile packageFile(getAbsolutePath("ofPackage.json"));
-	if(packageFile.exists()){
+	if (packageFile.exists())
+	{
 		packageJson << packageFile;
 	}
 	return packageJson;
 }
 
-ofJson ofPackageManager::getPackageManagerJson(){
+ofJson ofPackageManager::getPackageManagerJson()
+{
 	ofJson packageManagerJson;
 	ofFile packageFile(getAbsolutePath("ofPackageManager.json"));
-	if(packageFile.exists()){
+	if (packageFile.exists())
+	{
 		packageManagerJson << packageFile;
-	}else{
+	}
+	else
+	{
 		packageFile.open(ofFilePath::join(ofFilePath::getUserHomeDir(), ".ofPackageManager.json"));
-		if(packageFile.exists()){
+		if (packageFile.exists())
+		{
 			packageManagerJson << packageFile;
 		}
 	}
 	return packageManagerJson;
 }
 
-ofJson ofPackageManager::getLocalConfigJson(){
+ofJson ofPackageManager::getLocalConfigJson()
+{
 	ofJson packageManagerConfigJson;
 	ofFile packageManagerConfigFile(getAbsolutePath("ofPackageManager.json"));
-	if(packageManagerConfigFile.exists()){
+	if (packageManagerConfigFile.exists())
+	{
 		packageManagerConfigJson << packageManagerConfigFile;
 	}
 	return packageManagerConfigJson;
 }
 
-ofJson ofPackageManager::getGlobalConfigJson(){
+ofJson ofPackageManager::getGlobalConfigJson()
+{
 	ofJson packageManagerConfigJson;
 	ofFile packageManagerConfigFile(ofFilePath::join(ofFilePath::getUserHomeDir(), ".ofPackageManager.json"));
-	if(packageManagerConfigFile.exists()){
+	if (packageManagerConfigFile.exists())
+	{
 		packageManagerConfigJson << packageManagerConfigFile;
 	}
 	return packageManagerConfigJson;
 }
 
-ofJson ofPackageManager::getVersionJson(){
+ofJson ofPackageManager::getVersionJson()
+{
 	// ofFile versionFile(ofToDataPath("version.json"));
 	ofJson versionJson;
 	// versionJson << versionFile;
@@ -656,81 +827,100 @@ ofJson ofPackageManager::getVersionJson(){
 	return versionJson;
 }
 
-std::string ofPackageManager::generateGithubUrl(std::string github){
+std::string ofPackageManager::generateGithubUrl(std::string github)
+{
 	return "http://github.com/" + github + ".git";
 }
 
-std::string ofPackageManager::extractRepositoryName(std::string cloneUrl){
+std::string ofPackageManager::extractRepositoryName(std::string cloneUrl)
+{
 	auto name = ofSplitString(cloneUrl, "/").back();
 	name = name.substr(0, name.size() - 4);
 	return name;
 }
 
-std::string ofPackageManager::getAbsolutePath(std::string path){
-	if(ofFilePath::isAbsolute(path)){
+std::string ofPackageManager::getAbsolutePath(std::string path)
+{
+	if (ofFilePath::isAbsolute(path))
+	{
 		return path;
 	}
 	return ofFilePath::join(_cwdPath, path);
 }
 
-std::pair<std::string, std::string> ofPackageManager::getPathAndName(std::string name) {
+std::pair<std::string, std::string> ofPackageManager::getPathAndName(std::string name)
+{
 	auto words = ofSplitString(name, "/");
-	if (words.size() > 1) {
+	if (words.size() > 1)
+	{
 		auto path = words[0];
-		for (auto i = 1; i < words.size() - 2; i++) {
-			path+"/"+words[i];
+		for (auto i = 1; i < words.size() - 2; i++)
+		{
+			path + "/" + words[i];
 		}
 		return std::make_pair(path, words[words.size() - 1]);
 	}
 	return std::make_pair("", name);
 }
 
-bool ofPackageManager::hasConfig(std::string path){
+bool ofPackageManager::hasConfig(std::string path)
+{
 	ofFile localConfig(ofFilePath::join(getAbsolutePath(path), "ofPackageMananager.json"));
 	return localConfig.exists();
 }
 
-bool ofPackageManager::hasReadme(std::string path){
+bool ofPackageManager::hasReadme(std::string path)
+{
 	path = getAbsolutePath(path);
 	ofFile readmeFile(ofFilePath::join(path, "README.md"));
 	return readmeFile.exists();
 }
 
-bool ofPackageManager::isGitRepository(std::string path){
-	if(!ofFilePath::isAbsolute(path)){
+bool ofPackageManager::isGitRepository(std::string path)
+{
+	if (!ofFilePath::isAbsolute(path))
+	{
 		path = ofFilePath::join(_cwdPath, path);
 	}
 	ofDirectory gitDirectory(ofFilePath::join(path, ".git"));
 	return gitDirectory.exists();
 }
 
-bool ofPackageManager::isGitUrl(std::string path){
+bool ofPackageManager::isGitUrl(std::string path)
+{
 	// TODO: check if string ends with .git
 	return path.substr(0, 4) == "git@" || path.substr(0, 4) == "http";
 }
 
-bool ofPackageManager::isGithubPair(std::string path) {
+bool ofPackageManager::isGithubPair(std::string path)
+{
 	return ofSplitString(path, "/").size() > 1;
 }
 
-bool ofPackageManager::hasPackageFile(std::string path){
-	if(!ofFilePath::isAbsolute(path)){
+bool ofPackageManager::hasPackageFile(std::string path)
+{
+	if (!ofFilePath::isAbsolute(path))
+	{
 		path = ofFilePath::join(_cwdPath, path);
 	}
 	ofFile packageFile(ofFilePath::join(path, "ofPackage.json"));
 	return packageFile.exists();
 }
 
-bool ofPackageManager::hasAddonsMakeFile(std::string path){
-	if(!ofFilePath::isAbsolute(path)){
+bool ofPackageManager::hasAddonsMakeFile(std::string path)
+{
+	if (!ofFilePath::isAbsolute(path))
+	{
 		path = ofFilePath::join(_cwdPath, path);
 	}
 	ofFile addonsMakeFile(ofFilePath::join(path, "addons.make"));
 	return addonsMakeFile.exists();
 }
 
-bool ofPackageManager::hasAddonsConfigFile(std::string path){
-	if(!ofFilePath::isAbsolute(path)){
+bool ofPackageManager::hasAddonsConfigFile(std::string path)
+{
+	if (!ofFilePath::isAbsolute(path))
+	{
 		path = ofFilePath::join(_cwdPath, path);
 	}
 	ofFile addonConfigFile(ofFilePath::join(path, "addon_config.mk"));

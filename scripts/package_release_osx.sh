@@ -4,8 +4,7 @@ cd ..
 make
 cd scripts
 ./fix_dylib.sh
-
-# TODO: run tests
+./test.sh
 
 mkdir ../../tmp
 cd ../../tmp
