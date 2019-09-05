@@ -15,8 +15,9 @@ if [ $TASK="install" ]; then
         IFS=$'#,@' ADDON=($i)
         if [ ${#ADDON[@]} -eq 3 ]; then
             cd $pwd
-            git clone ${ADDON[1]} ${ADDON[0]}
-            cd ${ADDON[0]} && git checkout ${ADDON[2]}
+            DESTINATION="$(echo -e "${ADDON[0]}" | sed -e 's/[[:space:]]*$//')"
+            git clone ${ADDON[1]} ${DESTINATION}
+            cd ${DESTINATION} && git checkout ${ADDON[2]}
             # TODO: parse addon dependencies, neccessary?
         fi
     done
