@@ -606,6 +606,10 @@ ofPackage ofPackageManager::installPackage(std::string key, std::string destinat
 ofPackage ofPackageManager::installPackageById(std::string id, std::string checkout, std::string destinationPath)
 {
 	ofLogNotice("install") << "trying to find" << id << "in the database.";
+	if (isCoreAddon(id))
+	{
+		return ofPackage("", "", "");
+	}
 	if (destinationPath.empty())
 	{
 		destinationPath = _configJson["localAddonsPath"];
