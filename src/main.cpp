@@ -54,14 +54,14 @@ int main(int argc, char **argv)
 	{
 		if (argc == 2)
 		{
-			app.configurePackageManager();
+			app.configure();
 		}
 		if (argc == 3)
 		{
 			std::string option = argv[2];
 			if (option == "-g" || option == "--global")
 			{
-				app.configurePackageManager(true);
+				app.configure(true);
 			}
 		}
 	}
@@ -84,15 +84,7 @@ int main(int argc, char **argv)
 			return -1;
 		}
 
-		if (subtask == "project")
-		{
-			app.generateProject();
-		}
-		else if (subtask == "readme")
-		{
-			app.generateReadme();
-		}
-		else if (subtask == "database")
+		if (subtask == "database")
 		{
 			app.generateDatabaseEntryFile();
 		}
