@@ -62,23 +62,16 @@ Run the global configuration in order to install addons globally. `ofPackageMana
 - Check for updates: `ofPackageManager doctor`
 - Upate packages database: `ofPackageManager update`
 
-You can also use the online version if you do not have the package manager installed on your machine. e.g. `cd into/your/project/app` and execute the following to install its dependencies.
+## Best practices
 
-```
-bash -c "$(curl -sSL https://raw.githubusercontent.com/thomasgeissl/ofPackageManager/master/scripts/ofPackageManager.sh)" install
-```
+- Do not forget to add local_addons to your .gitignore: `echo "./local_addons" >> .gitignore`
+- Configure the package manager locally if you have more than one openFrameworks versions installed on your computer.
+- Configure the package manager locally if you want to use your own custom packages database for a project.
+- You can also use the bash-based online version if you do not have the package manager installed on your machine. e.g. `cd into/your/project/app` and execute the following to install its dependencies: `bash -c "$(curl -sSL https://raw.githubusercontent.com/thomasgeissl/ofPackageManager/master/scripts/ofPackageManager.sh)" install`
 
 ## Known issues
 
-- The current version of the project generator does not support comments in the addons.make file
-
-## TODOs
-
-- fix linux and windows version
-- command line syntax
-- better console output
-- move logic to ofApp.\* instead of main.cpp
-- optimize
+- The version of the project generator bundled with 0.10.1 does not support comments in the addons.make file. It is fixed on github, the version included in the nightly builds should work.
 
 ## License
 

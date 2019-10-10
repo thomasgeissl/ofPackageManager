@@ -293,7 +293,7 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 		{
 			if (repo.clone(url))
 			{
-				ofLogNotice("install") << "Successfully cloned repo" << url;
+				ofLogNotice("install") << "Successfully cloned repo " << url;
 			}
 			if (checkout != "latest")
 			{
@@ -312,7 +312,7 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 		destinationDirectory.create();
 		if (repo.clone(url))
 		{
-			ofLogNotice("install") << "Successfully cloned repo" << url;
+			ofLogNotice("install") << "Successfully cloned repo " << url;
 		}
 		if (checkout != "latest")
 		{
