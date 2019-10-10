@@ -1,9 +1,13 @@
 #!/bin/sh
 cd "$(dirname "$0")"
+cd ..
 
+rm -rf test
 mkdir test 
 cd test
-APP=../../bin/ofPackageManager.app/Contents/MacOS/ofPackageManager 
+ls
+
+APP=../bin/ofPackageManager.app/Contents/MacOS/ofPackageManager 
 echo "testing info task:"
 $APP info
 echo ""
@@ -86,4 +90,5 @@ echo "congratulations. successfully run the test."
 
 # TODO: search tasks, global install
 
-
+cd ..
+rm -rf test
