@@ -42,9 +42,6 @@ Run the global configuration in order to install addons globally. `ofPackageMana
 
 ### Package management
 
-- Search package in database: `ofPackageManager search ofxHTTP`
-- Search package on github by name: `ofPackageManager search github ofxSyphon`
-- Search package on github by user: `ofPackageManager search github --user arturoc`
 - Install package by id: `ofPackageManager install ofxMidi`
 - Install package by github name (user/repo): `ofPackageManager install arturoc/ofxAruco`
 - Install package by url: `ofPackageManager install https://github.com/kylemcdonald/ofxCv.git`
@@ -53,15 +50,17 @@ Run the global configuration in order to install addons globally. `ofPackageMana
 - Install specific commit or tag by appending an @ followed by the hash or tag name: e.g. `ofPackageManager install ofxMidi@2f0e6343c817a4f5a33b60339c82b5d10be8af01`
 - Add already cloned repositories: `ofPackageManager add -A local_addons`
 - Install dependencies of a package: `ofPackageManager install`
+- Search package in database: `ofPackageManager search ofxHTTP`
+- Search package on github by name: `ofPackageManager search github ofxSyphon`
+- Search package on github by user: `ofPackageManager search github --user arturoc`
 
 ### Package manager update/info
 
 - Info: `ofPackageManager info`
 - Help/man: `ofPackageManager help`
+- Print version: `ofPackageManager version`
 - Check for updates: `ofPackageManager doctor`
 - Upate packages database: `ofPackageManager update`
-- Print available packages: `ofPackageManager print packages`
-- Print version: `ofPackageManager print version`
 
 You can also use the online version if you do not have the package manager installed on your machine. e.g. `cd into/your/project/app` and execute the following to install its dependencies.
 

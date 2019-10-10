@@ -8,13 +8,13 @@ ofPackageManager::ofPackageManager(std::string cwdPath) : _cwdPath(cwdPath),
 
 void ofPackageManager::addPackageToAddonsMakeFile(ofPackage package)
 {
-	ofFile addonConfigFile(getAbsolutePath("addons.make"), ofFile::ReadOnly);
-	if (!addonConfigFile.exists())
+	ofFile addonsMakeFile(getAbsolutePath("addons.make"), ofFile::ReadOnly);
+	if (!addonsMakeFile.exists())
 	{
-		addonConfigFile.create();
+		addonsMakeFile.create();
 	}
 	auto stringToAdd = package._path + " #" + package._url + "@" + package._checkout;
-	ofBuffer fileBuffer = addonConfigFile.readToBuffer();
+	ofBuffer fileBuffer = addonsMakeFile.readToBuffer();
 	std::string content;
 	auto foundPackage = false;
 	for (auto line : fileBuffer.getLines())
@@ -40,7 +40,7 @@ void ofPackageManager::addPackageToAddonsMakeFile(ofPackage package)
 		content += stringToAdd;
 	}
 	fileBuffer.set(content.c_str(), content.size());
-	addonConfigFile.close();
+	addonsMakeFile.close();
 	ofFile newAddonsMakeFile(getAbsolutePath("addons.make"), ofFile::ReadWrite);
 	if (newAddonsMakeFile.writeFromBuffer(fileBuffer))
 	{
@@ -118,8 +118,8 @@ void ofPackageManager::configure(bool global)
 	}
 
 	ofJson configJson;
-	configJson["ofPath"] = getStringAnswer(relativeOrAbsolute + " path to openFrameworks?", ofFilePath::getAbsolutePath(getAbsolutePath("../../.."), false));
-	auto packagesPath = getStringAnswer("absolute path to packages directory?", ofFilePath::join(ofFilePath::getUserHomeDir(), ".ofPackages"));
+	configJson["ofPath"] = getStringAnswer("Absolute path to openFrameworks?", ofFilePath::getAbsolutePath(getAbsolutePath("../../.."), false));
+	auto packagesPath = getStringAnswer("Absolute path to packages directory?", ofFilePath::join(ofFilePath::getUserHomeDir(), ".ofPackages"));
 	configJson["packagesPath"] = packagesPath;
 	configJson["localAddonsPath"] = getStringAnswer("local addons directory?", "local_addons");
 
@@ -268,7 +268,7 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 {
 	if (destinationPath.empty())
 	{
-		destinationPath = _configJson["localAddonsPath"];
+		destinationPath = _configJson["localAddonsPath"].get<std::string>();
 	}
 	destinationPath = getAbsolutePath(destinationPath);
 	auto name = ofSplitString(url, "/").back();
@@ -399,7 +399,36 @@ void ofPackageManager::printPaths()
 }
 void ofPackageManager::printManual()
 {
-	ofLogWarning("TODO") << "print manual";
+	cout << "ofPackageManager version " << OFAPP_MAJOR_VERSION << "." << OFAPP_MINOR_VERSION << "." << OFAPP_PATCH_VERSION << endl
+		 << endl;
+
+	cout << "Configuration" << endl;
+	cout << "The package manager needs to know where to find the openFrameworks installation and the packages database. It can be configured globally or locally. If there is no local (per project) config, the package manager will use the global configuration." << endl;
+	cout << "* Configure the package manager globally after the installation: ofPackageManager config -g" << endl;
+	cout << "* Configure the package manager locally: ofPackageManager config" << endl
+		 << endl;
+
+	cout << "Installation of packages" << endl;
+	cout << "Packages can be installed via an id (if available in the database), github name or git url. It is also possible to specify the version by appending the commit hash or tag. Packages can be installed locally or globally. It is recommended to install them locally. The package manager will also install the packages' dependencies." << endl;
+	cout << "The package manager will add git url and commit hash to the addons.make file." << endl;
+	cout << "* Install by id: ofPackageManager install ofxMidi" << endl;
+	cout << "* Install by github name: ofPackageManager install danomatika/ofxMidi" << endl;
+	cout << "* Install by git url: ofPackageManager install https://github.com/danomatika/ofxMidi.git" << endl;
+	cout << "* Install a specific version: ofPackageManager install ofxMidi@1.1.1" << endl
+		 << endl;
+
+	cout << "Installation of a project's dependencies" << endl;
+	cout << "It will clone all dependencies and check out the specified version in the addons.make file." << endl;
+	cout << "* ofPackageManager install" << endl
+		 << endl;
+
+	cout << "Adding manually cloned addons" << endl;
+	cout << "It will clone all dependencies and check out the specified version in the addons.make file." << endl;
+	cout << "* Add a single package: ofPackageManager add local_addons/ofxMidi" << endl;
+	cout << "* Add all packages inside one directory: ofPackageManager add -A local_addons" << endl
+		 << endl;
+
+	cout << "Further information can be found on github (https://github.com/thomasgeissl/ofPackageManager/)." << endl;
 }
 
 void ofPackageManager::printAvailablePackages()
@@ -433,10 +462,10 @@ void ofPackageManager::printAvailablePackages()
 
 void ofPackageManager::installPackagesFromAddonsMakeFile()
 {
-	ofFile addonConfigFile(getAbsolutePath("addons.make"));
-	if (addonConfigFile.exists())
+	ofFile addonsMakeFile(getAbsolutePath("addons.make"));
+	if (addonsMakeFile.exists())
 	{
-		ofBuffer fileBuffer = addonConfigFile.readToBuffer();
+		ofBuffer fileBuffer = addonsMakeFile.readToBuffer();
 		for (auto line : fileBuffer.getLines())
 		{
 			auto words = ofSplitString(ofTrim(line), "#");
@@ -447,13 +476,14 @@ void ofPackageManager::installPackagesFromAddonsMakeFile()
 			{
 				path = ofFilePath::join(getOfPath(), "addons");
 			}
+
 			switch (words.size())
 			{
 			case 1:
 			{
-				if (!isCoreAddon(words[0]))
+				if (!isCoreAddon(name))
 				{
-					installPackageById(words[0], "latest", path);
+					installPackageById(name, "latest", path);
 				}
 				break;
 			}
@@ -649,7 +679,7 @@ ofPackage ofPackageManager::installPackageById(std::string id, std::string check
 
 void ofPackageManager::updatePackagesDatabase()
 {
-	// ofSystem("cd " + ofToDataPath("ofPackages") + " && git pull origin master && cd " + _cwdPath);
+	ofLogWarning("update") << "This is currently not yet implemented. Please pull the packages database manually.";
 }
 
 void ofPackageManager::printVersion()

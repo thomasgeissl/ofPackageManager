@@ -22,7 +22,7 @@ then
 else echo "windows support is not yet implemented" && exit
 fi
 
-git clone --recursive https://github.com/thomasgeissl/ofPackageManager.git
+git clone https://github.com/thomasgeissl/ofPackageManager.git
 cd ofPackageManager/scripts
 ./install_dependencies.sh
 cd .. && make -j4

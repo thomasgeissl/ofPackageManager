@@ -69,39 +69,25 @@ int main(int argc, char **argv)
 	{
 		app.doctor();
 	}
-	else if (task == "generate")
+	else if (task == "update")
 	{
-		std::string subtask = "project";
-
-		if (argc == 3)
-		{
-			subtask = argv[2];
-		}
-		else if (argc > 3)
-		{
-			printInputError(argc, argv);
-			app.printManual();
-			return -1;
-		}
-
-		if (subtask == "database")
-		{
-			app.generateDatabaseEntryFile();
-		}
-		else
-		{
-			printInputError(argc, argv);
-			app.printManual();
-			return -1;
-		}
+		app.updatePackagesDatabase();
 	}
-	else if (task == "help")
+	else if (task == "database")
+	{
+		app.generateDatabaseEntryFile();
+	}
+	else if (task == "help" || task == "man")
 	{
 		app.printManual();
 	}
 	else if (task == "info")
 	{
 		app.printInfo();
+	}
+	else if (task == "version")
+	{
+		app.printVersion();
 	}
 	else if (task == "install")
 	{
@@ -143,32 +129,6 @@ int main(int argc, char **argv)
 			}
 		}
 	}
-	else if (task == "print")
-	{
-		std::string subtask = "packages";
-		if (argc == 3)
-		{
-			subtask = argv[2];
-		}
-		if (subtask == "packages")
-		{
-			app.printAvailablePackages();
-		}
-		else if (subtask == "manual" || subtask == "man" || subtask == "help")
-		{
-			app.printManual();
-		}
-		else if (subtask == "version")
-		{
-			app.printVersion();
-		}
-		else
-		{
-			printInputError(argc, argv);
-			app.printManual();
-			return -1;
-		}
-	}
 	else if (task == "search")
 	{
 		if (argc == 3)
@@ -202,14 +162,9 @@ int main(int argc, char **argv)
 			return -1;
 		}
 	}
-	else if (task == "update")
-	{
-		app.updatePackagesDatabase();
-	}
 	else
 	{
 		ofLogError("ofPackageManager") << "unkown task" << task;
-		app.printInfo();
 		app.printManual();
 	}
 
