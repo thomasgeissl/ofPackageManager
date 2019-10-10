@@ -15,6 +15,8 @@ void printInputError(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
+	ofInit();
+
 #if defined(TARGET_OSX) || defined(TARGET_LINUX)
 	std::shared_ptr<ofColorsLoggerChannel> logger{
 		new ofColorsLoggerChannel};
