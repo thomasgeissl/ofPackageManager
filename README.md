@@ -13,7 +13,9 @@ The current command line interface is very similar to npm, but I am open for sug
 
 ### OSX
 
-On OSX you can install it via brew.
+#### brew
+
+On OSX you can install the package manager via brew. This will download the most recent version of the package manager and add it to your path.
 
 ```
 brew tap thomasgeissl/tools
@@ -21,7 +23,13 @@ brew install ofpackagemanager
 # brew upgrade ofpackagemanager
 ```
 
-This will download the most recent version of the package manager and add it to your search path.
+#### manually
+
+Or copy this line and paste it in your terminal. It will download the most recent version of the package manager and add it to your path.
+
+```
+bash -c "$(curl -sSL https://raw.githubusercontent.com/thomasgeissl/ofPackageManager/master/scripts/osx/downloadAndAddToPath.sh)"
+```
 
 ### Building
 
