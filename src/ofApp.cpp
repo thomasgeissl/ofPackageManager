@@ -272,8 +272,15 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 	}
 	destinationPath = getAbsolutePath(destinationPath);
 	auto name = ofSplitString(url, "/").back();
-	// TODO: check if url ends with .git
-	name = name.substr(0, name.size() - 4);
+	std::string suffix = ".git";
+	if (0 == name.compare(name.size() - suffix.size(), suffix.size(), suffix))
+	{
+		name = name.substr(0, name.size() - suffix.size());
+	}
+	else
+	{
+		url += suffix;
+	}
 
 	ofDirectory destinationDirectory(destinationPath);
 	auto repoPath = ofFilePath::join(destinationPath, name);
