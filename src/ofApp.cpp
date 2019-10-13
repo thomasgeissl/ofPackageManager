@@ -721,23 +721,28 @@ std::string ofPackageManager::getOfPath()
 
 ofJson ofPackageManager::getConfig()
 {
-	ofJson packageManagerJson;
-	ofFile packageFile(getAbsolutePath("ofPackageManager.json"));
-	if (packageFile.exists())
+	ofJson configJson;
+	ofFile configFile(getAbsolutePath("ofPackageManager.json"));
+	// TODO: go up one directory until config is found or arrived at root
+	if (configFile.exists())
 	{
-		packageFile >> packageManagerJson;
+		configFile >> configJson;
 	}
 	else
 	{
-		packageFile.open(ofFilePath::join(ofFilePath::getUserHomeDir(), ".ofPackageManager.json"));
-		if (packageFile.exists())
+		configFile.open(ofFilePath::join(ofFilePath::getUserHomeDir(), ".ofPackageManager.json"));
+		if (configFile.exists())
 		{
-			packageFile >> packageManagerJson;
+			configFile >> configJson;
 		}
 	}
-	return packageManagerJson;
+	return configJson;
 }
 
+void ofPackageManager::setConfig(ofJson config)
+{
+	_configJson = config;
+}
 std::string ofPackageManager::generateGithubUrl(std::string github)
 {
 	return "https://github.com/" + github + ".git";

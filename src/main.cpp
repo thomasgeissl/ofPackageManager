@@ -26,7 +26,30 @@ int main(int argc, char **argv)
 	filesystem::path cwdPath = filesystem::current_path();
 
 	ofPackageManager app(cwdPath.string());
+	std::string args = "";
+	for (auto i = 1; i < argc; i++)
+		args += argv[i];
+}
 
+if (ofJson::accept(args))
+{
+	auto request = ofJson::parse(args);
+	auto type = request["type"].get<std::string>();
+	if (type == "INSTALL")
+	{
+		auto payload = request["payload"];
+		app.setConfig(payload["config"]);
+		app.installPackagesFromAddonsMakeFile();
+	}
+	// {
+	// 	type: type,
+	// 	payload: {
+	// 		config
+	// 	}
+	// }
+}
+else
+{
 	std::string task;
 	if (argc > 1)
 	{
@@ -171,5 +194,7 @@ int main(int argc, char **argv)
 	}
 
 	ofLogNotice() << "Thanks for using ofPackageManager. If you find a bug then please report it on the github issue tracker (https://github.com/thomasgeissl/ofPackageManager/issues). See you soon.";
-	return 0;
+}
+
+return 0;
 }

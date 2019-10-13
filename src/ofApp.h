@@ -42,6 +42,7 @@ public:
 
 	std::string getOfPath();
 	ofJson getConfig();
+	void setConfig(ofJson config);
 	std::string generateGithubUrl(std::string github);
 	std::string getAbsolutePath(std::string path);
 	std::pair<std::string, std::string> getPathAndName(std::string name);
