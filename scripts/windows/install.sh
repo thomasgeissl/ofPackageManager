@@ -1,4 +1,4 @@
-choco install msys2
+choco install -y msys2
 
 curl -O https://openframeworks.cc/versions/v0.10.1/of_v0.10.1_msys2_release.zip
 unzip -a -qq of_v0.10.1_msys2_release.zip
