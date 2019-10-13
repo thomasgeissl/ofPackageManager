@@ -1,6 +1,4 @@
-#!/bin/sh
-
-#!/bin/sh
+choco install msys2
 
 curl -O https://openframeworks.cc/versions/v0.10.1/of_v0.10.1_msys2_release.zip
 unzip -a -qq of_v0.10.1_msys2_release.zip
@@ -13,4 +11,4 @@ git clone https://github.com/thomasgeissl/ofPackageManager.git
 cd ofPackageManager/scripts
 ./install_dependencies.sh
 cd ..
-make
+# make
