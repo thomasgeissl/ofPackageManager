@@ -16,8 +16,10 @@
     "@material-ui/core": "^4.5.1",
     "gatsby": "^2.16.1",
     "gatsby-cli": "^2.8.2",
+    "gatsby-plugin-react-helmet": "^3.1.13",
     "react": "^16.10.2",
     "react-dom": "^16.10.2",
+    "react-helmet": "^5.2.1",
     "styled-components": "^4.4.0"
   },
   "devDependencies": {
