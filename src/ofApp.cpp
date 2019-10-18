@@ -249,11 +249,15 @@ ofJson ofPackageManager::searchPackageOnGithubByUser(std::string user)
 	auto counter = 0;
 	for (auto repo : resultJson)
 	{
-		outputString += ofToString(counter++);
-		outputString += ": ";
-		std::string name = repo["full_name"];
-		outputString += name;
-		outputString += "\n";
+		std::string repoName = repo["name"];
+		if (repoName.substr(0, 3) == "ofx")
+		{
+			outputString += ofToString(counter++);
+			outputString += ": ";
+			std::string name = repo["full_name"];
+			outputString += name;
+			outputString += "\n";
+		}
 	}
 	ofLogNotice("search") << outputString;
 	return resultJson;
