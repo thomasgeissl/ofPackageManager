@@ -7,9 +7,10 @@ import Grid from "@material-ui/core/Grid"
 
 const StyledLogo = styled.img`
   width: 15%;
+  margin-top: 32px;
 `
 const StyledPaper = styled(Paper)`
-  padding: 15px;
+  padding: 32px;
 `
 const PaperHeadline = styled.h3`
   margin-top: 0;
@@ -29,6 +30,7 @@ const SubHeadline = styled.h2`
   font-size: 28px;
   text-align: center;
   margin-top: 50px;
+  margin-bottom: 32px;
 `
 const Block = styled.div`
   text-align: left;
@@ -45,6 +47,8 @@ const CodeBlock = styled.div`
   margin-bottom: 15px;
   font-family: monaco;
 `
+
+const StyledImage = styled.img``
 
 const Row = props => (
   <Grid item xs={12}>
@@ -63,12 +67,11 @@ export default () => (
         },
         {
           name: "keywords",
-          content: "package, manager, openFrameworks, oF, npm, brew, addons, ofx, ofxAddons",
+          content:
+            "package, manager, openFrameworks, oF, npm, brew, addons, ofx, ofxAddons",
         },
       ]}
-      link={[
-        { rel: "shortcut icon", type: "image/png", href: `${Logo}` },
-      ]}
+      link={[{ rel: "shortcut icon", type: "image/png", href: `${Logo}` }]}
     />
     <StyledLogo src={Logo}></StyledLogo>
 
@@ -87,16 +90,36 @@ export default () => (
           <a href="https://chocolatey.org/" target="_blank">
             chocolatey
           </a>{" "}
-          installable version. For now you can download the latest version
-          manually from the{" "}
-          <a
-            href="https://github.com/thomasgeissl/ofPackageManager/releases"
-            target="_blank"
-          >
-            github releases
-          </a>{" "}
-          page. You can add it to the path, so you do not have to type the full
-          path.
+          installable version. For now you to install the exe manually.
+          <ol>
+            <li>
+              Download the latest release for Windows from the{" "}
+              <a
+                href="https://github.com/thomasgeissl/ofPackageManager/releases"
+                target="_blank"
+              >
+                github releases
+              </a>{" "}
+              page.{" "}
+            </li>
+            <li>
+              Unzip the package anywhere on your hard drive. Make sure to keep
+              the entire contents of the folder, including the DLLs.
+            </li>
+            <li>
+              Add the package folder to the PATH variable. Steps on how to do
+              this can be found{" "}
+              <a
+                href="https://www.addictivetips.com/windows-tips/set-path-environment-variables-in-windows-10/"
+                target="_blank"
+              >
+                here
+              </a>
+              .<br></br>
+              <br></br>
+              <StyledImage src="https://github.com/thomasgeissl/ofPackageManager/raw/master/win-path.png"></StyledImage>
+            </li>
+          </ol>
         </Row>
 
         <Row>
