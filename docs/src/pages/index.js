@@ -10,7 +10,7 @@ const StyledLogo = styled.img`
   margin-top: 32px;
 `
 const StyledPaper = styled(Paper)`
-  padding: 32px;
+  padding: 15px;
 `
 const PaperHeadline = styled.h3`
   margin-top: 0;
@@ -48,7 +48,9 @@ const CodeBlock = styled.div`
   font-family: monaco;
 `
 
-const StyledImage = styled.img``
+const StyledImage = styled.img`
+  width: 50%;
+`
 
 const Row = props => (
   <Grid item xs={12}>
