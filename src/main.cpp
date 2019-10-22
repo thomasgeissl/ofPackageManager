@@ -166,7 +166,7 @@ int main(int argc, char **argv)
 	}
 	else
 	{
-		ofLogError("ofPackageManager") << "unkown task" << task;
+		ofLogError("ofPackageManager") << "unknown task" << task;
 		app.printManual();
 	}
 
