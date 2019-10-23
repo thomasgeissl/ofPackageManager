@@ -227,12 +227,21 @@ ofJson ofPackageManager::searchPackageOnGithubByName(string name)
 	for (auto repo : resultJson["items"])
 	{
 		std::string name = repo["full_name"];
-		outputString += ofToString(counter++);
-		outputString += ": ";
-		outputString += name;
-		outputString += "\n";
+		std::string url = repo["html_url"];
+		std::string updatedAt = repo["updated_at"];
+		int stars = repo["stargazers_count"];
+		int forks = repo["forks_count"];
+		std::string isFork = repo["fork"].get<bool>() ? "true" : "false";
+		int openIssues = repo["open_issues_count"];
+		outputString += ofToString(counter++) + ": " + name;
+		outputString += "\n\t";
+		outputString += url;
+		outputString += "\n\t";
+		outputString += "stars: " + ofToString(stars) + ", open issues: " + ofToString(openIssues) + ", updated at: " + updatedAt + ", forks: " + ofToString(forks) + ", isFork: " + isFork;
+		outputString += "\n\n";
 	}
 	ofLogNotice("search") << outputString;
+
 	return resultJson;
 }
 
@@ -250,13 +259,21 @@ ofJson ofPackageManager::searchPackageOnGithubByUser(std::string user)
 	for (auto repo : resultJson)
 	{
 		std::string repoName = repo["name"];
+		std::string name = repo["full_name"];
+		std::string url = repo["html_url"];
+		std::string updatedAt = repo["updated_at"];
+		int stars = repo["stargazers_count"];
+		int forks = repo["forks_count"];
+		std::string isFork = repo["fork"].get<bool>() ? "true" : "false";
+		int openIssues = repo["open_issues_count"];
 		if (repoName.substr(0, 3) == "ofx")
 		{
-			outputString += ofToString(counter++);
-			outputString += ": ";
-			std::string name = repo["full_name"];
-			outputString += name;
-			outputString += "\n";
+			outputString += ofToString(counter++) + ": " + name;
+			outputString += "\n\t";
+			outputString += url;
+			outputString += "\n\t";
+			outputString += "stars: " + ofToString(stars) + ", open issues: " + ofToString(openIssues) + ", updated at: " + updatedAt + ", forks: " + ofToString(forks) + ", isFork: " + isFork;
+			outputString += "\n\n";
 		}
 	}
 	ofLogNotice("search") << outputString;
@@ -345,14 +362,21 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 	return ofPackage(ofFilePath::join(ofFilePath::makeRelative(_cwdPath, destinationPath), name), url, checkout);
 }
 
-ofPackage ofPackageManager::maybeInstallOneOfThePackages(ofJson packages, std::string destinationPath)
+ofPackage ofPackageManager::maybeInstallOneOfThePackages(ofJson packages, std::string destinationPath = "")
 {
 	if (getBoolAnswer("Do you wanna install any of them?"))
 	{
 		auto index = getIntAnswer("Which one? Please enter the corresponding number.", 0);
 		if (index < packages["items"].size())
 		{
-			ofLogNotice() << packages["items"][index]["name"];
+			if (destinationPath == "")
+			{
+				destinationPath = "local_addons";
+				if (!getBoolAnswer("Where do you want to install the package. It is recommended to install it locally, are you fine with that? Otherwise it will be installed to your global addons directory"))
+				{
+					destinationPath = ofFilePath::join(getOfPath(), "addons");
+				}
+			}
 			return installPackageByUrl(packages["items"][index]["clone_url"], "latest", destinationPath);
 		}
 	}
@@ -373,11 +397,39 @@ void ofPackageManager::searchPackageInDatabaseById(std::string name)
 			file.open(file.getAbsolutePath());
 			file >> packageJson;
 
+			//TODO: multiple results
 			std::size_t found = ofToLower(file.getFileName()).find(ofToLower(name));
 			if (found != std::string::npos)
 			{
 				foundPackage = true;
-				ofLogNotice("search") << packageJson["cloneUrl"];
+				std::string outputString = "The following package was found in the database: \n";
+				outputString += packageJson.dump(4);
+
+				std::cout << outputString << endl;
+				if (getBoolAnswer("Do you want to install it?"))
+				{
+					std::string path = "local_addons";
+					if (!getBoolAnswer("Where do you want to install the package. It is recommended to install it locally, are you fine with that? Otherwise it will be installed to your global addons directory"))
+					{
+						path = ofFilePath::join(getOfPath(), "addons");
+					}
+					auto package = installPackageById(packageJson["name"], "latest", path);
+					if (!package.isEmpty())
+					{
+						addPackageToAddonsMakeFile(package);
+					}
+				}
+				else
+				{
+					if (getBoolAnswer("Okey-dokey, do you want to search it on github?"))
+					{
+						auto package = maybeInstallOneOfThePackages(searchPackageOnGithubByName(packageJson["name"]));
+						if (!package.isEmpty())
+						{
+							addPackageToAddonsMakeFile(package);
+						}
+					}
+				}
 			}
 			else
 			{
