@@ -12,10 +12,10 @@ class ofPackageManager
 public:
 	ofPackageManager(std::string cwdPath);
 
-	void addPackageToAddonsMakeFile(ofPackage package);
-	void addPackageToAddonsMakeFile(std::string path);
-	void addPackagesToAddonsMakeFile(std::string path);
-	void addPackagesToAddonsMakeFile(std::vector<std::string> paths);
+	bool addPackageToAddonsMakeFile(ofPackage package);
+	bool addPackageToAddonsMakeFile(std::string path);
+	bool addPackagesToAddonsMakeFile(std::string path);
+	bool addPackagesToAddonsMakeFile(std::vector<std::string> paths);
 	void configure(bool global = false);
 	void doctor();
 	void generateDatabaseEntryFile();
