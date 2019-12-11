@@ -31,6 +31,16 @@ Or copy this line and paste it in your terminal. It will download the most recen
 bash -c "$(curl -sSL https://raw.githubusercontent.com/thomasgeissl/ofPackageManager/master/scripts/osx/downloadAndAddToPath.sh)"
 ```
 
+### Windows
+
+On Windows you have to install the `exe` manually.
+
+1. Download the latest release for Windows [here](https://github.com/thomasgeissl/ofPackageManager/releases).
+1. Unzip the package anywhere on your hard drive. Make sure to keep the entire contents of the folder, including the DLLs.
+1. Add the package folder to the `PATH` variable. Steps on how to do this can be found [here](https://www.addictivetips.com/windows-tips/set-path-environment-variables-in-windows-10/).
+
+![](win-path.png)
+
 ### Building
 
 - You can download a fresh version of openFrameworks, as well as ofPackageManager and its depedencies via the following commands.
