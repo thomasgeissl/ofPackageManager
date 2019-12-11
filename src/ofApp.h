@@ -51,6 +51,7 @@ public:
 	bool isGithubPair(std::string path);
 	bool hasAddonsMakeFile(std::string path);
 	bool hasAddonConfigFile(std::string path);
+	bool hasPackageManagerConfig(std::string path);
 
 	std::string _cwdPath;
 	ofJson _configJson;

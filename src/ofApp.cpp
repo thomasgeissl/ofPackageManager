@@ -1,5 +1,6 @@
 #include "ofApp.h"
 #include "ofxCommandLineUtils.h"
+namespace fs = std::filesystem;
 
 ofPackageManager::ofPackageManager(std::string cwdPath) : _cwdPath(cwdPath),
 														  _configJson(getConfig())
@@ -798,9 +799,28 @@ ofJson ofPackageManager::getConfig()
 {
 	ofJson packageManagerJson;
 	ofFile packageFile(getAbsolutePath("ofPackageManager.json"));
+	std::string path = _cwdPath;
+	while (!hasPackageManagerConfig(getAbsolutePath(path)))
+	{
+		ofFile file(path);
+		fs::path p(path);
+		path = p.parent_path().string();
+		// TODO: does that work on windows
+		if (path.size() < 4)
+		{
+			break;
+		}
+	}
+	ofLogNotice() << "using config in " << path;
+	packageFile.open(ofFilePath::join(path, "ofPackageManager.json"));
+	ofFile hiddenPackageFile(ofFilePath::join(path, ".ofPackageManager.json"));
 	if (packageFile.exists())
 	{
 		packageFile >> packageManagerJson;
+	}
+	else if (hiddenPackageFile.exists())
+	{
+		hiddenPackageFile >> packageManagerJson;
 	}
 	else
 	{
@@ -881,4 +901,16 @@ bool ofPackageManager::hasAddonConfigFile(std::string path)
 	}
 	ofFile addonConfigFile(ofFilePath::join(path, "addon_config.mk"));
 	return addonConfigFile.exists();
+}
+
+bool ofPackageManager::hasPackageManagerConfig(std::string path)
+{
+	if (!ofDirectory::doesDirectoryExist(path))
+	{
+		ofLogNotice() << "dir does not exist " << path;
+		return false;
+	}
+	ofFile packageManagerConfigFile(ofFilePath::join(path, "ofPackageManager.json"));
+	ofFile hiddenPackageManagerConfigFile(ofFilePath::join(path, ".ofPackageManager.json"));
+	return packageManagerConfigFile.exists() || hiddenPackageManagerConfigFile.exists();
 }
