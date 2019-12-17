@@ -825,7 +825,7 @@ ofJson ofPackageManager::getConfig()
 	ofFile hiddenPackageFile(ofFilePath::join(path, ".ofPackageManager.json"));
 	if (packageFile.exists())
 	{
-		configFile >> configJson;
+		packageFile >> packageManagerJson;
 	}
 	else if (hiddenPackageFile.exists())
 	{
@@ -833,13 +833,13 @@ ofJson ofPackageManager::getConfig()
 	}
 	else
 	{
-		configFile.open(ofFilePath::join(ofFilePath::getUserHomeDir(), ".ofPackageManager.json"));
-		if (configFile.exists())
+		packageFile.open(ofFilePath::join(ofFilePath::getUserHomeDir(), ".ofPackageManager.json"));
+		if (packageFile.exists())
 		{
-			configFile >> configJson;
+			packageFile >> packageManagerJson;
 		}
 	}
-	return configJson;
+	return packageManagerJson;
 }
 
 void ofPackageManager::setConfig(ofJson config)

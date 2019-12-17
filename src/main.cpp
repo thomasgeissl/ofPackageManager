@@ -18,6 +18,7 @@ bool doesKeyExist(ofJson payload, std::string key)
 	auto search = payload.find(key);
 	return search != payload.end();
 }
+
 int main(int argc, char **argv)
 {
 	ofInit();
@@ -121,15 +122,10 @@ int main(int argc, char **argv)
 			}
 			app.installPackageById(payload["url"].get<std::string>(), checkout, destinationPath);
 		}
-		// {
-		// 	type: type,
-		// 	payload: {
-		// 		config
-		// 	}
-		// }
 	}
 	else
 	{
+
 		std::string task;
 		if (argc > 1)
 		{
@@ -267,22 +263,17 @@ int main(int argc, char **argv)
 				return -1;
 			}
 		}
+		else if (task == "generate")
+		{
+			ofLogNotice() << "generate project";
+		}
 		else
 		{
-			ofLogError("ofPackageManager") << "unkown task" << task;
+			ofLogError("ofPackageManager") << "unknown task" << task;
 			app.printManual();
 		}
 	}
-	else if (task == "generate")
-	{
-		ofLogNotice() << "generate project";
-	}
-	else
-	{
-		ofLogError("ofPackageManager") << "unknown task" << task;
-		app.printManual();
-	}
-	ofLogNotice() << "Thanks for using ofPackageManager. If you find a bug then please report it on the github issue tracker (https://github.com/thomasgeissl/ofPackageManager/issues). See you soon.";
 
+	ofLogNotice() << "Thanks for using ofPackageManager. If you find a bug then please report it on the github issue tracker (https://github.com/thomasgeissl/ofPackageManager/issues). See you soon.";
 	return 0;
 }
