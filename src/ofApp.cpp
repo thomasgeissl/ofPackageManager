@@ -5,6 +5,7 @@ namespace fs = std::filesystem;
 ofPackageManager::ofPackageManager(std::string cwdPath) : _cwdPath(cwdPath),
 														  _configJson(getConfig())
 {
+	// ofSetLogLevel(OF_LOG_VERBOSE);
 }
 
 bool ofPackageManager::addPackageToAddonsMakeFile(ofPackage package)
@@ -304,6 +305,7 @@ ofPackage ofPackageManager::installPackageByGithub(std::string github, std::stri
 
 ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string checkout, std::string destinationPath)
 {
+	ofLogNotice("ofPackageManager") << "install package by url (" << url << "@" << checkout << " to " << destinationPath;
 	if (destinationPath.empty())
 	{
 		destinationPath = _configJson["localAddonsPath"].get<std::string>();
@@ -545,6 +547,7 @@ void ofPackageManager::printAvailablePackages()
 
 void ofPackageManager::installPackagesFromAddonsMakeFile()
 {
+	ofLogNotice("ofPackageManager") << "installing packages listed in addons.make";
 	ofFile addonsMakeFile(getAbsolutePath("addons.make"));
 	if (addonsMakeFile.exists())
 	{
@@ -751,7 +754,7 @@ ofPackage ofPackageManager::installPackageById(std::string id, std::string check
 	}
 	if (!foundPackage)
 	{
-		ofLogError("search") << "Unfortunately this package was not found in the database.";
+		ofLogError("search") << "Unfortunately " << id << " was not found in the database.";
 		if (getBoolAnswer("But it is probably available on github. Wanna give it a try?"))
 		{
 			return maybeInstallOneOfThePackages(searchPackageOnGithubByName(id), destinationPath);
