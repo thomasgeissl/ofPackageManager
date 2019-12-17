@@ -272,9 +272,17 @@ int main(int argc, char **argv)
 			ofLogError("ofPackageManager") << "unkown task" << task;
 			app.printManual();
 		}
-
-		ofLogNotice() << "Thanks for using ofPackageManager. If you find a bug then please report it on the github issue tracker (https://github.com/thomasgeissl/ofPackageManager/issues). See you soon.";
 	}
+	else if (task == "generate")
+	{
+		ofLogNotice() << "generate project";
+	}
+	else
+	{
+		ofLogError("ofPackageManager") << "unknown task" << task;
+		app.printManual();
+	}
+	ofLogNotice() << "Thanks for using ofPackageManager. If you find a bug then please report it on the github issue tracker (https://github.com/thomasgeissl/ofPackageManager/issues). See you soon.";
 
 	return 0;
 }

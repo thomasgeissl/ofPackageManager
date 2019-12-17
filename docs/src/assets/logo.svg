@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1200px" height="1200px" viewBox="0 0 1200 1200" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 57.1 (83088) - https://sketch.com -->
+    <title>vinyl12</title>
+    <desc>Created with Sketch.</desc>
+    <g id="vinyl12" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="lmproulx-Open-box-Boite-ouverte" transform="translate(29.000000, 272.000000)" fill-rule="nonzero" stroke="#000000" stroke-linecap="round" stroke-linejoin="round">
+            <polygon id="path3263" stroke-width="2.098" fill="#E8E8E8" points="482.773218 894 498 483.132586 200.62419 293 193 696.270731"></polygon>
+            <polygon id="path3265" stroke-width="2.098" fill="#E8E8E8" points="794 316 794 749.661573 482 894 489.597927 475.687849"></polygon>
+            <polygon id="path3267" stroke-width="2.098" fill="#C8C8C8" points="195 285.864932 484.657594 476 801 327.716192 522.763333 149"></polygon>
+            <polygon id="path3269" stroke-width="2.098" fill="#E8E8E8" points="513 156.141395 421.568346 0 33 175.186977 206.621957 290"></polygon>
+            <polygon id="path3271" stroke-width="2.098" fill="#E8E8E8" points="213.384178 296 0 322.649865 365.806845 555 491 471.705686"></polygon>
+            <polygon id="path3273" stroke-width="2.098" fill="#E8E8E8" points="519 149.606408 623.723659 23 933 226.216753 787.021567 324"></polygon>
+            <polygon id="path3275" stroke-width="2.098" fill="#E8E8E8" points="485 476.346594 788.372222 324 978 392.566757 629.087037 583"></polygon>
+            <path d="M518,157 L509,465" id="path3277" stroke-width="1.198" fill="#7F7F7F"></path>
+        </g>
+        <g id="Group" transform="translate(703.000000, 384.500000) rotate(-31.000000) translate(-703.000000, -384.500000) translate(447.000000, 247.000000)" fill="#EE3987" stroke="#000000" stroke-width="3">
+            <circle id="Oval" cx="137.312799" cy="137.654471" r="137"></circle>
+            <rect id="Rectangle" x="278.738033" y="0.550506325" width="114" height="270"></rect>
+            <rect id="Rectangle" x="397.507312" y="120.564808" width="74" height="74"></rect>
+            <polygon id="Triangle" points="397.807279 0.76545248 511.807279 0.76545248 397.807279 114.765452"></polygon>
+        </g>
+    </g>
+</svg>

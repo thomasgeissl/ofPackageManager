@@ -12,10 +12,10 @@ class ofPackageManager
 public:
 	ofPackageManager(std::string cwdPath);
 
-	void addPackageToAddonsMakeFile(ofPackage package);
-	void addPackageToAddonsMakeFile(std::string path);
-	void addPackagesToAddonsMakeFile(std::string path);
-	void addPackagesToAddonsMakeFile(std::vector<std::string> paths);
+	bool addPackageToAddonsMakeFile(ofPackage package);
+	bool addPackageToAddonsMakeFile(std::string path);
+	bool addPackagesToAddonsMakeFile(std::string path);
+	bool addPackagesToAddonsMakeFile(std::vector<std::string> paths);
 	void configure(bool global = false);
 	void doctor();
 	void generateDatabaseEntryFile();
@@ -28,6 +28,8 @@ public:
 	ofPackage installPackageByGithub(std::string github, std::string checkout = "", std::string destinationPath = "");
 	ofPackage installPackageByUrl(std::string url, std::string checkout = "", std::string destinationPath = "");
 	ofPackage maybeInstallOneOfThePackages(ofJson packages, std::string destinationPath);
+
+	void generateProject();
 
 	void printInfo();
 	void printPaths();
@@ -52,6 +54,7 @@ public:
 	bool isGithubPair(std::string path);
 	bool hasAddonsMakeFile(std::string path);
 	bool hasAddonConfigFile(std::string path);
+	bool hasPackageManagerConfig(std::string path);
 
 	std::string _cwdPath;
 	ofJson _configJson;
