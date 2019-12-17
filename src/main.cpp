@@ -164,6 +164,10 @@ int main(int argc, char **argv)
 			return -1;
 		}
 	}
+	else if (task == "generate")
+	{
+		ofLogNotice() << "generate project";
+	}
 	else
 	{
 		ofLogError("ofPackageManager") << "unknown task" << task;

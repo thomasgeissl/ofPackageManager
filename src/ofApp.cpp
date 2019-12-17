@@ -140,6 +140,7 @@ void ofPackageManager::configure(bool global)
 	auto packagesPath = getStringAnswer("Absolute path to packages directory?", ofFilePath::join(ofFilePath::getUserHomeDir(), ".ofPackages"));
 	configJson["packagesPath"] = packagesPath;
 	configJson["localAddonsPath"] = getStringAnswer("local addons directory?", "local_addons");
+	configJson["pgPath"] = getStringAnswer("Absolute path to the projet generator?", ofFilePath::join(configJson["ofPath"].get<std::string>(), "projectGenerator-osx"));
 
 	configFile.create();
 	configFile.open(configPath, ofFile::WriteOnly);
@@ -402,6 +403,11 @@ ofPackage ofPackageManager::maybeInstallOneOfThePackages(ofJson packages, std::s
 	return ofPackage();
 }
 
+void ofPackageManager::generateProject()
+{
+	// ofSystem();
+	ofLogNotice() << _configJson["pgPath"];
+}
 void ofPackageManager::searchPackageInDatabaseById(std::string name)
 {
 	std::string databasePath = _configJson["packagesPath"];

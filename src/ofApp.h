@@ -29,6 +29,8 @@ public:
 	ofPackage installPackageByUrl(std::string url, std::string checkout = "", std::string destinationPath = "");
 	ofPackage maybeInstallOneOfThePackages(ofJson packages, std::string destinationPath);
 
+	void generateProject();
+
 	void printInfo();
 	void printPaths();
 	void printManual();
