@@ -1,9 +1,12 @@
 #include "ofApp.h"
 #include "ofxCommandLineUtils.h"
+#define IFNOTSILENT(do) ({if(!_silent){do;} })
+#define IFSILENT(do) ({if(_silent){do;} })
 namespace fs = std::filesystem;
 
 ofPackageManager::ofPackageManager(std::string cwdPath) : _cwdPath(cwdPath),
-														  _configJson(getConfig())
+														  _configJson(getConfig()),
+														  _silent(false)
 {
 	// ofSetLogLevel(OF_LOG_VERBOSE);
 }
@@ -50,11 +53,11 @@ bool ofPackageManager::addPackageToAddonsMakeFile(ofPackage package)
 	ofFile newAddonsMakeFile(getAbsolutePath("addons.make"), ofFile::ReadWrite);
 	if (newAddonsMakeFile.writeFromBuffer(fileBuffer))
 	{
-		ofLogNotice("ofPackageManager") << "successfully updated addons.make";
+		IFNOTSILENT(ofLogNotice("ofPackageManager") << "successfully updated addons.make";);
 	}
 	else
 	{
-		ofLogError("ofPackageManager") << "Could not update addons.make";
+		IFNOTSILENT(ofLogError("ofPackageManager") << "Could not update addons.make";);
 	}
 	return true;
 }
@@ -87,7 +90,7 @@ bool ofPackageManager::addPackagesToAddonsMakeFile(std::string path)
 	ofDirectory directory(ofFilePath::join(_cwdPath, path));
 	if (!directory.exists())
 	{
-		ofLogError() << "directory does not exit";
+		IFNOTSILENT(ofLogError() << "directory does not exit";);
 		return false;
 	}
 	directory.listDir();
@@ -128,10 +131,13 @@ void ofPackageManager::configure(bool global)
 	ofFile configFile(configPath);
 	if (configFile.exists())
 	{
-		ofLogWarning("config") << "Config file already exits.";
-		if (!getBoolAnswer("Do you want to override it?"))
+		if (!_silent)
 		{
-			return;
+			ofLogWarning("config") << "Config file already exits.";
+			if (!getBoolAnswer("Do you want to override it?"))
+			{
+				return;
+			}
 		}
 	}
 
@@ -149,18 +155,18 @@ void ofPackageManager::configure(bool global)
 
 	if (ofDirectory::doesDirectoryExist(packagesPath, false))
 	{
-		ofLogError("config") << "The packages database exits already. Please update manually (cd " + packagesPath + " && git pull).";
+		IFNOTSILENT(ofLogError("config") << "The packages database exits already. Please update manually (cd " + packagesPath + " && git pull).";);
 	}
 	else
 	{
 		ofxGit::repository repo(packagesPath);
 		if (repo.clone("https://github.com/thomasgeissl/ofPackages.git"))
 		{
-			ofLogNotice("config") << "Successfully cloned packages database";
+			IFNOTSILENT(ofLogNotice("config") << "Successfully cloned packages database";);
 		}
 		else
 		{
-			ofLogError("config") << "Could not clone packages database";
+			IFNOTSILENT(ofLogError("config") << "Could not clone packages database";);
 		}
 	}
 }
@@ -201,12 +207,14 @@ void ofPackageManager::doctor()
 		mostRecentVersion._minor > currentVersion._minor ||
 		mostRecentVersion._patch > currentVersion._patch)
 	{
-		ofLogNotice("doctor") << "There is a new version of ofPackageManager available! "
-							  << "\nThe most recent version is " << mostRecentVersion._major << "." << mostRecentVersion._minor << "." << mostRecentVersion._patch;
+		IFNOTSILENT(
+			ofLogNotice("doctor") << "There is a new version of ofPackageManager available! "
+								  << "\nThe most recent version is " << mostRecentVersion._major << "." << mostRecentVersion._minor << "." << mostRecentVersion._patch;);
 	}
 	else
 	{
-		ofLogNotice("doctor") << "You are up to date. Currently there is no newer version of ofPackageManager available";
+		IFNOTSILENT(
+			ofLogNotice("doctor") << "You are up to date. Currently there is no newer version of ofPackageManager available";);
 	}
 
 	// check version of ofPackages
@@ -306,7 +314,7 @@ ofPackage ofPackageManager::installPackageByGithub(std::string github, std::stri
 
 ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string checkout, std::string destinationPath)
 {
-	ofLogNotice("ofPackageManager") << "install package by url (" << url << "@" << checkout << " to " << destinationPath;
+	IFNOTSILENT(ofLogNotice("ofPackageManager") << "install package by url (" << url << "@" << checkout << " to " << destinationPath;);
 	if (destinationPath.empty())
 	{
 		destinationPath = _configJson["localAddonsPath"].get<std::string>();
@@ -341,7 +349,7 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 		{
 			if (repo.clone(url))
 			{
-				ofLogNotice("install") << "Successfully cloned repo " << url;
+				IFNOTSILENT(ofLogNotice("install") << "Successfully cloned repo " << url;);
 			}
 			if (checkout != "latest")
 			{
@@ -360,7 +368,7 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 		destinationDirectory.create();
 		if (repo.clone(url))
 		{
-			ofLogNotice("install") << "Successfully cloned repo " << url;
+			IFNOTSILENT(ofLogNotice("install") << "Successfully cloned repo " << url;);
 		}
 		if (checkout != "latest")
 		{
@@ -384,6 +392,7 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 
 ofPackage ofPackageManager::maybeInstallOneOfThePackages(ofJson packages, std::string destinationPath = "")
 {
+	IFSILENT(return ofPackage(););
 	if (getBoolAnswer("Do you wanna install any of them?"))
 	{
 		auto index = getIntAnswer("Which one? Please enter the corresponding number.", 0);
@@ -553,7 +562,7 @@ void ofPackageManager::printAvailablePackages()
 
 void ofPackageManager::installPackagesFromAddonsMakeFile()
 {
-	ofLogNotice("ofPackageManager") << "installing packages listed in addons.make";
+	IFNOTSILENT(ofLogNotice("ofPackageManager") << "installing packages listed in addons.make";);
 	ofFile addonsMakeFile(getAbsolutePath("addons.make"));
 	if (addonsMakeFile.exists())
 	{
@@ -613,7 +622,7 @@ void ofPackageManager::installPackagesFromAddonsMakeFile()
 	}
 	else
 	{
-		ofLogError("install") << "Sorry, but there is no addons.make file in this directory.";
+		IFNOTSILENT(ofLogError("install") << "Sorry, but there is no addons.make file in this directory.";);
 	}
 }
 
@@ -685,7 +694,7 @@ void ofPackageManager::installDependenciesFromAddonConfig(std::string path, std:
 	}
 	else
 	{
-		ofLogError("install") << "Package does not contain an addon_config file" << path;
+		IFNOTSILENT(ofLogError("install") << "Package does not contain an addon_config file" << path;);
 	}
 }
 
@@ -700,7 +709,7 @@ ofPackage ofPackageManager::installPackage(std::string addon, std::string destin
 	}
 	if (isCoreAddon(addon))
 	{
-		ofLogNotice("install") << addon << " seems to be a core addon.";
+		IFNOTSILENT(ofLogNotice("install") << addon << " seems to be a core addon.";);
 		return ofPackage();
 	}
 
@@ -721,7 +730,7 @@ ofPackage ofPackageManager::installPackageById(std::string id, std::string check
 {
 	if (isCoreAddon(id))
 	{
-		ofLogNotice("install") << id << " seems to be a core addon.";
+		IFNOTSILENT(ofLogNotice("install") << id << " seems to be a core addon.";);
 		return ofPackage();
 	}
 	if (destinationPath.empty())
@@ -760,18 +769,19 @@ ofPackage ofPackageManager::installPackageById(std::string id, std::string check
 	}
 	if (!foundPackage)
 	{
-		ofLogError("search") << "Unfortunately " << id << " was not found in the database.";
-		if (getBoolAnswer("But it is probably available on github. Wanna give it a try?"))
-		{
-			return maybeInstallOneOfThePackages(searchPackageOnGithubByName(id), destinationPath);
-		}
+		IFNOTSILENT(
+			ofLogError("search") << "Unfortunately " << id << " was not found in the database.";
+			if (getBoolAnswer("But it is probably available on github. Wanna give it a try?")) {
+				return maybeInstallOneOfThePackages(searchPackageOnGithubByName(id), destinationPath);
+			});
 	}
 	return ofPackage();
 }
 
 void ofPackageManager::updatePackagesDatabase()
 {
-	ofLogWarning("update") << "This is currently not yet implemented. Please pull the packages database manually.";
+	IFNOTSILENT(
+		ofLogWarning("update") << "This is currently not yet implemented. Please pull the packages database manually.";);
 }
 
 void ofPackageManager::printVersion()
@@ -820,7 +830,6 @@ ofJson ofPackageManager::getConfig()
 			break;
 		}
 	}
-	ofLogNotice() << "using config in " << path;
 	packageFile.open(ofFilePath::join(path, "ofPackageManager.json"));
 	ofFile hiddenPackageFile(ofFilePath::join(path, ".ofPackageManager.json"));
 	if (packageFile.exists())
@@ -849,6 +858,11 @@ void ofPackageManager::setConfig(ofJson config)
 void ofPackageManager::setCwdPath(std::string path)
 {
 	_cwdPath = path;
+}
+void ofPackageManager::setSilent(bool value)
+{
+	_silent = value;
+	ofxGit::repository::setSilent(value);
 }
 std::string ofPackageManager::generateGithubUrl(std::string github)
 {
@@ -924,7 +938,8 @@ bool ofPackageManager::hasPackageManagerConfig(std::string path)
 {
 	if (!ofDirectory::doesDirectoryExist(path))
 	{
-		ofLogNotice() << "dir does not exist " << path;
+		IFNOTSILENT(
+			ofLogWarning() << "dir does not exist " << path;);
 		return false;
 	}
 	ofFile packageManagerConfigFile(ofFilePath::join(path, "ofPackageManager.json"));

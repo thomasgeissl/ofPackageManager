@@ -46,6 +46,7 @@ public:
 	ofJson getConfig();
 	void setConfig(ofJson config);
 	void setCwdPath(std::string path);
+	void setSilent(bool value = true);
 	std::string generateGithubUrl(std::string github);
 	std::string getAbsolutePath(std::string path);
 	std::pair<std::string, std::string> getPathAndName(std::string name);
@@ -59,4 +60,5 @@ public:
 
 	std::string _cwdPath;
 	ofJson _configJson;
+	bool _silent;
 };

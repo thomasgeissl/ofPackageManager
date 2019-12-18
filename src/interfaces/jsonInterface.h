@@ -5,6 +5,7 @@ class jsonInterface
 public:
     jsonInterface(ofPackageManager app) : _app(app)
     {
+        _app.setSilent(true);
     }
     bool doesKeyExist(ofJson payload, std::string key)
     {

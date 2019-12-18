@@ -40,7 +40,7 @@ public:
             }
             else
             {
-                ofLogError("ofPackageManager") << "invalid syntax";
+                ofLogError("ofPackageManager") << "invalid arguments";
             }
         }
         else if (task == "config")
