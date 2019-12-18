@@ -102,6 +102,7 @@ Commands are valid json objects and follow the following structure:
       "ofPath": "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/",
       "packagesPath": "/Users/thomas.geissl/.ofPackages"
     },
+    "cwd": "this is optional",
     "otherProperties": "such as id, checkout, destination, ..."
   }
 }
