@@ -108,7 +108,7 @@ Commands are valid json objects and follow the following structure:
 }
 ```
 
-The following types are available: `INSTALL, INSTALLPACKAGEBYID, INSTALLPACKAGEBYGITHUB, INSTALLPACKAGEBYURL`
+The following types are available: `GETVERSION, INSTALL, INSTALLPACKAGEBYID, INSTALLPACKAGEBYGITHUB, INSTALLPACKAGEBYURL`
 
 ## Known issues
 

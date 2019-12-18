@@ -42,7 +42,6 @@ bool ofPackageManager::addPackageToAddonsMakeFile(ofPackage package)
 		{
 			content += line + "\n";
 		}
-		// ofLogNotice() << content;
 	}
 	if (!foundPackage)
 	{
@@ -560,7 +559,7 @@ void ofPackageManager::printAvailablePackages()
 	}
 }
 
-void ofPackageManager::installPackagesFromAddonsMakeFile()
+bool ofPackageManager::installPackagesFromAddonsMakeFile()
 {
 	IFNOTSILENT(ofLogNotice("ofPackageManager") << "installing packages listed in addons.make";);
 	ofFile addonsMakeFile(getAbsolutePath("addons.make"));
@@ -619,10 +618,12 @@ void ofPackageManager::installPackagesFromAddonsMakeFile()
 				break;
 			}
 		}
+		return true;
 	}
 	else
 	{
 		IFNOTSILENT(ofLogError("install") << "Sorry, but there is no addons.make file in this directory.";);
+		return false;
 	}
 }
 
@@ -849,6 +850,10 @@ ofJson ofPackageManager::getConfig()
 		}
 	}
 	return packageManagerJson;
+}
+version ofPackageManager::getVersion()
+{
+	return version(OFAPP_MAJOR_VERSION, OFAPP_MINOR_VERSION, OFAPP_PATCH_VERSION);
 }
 
 void ofPackageManager::setConfig(ofJson config)

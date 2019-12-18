@@ -20,7 +20,7 @@ public:
 	void doctor();
 	void generateDatabaseEntryFile();
 
-	void installPackagesFromAddonsMakeFile();
+	bool installPackagesFromAddonsMakeFile();
 	void installDependenciesFromAddonConfig(std::string path, std::string destination);
 
 	ofPackage installPackage(std::string key, std::string destinationPath = "");
@@ -44,6 +44,7 @@ public:
 
 	std::string getOfPath();
 	ofJson getConfig();
+	version getVersion();
 	void setConfig(ofJson config);
 	void setCwdPath(std::string path);
 	void setSilent(bool value = true);

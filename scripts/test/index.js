@@ -1,5 +1,10 @@
 const { execSync } = require("child_process");
 
+const getVersion = {
+  type: "GETVERSION",
+  payload: {}
+};
+
 const installById = {
   type: "INSTALLPACKAGEBYID",
   payload: {
@@ -69,9 +74,10 @@ const packageManager = command => {
 };
 
 execSync("rm -rf ./local_addons");
-packageManager(installById);
-packageManager(installByIdWithTag);
-packageManager(installByIdWithCommit);
-execSync("ofPackageManager add -A ./local_addons");
+packageManager(getVersion);
+// packageManager(installById);
+// packageManager(installByIdWithTag);
+// packageManager(installByIdWithCommit);
+// execSync("ofPackageManager add -A ./local_addons");
 // execSync("rm -rf ./local_addons");
 // packageManager(install);

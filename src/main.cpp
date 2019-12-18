@@ -18,8 +18,13 @@ int main(int argc, char **argv)
 
 	ofPackageManager app(cwdPath.string());
 	jsonInterface jsonI(app);
-	if (jsonI.exec(argc, argv))
+	if (jsonI.accept(argc, argv))
 	{
+		auto result = jsonI.exec(argc, argv);
+		if (result["success"].get<bool>())
+		{
+			std::cout << result.dump() << endl;
+		}
 	}
 	else
 	{
