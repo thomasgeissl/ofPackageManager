@@ -21,24 +21,29 @@ public:
         if (ofJson::accept(args))
         {
             auto request = ofJson::parse(args);
+            auto payload = request["payload"];
             auto type = request["type"].get<std::string>();
+            if (doesKeyExist(payload, "config"))
+            {
+                _app.setConfig(payload["config"]);
+            }
+            else
+            {
+                ofLogWarning("ofPackageManager") << "missing config property";
+            }
+            if (doesKeyExist(payload, "cwd"))
+            {
+                _app.setCwdPath(payload["cwd"].get<std::string>());
+            }
+
             if (type == "INSTALL")
             {
-                auto payload = request["payload"];
-                if (doesKeyExist(payload, "config"))
-                {
-                    _app.setConfig(payload["config"]);
-                }
                 _app.installPackagesFromAddonsMakeFile();
             }
             if (type == "INSTALLPACKAGE")
             {
-                auto payload = request["payload"];
                 std::string destinationPath = "";
-                if (doesKeyExist(payload, "config"))
-                {
-                    _app.setConfig(payload["config"]);
-                }
+
                 if (doesKeyExist(payload, "destinationPath"))
                 {
                     destinationPath = payload["destinationPath"].get<std::string>();
@@ -47,13 +52,8 @@ public:
             }
             if (type == "INSTALLPACKAGEBYID")
             {
-                auto payload = request["payload"];
                 std::string destinationPath = "";
                 std::string checkout = "";
-                if (doesKeyExist(payload, "config"))
-                {
-                    _app.setConfig(payload["config"]);
-                }
                 if (doesKeyExist(payload, "destinationPath"))
                 {
                     destinationPath = payload["destinationPath"].get<std::string>();
@@ -66,13 +66,8 @@ public:
             }
             if (type == "INSTALLPACKAGEBYGITHUB")
             {
-                auto payload = request["payload"];
                 std::string destinationPath = "";
                 std::string checkout = "";
-                if (doesKeyExist(payload, "config"))
-                {
-                    _app.setConfig(payload["config"]);
-                }
                 if (doesKeyExist(payload, "destinationPath"))
                 {
                     destinationPath = payload["destinationPath"].get<std::string>();
@@ -85,13 +80,8 @@ public:
             }
             if (type == "INSTALLPACKAGEBYURL")
             {
-                auto payload = request["payload"];
                 std::string destinationPath = "";
                 std::string checkout = "";
-                if (doesKeyExist(payload, "config"))
-                {
-                    _app.setConfig(payload["config"]);
-                }
                 if (doesKeyExist(payload, "destinationPath"))
                 {
                     destinationPath = payload["destinationPath"].get<std::string>();

@@ -846,6 +846,10 @@ void ofPackageManager::setConfig(ofJson config)
 {
 	_configJson = config;
 }
+void ofPackageManager::setCwdPath(std::string path)
+{
+	_cwdPath = path;
+}
 std::string ofPackageManager::generateGithubUrl(std::string github)
 {
 	return "https://github.com/" + github + ".git";
