@@ -114,8 +114,8 @@ The response will be a json object. It will always contain a success property. A
 
 ```json
 {
-    success: true,
-    payload: {
+    "success": true,
+    "payload": {
         ...
     }
 }
