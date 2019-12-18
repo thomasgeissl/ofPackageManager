@@ -103,12 +103,23 @@ Commands are valid json objects and follow the following structure:
       "packagesPath": "/Users/thomas.geissl/.ofPackages"
     },
     "cwd": "this is optional",
-    "otherProperties": "such as id, checkout, destination, ..."
+    "otherProperties": "such as id, checkout, destination, ... (optional)"
   }
 }
 ```
 
-The following types are available: `GETVERSION, INSTALL, INSTALLPACKAGEBYID, INSTALLPACKAGEBYGITHUB, INSTALLPACKAGEBYURL`
+The following types for requests are available: `GETVERSION, INSTALL, INSTALLPACKAGEBYID, INSTALLPACKAGEBYGITHUB, INSTALLPACKAGEBYURL, ADDPACKAGETOADDONSMAKEFILE`
+
+The response will be a json object. It will always contain a success property. And optionally a payload property with additional information.
+
+```json
+{
+    success: true,
+    payload: {
+        ...
+    }
+}
+```
 
 ## Known issues
 
