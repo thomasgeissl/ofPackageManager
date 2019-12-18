@@ -87,6 +87,28 @@ Run the global configuration in order to install addons globally. `ofPackageMana
 - Configure the package manager locally if you want to use your own custom packages database for a project.
 - You can also use the bash-based online version if you do not have the package manager installed on your machine. e.g. `cd into/your/project/app` and execute the following to install its dependencies: `bash -c "$(curl -sSL https://raw.githubusercontent.com/thomasgeissl/ofPackageManager/master/scripts/ofPackageManager.sh)" install`
 
+## json interface
+
+ofPackageManager also accepts json commands, this can be useful if you wanna integrate it into another application.
+
+Commands are valid json objects and follow the following structure:
+
+```json
+{
+  "type": "TYPE",
+  "payload": {
+    "config": {
+      "localAddonsPath": "local_addons",
+      "ofPath": "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/",
+      "packagesPath": "/Users/thomas.geissl/.ofPackages"
+    },
+    "otherProperties": "such as id, checkout, destination, ..."
+  }
+}
+```
+
+The following types are available: `INSTALL, INSTALLPACKAGEBYID, INSTALLPACKAGEBYGITHUB,INSTALLPACKAGEBYURL`
+
 ## Known issues
 
 - The version of the project generator bundled with 0.10.1 does not support comments in the addons.make file. It is fixed on github, the version included in the nightly builds should work.
