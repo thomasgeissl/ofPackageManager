@@ -36,7 +36,7 @@ public:
 	void printManual();
 	void printAvailablePackages();
 	void printVersion();
-	void searchPackageInDatabaseById(std::string id);
+	ofJson searchPackageInDatabaseById(std::string id);
 	ofJson searchPackageOnGithubByName(std::string name);
 	ofJson searchPackageOnGithubByUser(std::string user);
 	void updatePackagesDatabase();

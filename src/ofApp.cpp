@@ -266,7 +266,8 @@ ofJson ofPackageManager::searchPackageOnGithubByName(string name)
 		outputString += "stars: " + ofToString(stars) + ", open issues: " + ofToString(openIssues) + ", updated at: " + updatedAt + ", forks: " + ofToString(forks) + ", isFork: " + isFork;
 		outputString += "\n\n";
 	}
-	ofLogNotice("search") << outputString;
+	IFNOTSILENT(
+		ofLogNotice("search") << outputString;);
 
 	return resultJson;
 }
@@ -302,7 +303,8 @@ ofJson ofPackageManager::searchPackageOnGithubByUser(std::string user)
 			outputString += "\n\n";
 		}
 	}
-	ofLogNotice("search") << outputString;
+	IFNOTSILENT(
+		ofLogNotice("search") << outputString;);
 	return resultJson;
 }
 
@@ -411,7 +413,7 @@ void ofPackageManager::generateProject()
 	// ofSystem();
 	ofLogNotice() << _configJson["pgPath"];
 }
-void ofPackageManager::searchPackageInDatabaseById(std::string name)
+ofJson ofPackageManager::searchPackageInDatabaseById(std::string name)
 {
 	std::string databasePath = _configJson["packagesPath"];
 	ofDirectory ofPackagesDirectory(databasePath);
@@ -454,30 +456,29 @@ void ofPackageManager::searchPackageInDatabaseById(std::string name)
 		}
 	}
 
-	if (counter > 0)
-	{
-		std::cout << outputString << endl;
+	IFNOTSILENT(
+		if (counter > 0) {
+			std::cout << outputString << endl;
 
-		if (!addPackageToAddonsMakeFile(maybeInstallOneOfThePackages(result)))
-		{
-			if (getBoolAnswer("Okey-dokey, do you want to search it on github?"))
+			if (!addPackageToAddonsMakeFile(maybeInstallOneOfThePackages(result)))
 			{
-				auto package = maybeInstallOneOfThePackages(searchPackageOnGithubByName(name));
-				if (!package.isEmpty())
+				if (getBoolAnswer("Okey-dokey, do you want to search it on github?"))
 				{
-					addPackageToAddonsMakeFile(package);
+					auto package = maybeInstallOneOfThePackages(searchPackageOnGithubByName(name));
+					if (!package.isEmpty())
+					{
+						addPackageToAddonsMakeFile(package);
+					}
 				}
 			}
-		}
-	}
-	else
-	{
-		std::cout << "Unfortunately this package was not found in the database." << endl;
-		if (getBoolAnswer("But it is probably available on github. Wanna give it a try?"))
-		{
-			addPackageToAddonsMakeFile(maybeInstallOneOfThePackages(searchPackageOnGithubByName(name)));
-		}
-	}
+		} else {
+			std::cout << "Unfortunately this package was not found in the database." << endl;
+			if (getBoolAnswer("But it is probably available on github. Wanna give it a try?"))
+			{
+				addPackageToAddonsMakeFile(maybeInstallOneOfThePackages(searchPackageOnGithubByName(name)));
+			}
+		});
+	return result;
 }
 
 void ofPackageManager::printInfo()
