@@ -34,6 +34,21 @@ const installByIdWithTag = {
     }
   }
 };
+const installByIdWithNonExistingTag = {
+  type: "INSTALLPACKAGEBYID",
+  payload: {
+    id: "ofxCv",
+    checkout: "nonexistingtag",
+    destination: "local_addons",
+    config: {
+      localAddonsPath: "local_addons",
+      ofPath: "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/",
+      packagesPath: "/Users/thomas.geissl/.ofPackages",
+      pgPath:
+        "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/projectGenerator-osx"
+    }
+  }
+};
 
 const installByIdWithCommit = {
   type: "INSTALLPACKAGEBYID",
@@ -63,21 +78,68 @@ const install = {
   }
 };
 
+const addPackageIfSuccess = response => {
+  if (!response.success) {
+    console.log("could not add package", response);
+    return false;
+  }
+  const install = {
+    type: "ADDPACKAGETOADDONSMAKEFILE",
+    payload: {
+      package: response.payload.package,
+      config: {
+        localAddonsPath: "local_addons",
+        ofPath: "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/",
+        packagesPath: "/Users/thomas.geissl/.ofPackages",
+        pgPath:
+          "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/projectGenerator-osx"
+      }
+    }
+  };
+  return packageManager(install);
+};
+
 const packageManager = command => {
-  console.log(
+  const response = JSON.parse(
     execSync(
       `../../bin/ofPackageManager.app/Contents/MacOS/ofPackageManager "${JSON.stringify(
         command
       ).replace(/\\([\s\S])|(")/g, "\\$1$2")}"`
     ).toString()
   );
+  console.log(response);
+  return response;
 };
 
 execSync("rm -rf ./local_addons");
-packageManager(getVersion);
-// packageManager(installById);
-// packageManager(installByIdWithTag);
-// packageManager(installByIdWithCommit);
-// execSync("ofPackageManager add -A ./local_addons");
-// execSync("rm -rf ./local_addons");
-// packageManager(install);
+execSync("rm -rf ./addons.make");
+
+console.log("getting version");
+const version = packageManager(getVersion);
+console.log("installing package by id");
+const packageInstalledById = packageManager(installById);
+console.log("installing package by id with tag");
+const packageInstalledByIdWithTag = packageManager(installByIdWithTag);
+console.log("installing package by id with commit");
+const packageInstalledByIdWithCommit = packageManager(installByIdWithCommit);
+console.log("installing package by id with nonexisting tag");
+const packageInstalledByIdWithNonExistingTag = packageManager(
+  installByIdWithNonExistingTag
+);
+
+console.log("adding package installed by id to addons.make");
+addPackageIfSuccess(packageInstalledById);
+console.log("adding package installed by id with tag to addons.make");
+addPackageIfSuccess(packageInstalledByIdWithTag);
+console.log("adding package installed by id with commit to addons.make");
+addPackageIfSuccess(packageInstalledByIdWithCommit);
+console.log(
+  "adding package installed by id with nonexisting tag to addons.make"
+);
+addPackageIfSuccess(packageInstalledByIdWithNonExistingTag);
+
+execSync("rm -rf ./local_addons");
+console.log(
+  "reinstalling packages listed in the addons.make file after deleting them"
+);
+const installed = packageManager(install);
