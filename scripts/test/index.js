@@ -78,6 +78,20 @@ const install = {
   }
 };
 
+const searchInDataBaseById = {
+  type: "SEARCHPACKAGEINDATABASEBYID",
+  payload: {
+    id: "ofxCv",
+    config: {
+      localAddonsPath: "local_addons",
+      ofPath: "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/",
+      packagesPath: "/Users/thomas.geissl/.ofPackages",
+      pgPath:
+        "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/projectGenerator-osx"
+    }
+  }
+};
+
 const searchOnGithubByName = {
   type: "SEARCHPACKAGEONGITHUBBYNAME",
   payload: {
@@ -172,5 +186,6 @@ console.log(
 );
 const installed = packageManager(install);
 
+const searchResultsInDataBaseById = packageManager(searchInDataBaseById);
 const searchResultsOnGithubByName = packageManager(searchOnGithubByName);
 const searchResultsOnGithubByUser = packageManager(searchOnGithubByUser);

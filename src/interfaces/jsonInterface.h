@@ -5,6 +5,7 @@
 #define TYPE_INSTALLPACKAGEBYGITHUB "INSTALLPACKAGEBYGITHUB"
 #define TYPE_INSTALLPACKAGEBYURL "INSTALLPACKAGEBYURL"
 #define TYPE_ADDPACKAGETOADDONSMAKEFILE "ADDPACKAGETOADDONSMAKEFILE"
+#define TYPE_SEARCHPACKAGEINDATABASEBYID "SEARCHPACKAGEINDATABASEBYID"
 #define TYPE_SEARCHPACKAGEONGITHUBBYNAME "SEARCHPACKAGEONGITHUBBYNAME"
 #define TYPE_SEARCHPACKAGEONGITHUBBYUSER "SEARCHPACKAGEONGITHUBBYUSER"
 #define TYPE_GETVERSION "GETVERSION"
@@ -162,6 +163,16 @@ public:
                 if (_app.addPackageToAddonsMakeFile(p))
                 {
                     result["success"] = true;
+                }
+            }
+            else if (type == TYPE_SEARCHPACKAGEINDATABASEBYID)
+            {
+                auto data = _app.searchPackageInDatabaseById(payload["id"].get<std::string>());
+                // TODO: it maybe makes sense to filter a bit
+                // if (data["total_count"].get<int>() > 0)
+                {
+                    result["success"] = true;
+                    result["data"] = data;
                 }
             }
             else if (type == TYPE_SEARCHPACKAGEONGITHUBBYNAME)
