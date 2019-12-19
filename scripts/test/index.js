@@ -78,6 +78,34 @@ const install = {
   }
 };
 
+const searchOnGithubByName = {
+  type: "SEARCHPACKAGEONGITHUBBYNAME",
+  payload: {
+    name: "ofxDmx",
+    config: {
+      localAddonsPath: "local_addons",
+      ofPath: "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/",
+      packagesPath: "/Users/thomas.geissl/.ofPackages",
+      pgPath:
+        "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/projectGenerator-osx"
+    }
+  }
+};
+
+const searchOnGithubByUser = {
+  type: "SEARCHPACKAGEONGITHUBBYUSER",
+  payload: {
+    user: "bakercp",
+    config: {
+      localAddonsPath: "local_addons",
+      ofPath: "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/",
+      packagesPath: "/Users/thomas.geissl/.ofPackages",
+      pgPath:
+        "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/projectGenerator-osx"
+    }
+  }
+};
+
 const addPackageIfSuccess = response => {
   if (!response.success) {
     console.log("could not add package", response);
@@ -143,3 +171,6 @@ console.log(
   "reinstalling packages listed in the addons.make file after deleting them"
 );
 const installed = packageManager(install);
+
+const searchResultsOnGithubByName = packageManager(searchOnGithubByName);
+const searchResultsOnGithubByUser = packageManager(searchOnGithubByUser);

@@ -5,6 +5,8 @@
 #define TYPE_INSTALLPACKAGEBYGITHUB "INSTALLPACKAGEBYGITHUB"
 #define TYPE_INSTALLPACKAGEBYURL "INSTALLPACKAGEBYURL"
 #define TYPE_ADDPACKAGETOADDONSMAKEFILE "ADDPACKAGETOADDONSMAKEFILE"
+#define TYPE_SEARCHPACKAGEONGITHUBBYNAME "SEARCHPACKAGEONGITHUBBYNAME"
+#define TYPE_SEARCHPACKAGEONGITHUBBYUSER "SEARCHPACKAGEONGITHUBBYUSER"
 #define TYPE_GETVERSION "GETVERSION"
 
 class jsonInterface
@@ -66,10 +68,6 @@ public:
                 {
                     result["success"] = true;
                 }
-                else
-                {
-                    result["success"] = false;
-                }
             }
             else if (type == "INSTALLPACKAGE")
             {
@@ -80,11 +78,7 @@ public:
                     destinationPath = payload["destinationPath"].get<std::string>();
                 }
                 auto p = _app.installPackage(payload["key"].get<std::string>(), destinationPath);
-                if (p.isEmpty())
-                {
-                    result["success"] = false;
-                }
-                else
+                if (!p.isEmpty())
                 {
                     result["success"] = true;
                     result["payload"]["package"] = ofJson::object();
@@ -106,11 +100,7 @@ public:
                     checkout = payload["checkout"].get<std::string>();
                 }
                 auto p = _app.installPackageById(payload["id"].get<std::string>(), checkout, destinationPath);
-                if (p.isEmpty())
-                {
-                    result["success"] = false;
-                }
-                else
+                if (!p.isEmpty())
                 {
                     result["success"] = true;
                     result["payload"]["package"] = ofJson::object();
@@ -132,11 +122,7 @@ public:
                     checkout = payload["checkout"].get<std::string>();
                 }
                 auto p = _app.installPackageByGithub(payload["github"].get<std::string>(), checkout, destinationPath);
-                if (p.isEmpty())
-                {
-                    result["success"] = false;
-                }
-                else
+                if (!p.isEmpty())
                 {
                     result["success"] = true;
                     result["payload"]["package"] = ofJson::object();
@@ -158,11 +144,7 @@ public:
                     checkout = payload["checkout"].get<std::string>();
                 }
                 auto p = _app.installPackageByUrl(payload["url"].get<std::string>(), checkout, destinationPath);
-                if (p.isEmpty())
-                {
-                    result["success"] = false;
-                }
-                else
+                if (!p.isEmpty())
                 {
                     result["success"] = true;
                     result["payload"]["package"] = ofJson::object();
@@ -181,9 +163,25 @@ public:
                 {
                     result["success"] = true;
                 }
-                else
+            }
+            else if (type == TYPE_SEARCHPACKAGEONGITHUBBYNAME)
+            {
+                auto data = _app.searchPackageOnGithubByName(payload["name"].get<std::string>());
+                // TODO: it maybe makes sense to filter a bit
+                if (data["total_count"].get<int>() > 0)
                 {
-                    result["success"] = false;
+                    result["success"] = true;
+                    result["data"] = data;
+                }
+            }
+            else if (type == TYPE_SEARCHPACKAGEONGITHUBBYUSER)
+            {
+                auto data = _app.searchPackageOnGithubByUser(payload["user"].get<std::string>());
+                // TODO: it maybe makes sense to filter a bit
+                if (data.size() > 0)
+                {
+                    result["success"] = true;
+                    result["data"] = data;
                 }
             }
             else if (type == TYPE_GETVERSION)
