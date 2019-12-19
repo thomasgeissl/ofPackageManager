@@ -1,5 +1,6 @@
 #include "ofApp.h"
 
+#define TYPE_INSTALLPACKAGESFROMADDONSMAKEFILE "INSTALL"
 #define TYPE_INSTALLPACKAGEBYID "INSTALLPACKAGEBYID"
 #define TYPE_INSTALLPACKAGEBYGITHUB "INSTALLPACKAGEBYGITHUB"
 #define TYPE_INSTALLPACKAGEBYURL "INSTALLPACKAGEBYURL"
@@ -59,7 +60,7 @@ public:
                 _app.setCwdPath(payload["cwd"].get<std::string>());
             }
 
-            if (type == "INSTALL")
+            if (type == TYPE_INSTALLPACKAGESFROMADDONSMAKEFILE)
             {
                 if (_app.installPackagesFromAddonsMakeFile())
                 {
@@ -86,9 +87,10 @@ public:
                 else
                 {
                     result["success"] = true;
-                    result["payload"]["url"] = p._url;
-                    result["payload"]["checkout"] = p._checkout;
-                    result["payload"]["path"] = p._path;
+                    result["payload"]["package"] = ofJson::object();
+                    result["payload"]["package"]["url"] = p._url;
+                    result["payload"]["package"]["checkout"] = p._checkout;
+                    result["payload"]["package"]["path"] = p._path;
                 }
             }
             else if (type == TYPE_INSTALLPACKAGEBYID)
@@ -111,12 +113,13 @@ public:
                 else
                 {
                     result["success"] = true;
-                    result["payload"]["url"] = p._url;
-                    result["payload"]["checkout"] = p._checkout;
-                    result["payload"]["path"] = p._path;
+                    result["payload"]["package"] = ofJson::object();
+                    result["payload"]["package"]["url"] = p._url;
+                    result["payload"]["package"]["checkout"] = p._checkout;
+                    result["payload"]["package"]["path"] = p._path;
                 }
             }
-            else if (type == TYPE_INSTALLPACKAGEBYID)
+            else if (type == TYPE_INSTALLPACKAGEBYGITHUB)
             {
                 std::string destinationPath = "";
                 std::string checkout = "";
@@ -128,7 +131,7 @@ public:
                 {
                     checkout = payload["checkout"].get<std::string>();
                 }
-                auto p = _app.installPackageById(payload["github"].get<std::string>(), checkout, destinationPath);
+                auto p = _app.installPackageByGithub(payload["github"].get<std::string>(), checkout, destinationPath);
                 if (p.isEmpty())
                 {
                     result["success"] = false;
@@ -136,9 +139,10 @@ public:
                 else
                 {
                     result["success"] = true;
-                    result["payload"]["url"] = p._url;
-                    result["payload"]["checkout"] = p._checkout;
-                    result["payload"]["path"] = p._path;
+                    result["payload"]["package"] = ofJson::object();
+                    result["payload"]["package"]["url"] = p._url;
+                    result["payload"]["package"]["checkout"] = p._checkout;
+                    result["payload"]["package"]["path"] = p._path;
                 }
             }
             else if (type == TYPE_INSTALLPACKAGEBYURL)
@@ -153,7 +157,7 @@ public:
                 {
                     checkout = payload["checkout"].get<std::string>();
                 }
-                auto p = _app.installPackageById(payload["url"].get<std::string>(), checkout, destinationPath);
+                auto p = _app.installPackageByUrl(payload["url"].get<std::string>(), checkout, destinationPath);
                 if (p.isEmpty())
                 {
                     result["success"] = false;
@@ -161,17 +165,18 @@ public:
                 else
                 {
                     result["success"] = true;
-                    result["payload"]["url"] = p._url;
-                    result["payload"]["checkout"] = p._checkout;
-                    result["payload"]["path"] = p._path;
+                    result["payload"]["package"] = ofJson::object();
+                    result["payload"]["package"]["url"] = p._url;
+                    result["payload"]["package"]["checkout"] = p._checkout;
+                    result["payload"]["package"]["path"] = p._path;
                 }
             }
             else if (type == TYPE_ADDPACKAGETOADDONSMAKEFILE)
             {
                 auto p = ofPackage(
-                    payload["path"].get<std::string>(),
-                    payload["url"].get<std::string>(),
-                    payload["checkout"].get<std::string>());
+                    payload["package"]["path"].get<std::string>(),
+                    payload["package"]["url"].get<std::string>(),
+                    payload["package"]["checkout"].get<std::string>());
                 if (_app.addPackageToAddonsMakeFile(p))
                 {
                     result["success"] = true;

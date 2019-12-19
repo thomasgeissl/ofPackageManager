@@ -352,13 +352,11 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 			}
 			if (checkout != "latest")
 			{
-				// checkout the version
-				repo.checkout(checkout);
-			}
-			else
-			{
-				// get commit hash
-				checkout = repo.getCommitHash();
+				if (!repo.checkout(checkout))
+				{
+					IFNOTSILENT(ofLogNotice("install") << "could not checkout " << checkout;);
+					return ofPackage();
+				}
 			}
 		}
 	}
@@ -371,13 +369,10 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 		}
 		if (checkout != "latest")
 		{
-			// checkout the version
-			repo.checkout(checkout);
-		}
-		else
-		{
-			// get commit hash
-			checkout = repo.getCommitHash();
+			if (!repo.checkout(checkout))
+			{
+				IFNOTSILENT(ofLogNotice("install") << "could not checkout " << checkout;);
+			}
 		}
 	}
 
@@ -386,7 +381,7 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 		installDependenciesFromAddonConfig(ofFilePath::join(destinationPath, name), destinationPath);
 	}
 
-	return ofPackage(ofFilePath::join(ofFilePath::makeRelative(_cwdPath, destinationPath), name), url, checkout);
+	return ofPackage(ofFilePath::join(ofFilePath::makeRelative(_cwdPath, destinationPath), name), url, repo.getCommitHash());
 }
 
 ofPackage ofPackageManager::maybeInstallOneOfThePackages(ofJson packages, std::string destinationPath = "")
