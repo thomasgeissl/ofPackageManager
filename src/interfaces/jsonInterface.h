@@ -172,7 +172,7 @@ public:
                 // if (data["total_count"].get<int>() > 0)
                 {
                     result["success"] = true;
-                    result["data"] = data;
+                    result["payload"]["data"] = data;
                 }
             }
             else if (type == TYPE_SEARCHPACKAGEONGITHUBBYNAME)
@@ -182,7 +182,7 @@ public:
                 if (data["total_count"].get<int>() > 0)
                 {
                     result["success"] = true;
-                    result["data"] = data;
+                    result["payload"]["data"] = data;
                 }
             }
             else if (type == TYPE_SEARCHPACKAGEONGITHUBBYUSER)
@@ -192,7 +192,7 @@ public:
                 if (data.size() > 0)
                 {
                     result["success"] = true;
-                    result["data"] = data;
+                    result["payload"]["data"] = data;
                 }
             }
             else if (type == TYPE_GETVERSION)
