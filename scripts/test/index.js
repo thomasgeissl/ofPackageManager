@@ -1,8 +1,22 @@
 const { execSync } = require("child_process");
 
+const config = {
+  localAddonsPath: "local_addons",
+  ofPath: "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/",
+  packagesPath: "/Users/thomas.geissl/.ofPackages",
+  pgPath:
+    "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/projectGenerator-osx"
+};
+
 const getVersion = {
-  type: "GETVERSION",
-  payload: {}
+  type: "GETVERSION"
+};
+
+const getAvailablePackages = {
+  type: "GETAVAILABLEPACKAGES",
+  payload: {
+    config
+  }
 };
 
 const installById = {
@@ -10,13 +24,7 @@ const installById = {
   payload: {
     id: "ofxMidi",
     destination: "local_addons",
-    config: {
-      localAddonsPath: "local_addons",
-      ofPath: "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/",
-      packagesPath: "/Users/thomas.geissl/.ofPackages",
-      pgPath:
-        "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/projectGenerator-osx"
-    }
+    config
   }
 };
 const installByIdWithTag = {
@@ -25,13 +33,7 @@ const installByIdWithTag = {
     id: "ofxLua",
     checkout: "1.3.0",
     destination: "local_addons",
-    config: {
-      localAddonsPath: "local_addons",
-      ofPath: "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/",
-      packagesPath: "/Users/thomas.geissl/.ofPackages",
-      pgPath:
-        "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/projectGenerator-osx"
-    }
+    config
   }
 };
 const installByIdWithNonExistingTag = {
@@ -40,13 +42,7 @@ const installByIdWithNonExistingTag = {
     id: "ofxCv",
     checkout: "nonexistingtag",
     destination: "local_addons",
-    config: {
-      localAddonsPath: "local_addons",
-      ofPath: "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/",
-      packagesPath: "/Users/thomas.geissl/.ofPackages",
-      pgPath:
-        "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/projectGenerator-osx"
-    }
+    config
   }
 };
 
@@ -56,25 +52,13 @@ const installByIdWithCommit = {
     id: "ofxPd",
     checkout: "c5f76a0ae5bcbcdf41af898c3b9a3db0960f72b8",
     destination: "local_addons",
-    config: {
-      localAddonsPath: "local_addons",
-      ofPath: "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/",
-      packagesPath: "/Users/thomas.geissl/.ofPackages",
-      pgPath:
-        "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/projectGenerator-osx"
-    }
+    config
   }
 };
 const install = {
   type: "INSTALL",
   payload: {
-    config: {
-      localAddonsPath: "local_addons",
-      ofPath: "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/",
-      packagesPath: "/Users/thomas.geissl/.ofPackages",
-      pgPath:
-        "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/projectGenerator-osx"
-    }
+    config
   }
 };
 
@@ -82,41 +66,21 @@ const searchInDataBaseById = {
   type: "SEARCHPACKAGEINDATABASEBYID",
   payload: {
     id: "ofxCv",
-    config: {
-      localAddonsPath: "local_addons",
-      ofPath: "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/",
-      packagesPath: "/Users/thomas.geissl/.ofPackages",
-      pgPath:
-        "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/projectGenerator-osx"
-    }
+    config
   }
 };
 
 const searchOnGithubByName = {
   type: "SEARCHPACKAGEONGITHUBBYNAME",
   payload: {
-    name: "ofxDmx",
-    config: {
-      localAddonsPath: "local_addons",
-      ofPath: "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/",
-      packagesPath: "/Users/thomas.geissl/.ofPackages",
-      pgPath:
-        "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/projectGenerator-osx"
-    }
+    name: "ofxDmx"
   }
 };
 
 const searchOnGithubByUser = {
   type: "SEARCHPACKAGEONGITHUBBYUSER",
   payload: {
-    user: "bakercp",
-    config: {
-      localAddonsPath: "local_addons",
-      ofPath: "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/",
-      packagesPath: "/Users/thomas.geissl/.ofPackages",
-      pgPath:
-        "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/projectGenerator-osx"
-    }
+    user: "bakercp"
   }
 };
 
@@ -129,13 +93,7 @@ const addPackageIfSuccess = response => {
     type: "ADDPACKAGETOADDONSMAKEFILE",
     payload: {
       package: response.payload.package,
-      config: {
-        localAddonsPath: "local_addons",
-        ofPath: "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/",
-        packagesPath: "/Users/thomas.geissl/.ofPackages",
-        pgPath:
-          "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/projectGenerator-osx"
-      }
+      config
     }
   };
   return packageManager(install);
@@ -158,31 +116,34 @@ execSync("rm -rf ./addons.make");
 
 console.log("getting version");
 const version = packageManager(getVersion);
-console.log("installing package by id");
+console.log("getting available packages");
+const availablePackages = packageManager(getAvailablePackages);
+// console.log(JSON.stringify(availablePackages, null, 2));
+console.log("\ninstalling package by id");
 const packageInstalledById = packageManager(installById);
-console.log("installing package by id with tag");
+console.log("\ninstalling package by id with tag");
 const packageInstalledByIdWithTag = packageManager(installByIdWithTag);
-console.log("installing package by id with commit");
+console.log("\ninstalling package by id with commit");
 const packageInstalledByIdWithCommit = packageManager(installByIdWithCommit);
-console.log("installing package by id with nonexisting tag");
+console.log("\ninstalling package by id with nonexisting tag");
 const packageInstalledByIdWithNonExistingTag = packageManager(
   installByIdWithNonExistingTag
 );
 
-console.log("adding package installed by id to addons.make");
+console.log("\nadding package installed by id to addons.make");
 addPackageIfSuccess(packageInstalledById);
-console.log("adding package installed by id with tag to addons.make");
+console.log("\nadding package installed by id with tag to addons.make");
 addPackageIfSuccess(packageInstalledByIdWithTag);
-console.log("adding package installed by id with commit to addons.make");
+console.log("\nadding package installed by id with commit to addons.make");
 addPackageIfSuccess(packageInstalledByIdWithCommit);
 console.log(
-  "adding package installed by id with nonexisting tag to addons.make"
+  "\nadding package installed by id with nonexisting tag to addons.make"
 );
 addPackageIfSuccess(packageInstalledByIdWithNonExistingTag);
 
 execSync("rm -rf ./local_addons");
 console.log(
-  "reinstalling packages listed in the addons.make file after deleting them"
+  "\nreinstalling packages listed in the addons.make file after deleting them"
 );
 const installed = packageManager(install);
 

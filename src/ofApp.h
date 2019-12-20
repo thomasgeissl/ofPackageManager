@@ -28,6 +28,7 @@ public:
 	ofPackage installPackageByGithub(std::string github, std::string checkout = "", std::string destinationPath = "");
 	ofPackage installPackageByUrl(std::string url, std::string checkout = "", std::string destinationPath = "");
 	ofPackage maybeInstallOneOfThePackages(ofJson packages, std::string destinationPath);
+	ofJson getAvailablePackages();
 
 	void generateProject();
 

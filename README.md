@@ -89,37 +89,7 @@ Run the global configuration in order to install addons globally. `ofPackageMana
 
 ## json interface
 
-ofPackageManager also accepts json commands, this can be useful if you wanna integrate it into another application.
-
-Commands are valid json objects and follow the following structure:
-
-```json
-{
-  "type": "TYPE",
-  "payload": {
-    "config": {
-      "localAddonsPath": "local_addons",
-      "ofPath": "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/",
-      "packagesPath": "/Users/thomas.geissl/.ofPackages"
-    },
-    "cwd": "this is optional",
-    "otherProperties": "such as id, checkout, destination, ... (optional)"
-  }
-}
-```
-
-The following types for requests are available: `GETVERSION, INSTALL, INSTALLPACKAGEBYID, INSTALLPACKAGEBYGITHUB, INSTALLPACKAGEBYURL, ADDPACKAGETOADDONSMAKEFILE`
-
-The response will be a json object. It will always contain a success property. And optionally a payload property with additional information.
-
-```json
-{
-    "success": true,
-    "payload": {
-        ...
-    }
-}
-```
+ofPackageManager also accepts json commands, this can be useful if you wanna integrate it into another application. It is documented [here](https://github.com/thomasgeissl/ofPackageManager/blob/master/docs/json.md).
 
 ## Known issues
 

@@ -408,6 +408,30 @@ ofPackage ofPackageManager::maybeInstallOneOfThePackages(ofJson packages, std::s
 	return ofPackage();
 }
 
+ofJson ofPackageManager::getAvailablePackages()
+{
+	std::string databasePath = _configJson["packagesPath"];
+	ofDirectory ofPackagesDirectory(databasePath);
+	ofPackagesDirectory.listDir();
+
+	auto counter = 0;
+	ofJson result = ofJson::array();
+
+	for (auto file : ofPackagesDirectory.getFiles())
+	{
+		if (file.getExtension() == "json")
+		{
+			ofJson packageJson;
+			file.open(file.getAbsolutePath());
+			file >> packageJson;
+			file.close();
+
+			result[counter] = packageJson;
+			counter++;
+		}
+	}
+	return result;
+}
 void ofPackageManager::generateProject()
 {
 	// ofSystem();

@@ -9,6 +9,7 @@
 #define TYPE_SEARCHPACKAGEONGITHUBBYNAME "SEARCHPACKAGEONGITHUBBYNAME"
 #define TYPE_SEARCHPACKAGEONGITHUBBYUSER "SEARCHPACKAGEONGITHUBBYUSER"
 #define TYPE_GETVERSION "GETVERSION"
+#define TYPE_GETAVAILABLEPACKAGES "GETAVAILABLEPACKAGES"
 
 class jsonInterface
 {
@@ -202,6 +203,12 @@ public:
                 result["payload"]["major"] = v._major;
                 result["payload"]["minor"] = v._minor;
                 result["payload"]["patch"] = v._patch;
+            }
+            else if (type == TYPE_GETAVAILABLEPACKAGES)
+            {
+                auto v = _app.getAvailablePackages();
+                result["success"] = true;
+                result["payload"]["data"] = v;
             }
             return result;
         }
