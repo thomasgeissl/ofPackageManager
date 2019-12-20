@@ -1,7 +1,7 @@
 #include "ofMain.h"
 #include "ofxUnitTests.h"
 #include "ofApp.h"
-#include "./interfaces/cliInterface.h"
+#include "./interfaces/cli.h"
 #include "./interfaces/jsonInterface.h"
 
 int main(int argc, char **argv)
@@ -25,8 +25,8 @@ int main(int argc, char **argv)
 	}
 	else
 	{
-		cliInterface cli(app);
-		cli.exec(argc, argv);
+		cli c(app);
+		c.exec(argc, argv);
 	}
 
 	return 0;

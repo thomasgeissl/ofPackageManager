@@ -170,14 +170,11 @@ void ofPackageManager::configure(bool global)
 	}
 }
 
-void ofPackageManager::doctor()
+bool ofPackageManager::isNewerVersionAvailable()
 {
-	printVersion();
-
-	// check version of ofPackageManager
 	ofHttpResponse request = ofLoadURL("https://raw.githubusercontent.com/thomasgeissl/ofPackageManager/master/defines.h");
 	auto defines = request.data.getText();
-	auto currentVersion = version(OFAPP_MAJOR_VERSION, OFAPP_MINOR_VERSION, OFAPP_PATCH_VERSION);
+	auto currentVersion = getVersion();
 	auto mostRecentVersion = currentVersion;
 	auto lines = ofSplitString(defines, "\n");
 	for (auto line : lines)
@@ -201,22 +198,10 @@ void ofPackageManager::doctor()
 	}
 
 	// TODO: move as an operator to version class
-	if (
+	return (
 		mostRecentVersion._major > currentVersion._major ||
 		mostRecentVersion._minor > currentVersion._minor ||
-		mostRecentVersion._patch > currentVersion._patch)
-	{
-		IFNOTSILENT(
-			ofLogNotice("doctor") << "There is a new version of ofPackageManager available! "
-								  << "\nThe most recent version is " << mostRecentVersion._major << "." << mostRecentVersion._minor << "." << mostRecentVersion._patch;);
-	}
-	else
-	{
-		IFNOTSILENT(
-			ofLogNotice("doctor") << "You are up to date. Currently there is no newer version of ofPackageManager available";);
-	}
-
-	// check version of ofPackages
+		mostRecentVersion._patch > currentVersion._patch);
 }
 
 void ofPackageManager::generateDatabaseEntryFile()
@@ -505,80 +490,6 @@ ofJson ofPackageManager::searchPackageInDatabaseById(std::string name)
 	return result;
 }
 
-void ofPackageManager::printInfo()
-{
-	ofLogNotice("ofPackageManager") << "info";
-	printVersion();
-	printPaths();
-}
-void ofPackageManager::printPaths()
-{
-	ofLogNotice("path") << "TODO";
-	ofLogNotice("global config path") << ofFilePath::join(ofFilePath::getUserHomeDir(), ".ofPackageManager.json");
-}
-void ofPackageManager::printManual()
-{
-	cout << "ofPackageManager version " << OFAPP_MAJOR_VERSION << "." << OFAPP_MINOR_VERSION << "." << OFAPP_PATCH_VERSION << endl
-		 << endl;
-
-	cout << "Configuration" << endl;
-	cout << "The package manager needs to know where to find the openFrameworks installation and the packages database. It can be configured globally or locally. If there is no local (per project) config, the package manager will use the global configuration." << endl;
-	cout << "* Configure the package manager globally after the installation: ofPackageManager config -g" << endl;
-	cout << "* Configure the package manager locally: ofPackageManager config" << endl
-		 << endl;
-
-	cout << "Installation of packages" << endl;
-	cout << "Packages can be installed via an id (if available in the database), github name or git url. It is also possible to specify the version by appending the commit hash or tag. Packages can be installed locally or globally. It is recommended to install them locally. The package manager will also install the packages' dependencies." << endl;
-	cout << "The package manager will add git url and commit hash to the addons.make file." << endl;
-	cout << "* Install by id: ofPackageManager install ofxMidi" << endl;
-	cout << "* Install by github name: ofPackageManager install danomatika/ofxMidi" << endl;
-	cout << "* Install by git url: ofPackageManager install https://github.com/danomatika/ofxMidi.git" << endl;
-	cout << "* Install a specific version: ofPackageManager install ofxMidi@1.1.1" << endl
-		 << endl;
-
-	cout << "Installation of a project's dependencies" << endl;
-	cout << "It will clone all dependencies and check out the specified version in the addons.make file." << endl;
-	cout << "* ofPackageManager install" << endl
-		 << endl;
-
-	cout << "Adding manually cloned addons" << endl;
-	cout << "It will clone all dependencies and check out the specified version in the addons.make file." << endl;
-	cout << "* Add a single package: ofPackageManager add local_addons/ofxMidi" << endl;
-	cout << "* Add all packages inside one directory: ofPackageManager add -A local_addons" << endl
-		 << endl;
-
-	cout << "Further information can be found on github (https://github.com/thomasgeissl/ofPackageManager/)." << endl;
-}
-
-void ofPackageManager::printAvailablePackages()
-{
-	std::string databasePath = _configJson["packagesPath"];
-	ofDirectory ofPackagesDirectory(databasePath);
-	ofPackagesDirectory.listDir();
-	for (auto file : ofPackagesDirectory.getFiles())
-	{
-		if (file.getExtension() == "json")
-		{
-			ofJson packageJson;
-			file.open(file.getAbsolutePath());
-			file >> packageJson;
-
-			std::cout << "# " << packageJson["name"] << std::endl;
-			std::cout << "## Description" << std::endl;
-			std::cout << packageJson["description"] << std::endl;
-			std::cout << "## Author" << std::endl;
-			std::cout << packageJson["author"] << std::endl;
-			std::cout << "## cloneUrl" << std::endl;
-			std::cout << packageJson["cloneUrl"] << std::endl;
-			std::cout << "## License" << std::endl;
-			std::cout << packageJson["license"] << std::endl;
-			std::cout << std::endl;
-
-			file.close();
-		}
-	}
-}
-
 bool ofPackageManager::installPackagesFromAddonsMakeFile()
 {
 	IFNOTSILENT(ofLogNotice("ofPackageManager") << "installing packages listed in addons.make";);
@@ -803,11 +714,6 @@ void ofPackageManager::updatePackagesDatabase()
 {
 	IFNOTSILENT(
 		ofLogWarning("update") << "This is currently not yet implemented. Please pull the packages database manually.";);
-}
-
-void ofPackageManager::printVersion()
-{
-	ofLogNotice("version") << OFAPP_MAJOR_VERSION << "." << OFAPP_MINOR_VERSION << "." << OFAPP_PATCH_VERSION;
 }
 
 bool ofPackageManager::isCoreAddon(std::string id)

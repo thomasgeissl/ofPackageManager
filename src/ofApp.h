@@ -17,7 +17,7 @@ public:
 	bool addPackagesToAddonsMakeFile(std::string path);
 	bool addPackagesToAddonsMakeFile(std::vector<std::string> paths);
 	void configure(bool global = false);
-	void doctor();
+	bool isNewerVersionAvailable();
 	void generateDatabaseEntryFile();
 
 	bool installPackagesFromAddonsMakeFile();
@@ -32,11 +32,6 @@ public:
 
 	void generateProject();
 
-	void printInfo();
-	void printPaths();
-	void printManual();
-	void printAvailablePackages();
-	void printVersion();
 	ofJson searchPackageInDatabaseById(std::string id);
 	ofJson searchPackageOnGithubByName(std::string name);
 	ofJson searchPackageOnGithubByUser(std::string user);
