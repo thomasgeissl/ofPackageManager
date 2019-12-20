@@ -55,6 +55,25 @@ const installByIdWithCommit = {
     config
   }
 };
+
+const installByUrl = {
+  type: "INSTALLPACKAGEBYURL",
+  payload: {
+    url: "https://github.com/arturoc/ofxAruco.git",
+    destination: "local_addons",
+    config
+  }
+};
+
+const installByGithub = {
+  type: "INSTALLPACKAGEBYGITHUB",
+  payload: {
+    github: "ofTheo/ofxControlPanel",
+    destination: "local_addons",
+    config
+  }
+};
+
 const install = {
   type: "INSTALL",
   payload: {
@@ -129,6 +148,10 @@ console.log("\ninstalling package by id with nonexisting tag");
 const packageInstalledByIdWithNonExistingTag = packageManager(
   installByIdWithNonExistingTag
 );
+console.log("\ninstalling package by url");
+const packageInstalledByUrl = packageManager(installByUrl);
+console.log("\ninstalling package by github handle");
+const packageInstalledByGithub = packageManager(installByGithub);
 
 console.log("\nadding package installed by id to addons.make");
 addPackageIfSuccess(packageInstalledById);
