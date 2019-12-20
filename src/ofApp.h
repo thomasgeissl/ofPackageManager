@@ -59,6 +59,8 @@ public:
 	bool hasAddonConfigFile(std::string path);
 	bool hasPackageManagerConfig(std::string path);
 
+	bool isConfigured();
+
 	std::string _cwdPath;
 	ofJson _configJson;
 	bool _silent;

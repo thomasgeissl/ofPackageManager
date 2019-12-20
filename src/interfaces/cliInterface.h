@@ -84,6 +84,11 @@ public:
         }
         else if (task == "install")
         {
+            if (!_app.isConfigured())
+            {
+                ofLogError() << "please run config task, before installing packages.";
+                return false;
+            }
             if (argc == 2)
             {
                 _app.installPackagesFromAddonsMakeFile();
@@ -124,6 +129,11 @@ public:
         }
         else if (task == "search")
         {
+            if (!_app.isConfigured())
+            {
+                ofLogError() << "please run config task, before installing packages.";
+                return false;
+            }
             if (argc == 3)
             {
                 _app.searchPackageInDatabaseById(argv[2]);
@@ -157,6 +167,11 @@ public:
         }
         else if (task == "generate")
         {
+            if (!_app.isConfigured())
+            {
+                ofLogError() << "please run config task, before installing packages.";
+                return false;
+            }
             ofLogNotice() << "generate project";
         }
         else

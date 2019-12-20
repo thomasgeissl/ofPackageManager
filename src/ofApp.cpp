@@ -947,3 +947,19 @@ bool ofPackageManager::hasPackageManagerConfig(std::string path)
 	ofFile hiddenPackageManagerConfigFile(ofFilePath::join(path, ".ofPackageManager.json"));
 	return packageManagerConfigFile.exists() || hiddenPackageManagerConfigFile.exists();
 }
+bool ofPackageManager::isConfigured()
+{
+	std::string path = _cwdPath;
+	while (!hasPackageManagerConfig(getAbsolutePath(path)))
+	{
+		ofFile file(path);
+		fs::path p(path);
+		path = p.parent_path().string();
+		// TODO: does that work on windows
+		if (path.size() < 4)
+		{
+			return hasPackageManagerConfig(ofFilePath::join(ofFilePath::getUserHomeDir(), ".ofPackageManager.json"));
+		}
+	}
+	return true;
+}
