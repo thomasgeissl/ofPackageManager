@@ -21,6 +21,8 @@ const getAvailablePackages = {
 
 const installById = {
   type: "INSTALLPACKAGEBYID",
+  cwd:
+    "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/apps/packagemanager/ofPackageManager/scripts/test/new",
   payload: {
     id: "ofxMidi",
     destination: "local_addons",
@@ -121,9 +123,10 @@ const addPackageIfSuccess = response => {
 const packageManager = command => {
   const response = JSON.parse(
     execSync(
-      `../../bin/ofPackageManager.app/Contents/MacOS/ofPackageManager "${JSON.stringify(
-        command
-      ).replace(/\\([\s\S])|(")/g, "\\$1$2")}"`
+      `ofPackageManager "${JSON.stringify(command).replace(
+        /\\([\s\S])|(")/g,
+        "\\$1$2"
+      )}"`
     ).toString()
   );
   console.log(response);

@@ -10,6 +10,8 @@
 #define TYPE_SEARCHPACKAGEONGITHUBBYUSER "SEARCHPACKAGEONGITHUBBYUSER"
 #define TYPE_GETVERSION "GETVERSION"
 #define TYPE_GETAVAILABLEPACKAGES "GETAVAILABLEPACKAGES"
+#define TYPE_GETCOREADDONS "GETCOREADDONS"
+#define TYPE_GETGLOBALLYINSTALLEDPACKAGES "GETGLOBALLYINSTALLEDPACKAGES"
 
 class jsonInterface
 {
@@ -209,6 +211,30 @@ public:
                 auto v = _app.getAvailablePackages();
                 result["success"] = true;
                 result["payload"]["data"] = v;
+            }
+            else if (type == TYPE_GETCOREADDONS)
+            {
+                auto v = _app.getCoreAddons();
+                result["success"] = true;
+                result["payload"]["data"] = ofJson::array();
+                for (auto &coreAddon : v)
+                {
+                    result["payload"]["data"].push_back(coreAddon);
+                }
+            }
+            else if (type == TYPE_GETGLOBALLYINSTALLEDPACKAGES)
+            {
+                auto v = _app.getGloballyInstalledPackages();
+                result["success"] = true;
+                result["payload"]["data"] = ofJson::array();
+                for (auto &package : v)
+                {
+                    auto p = ofJson::object();
+                    p["path"] = package._path;
+                    p["checkout"] = package._checkout;
+                    p["url"] = package._url;
+                    result["payload"]["data"].push_back(p);
+                }
             }
             return result;
         }

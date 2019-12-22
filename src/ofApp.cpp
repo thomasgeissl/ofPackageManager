@@ -325,11 +325,11 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 	{
 		if (repoDirectory.exists())
 		{
-			if (getBoolAnswer(destinationPath + "/" + name + " already exists. Do you want to pull and checkout the specified commit?", true))
-			{
-				ofLogNotice("TODO") << "Unfortunately it is not yet implemented due to missing ofxGit::repo::pull";
-				// TODO: pull and checkout, pull still does not work in ofxGit2
-			}
+			IFNOTSILENT(
+				if (getBoolAnswer(destinationPath + "/" + name + " already exists. Do you want to pull and checkout the specified commit?", true)) {
+					ofLogNotice("TODO") << "Unfortunately it is not yet implemented due to missing ofxGit::repo::pull";
+					// TODO: pull and checkout, pull still does not work in ofxGit2
+				});
 		}
 		else
 		{
@@ -416,6 +416,48 @@ ofJson ofPackageManager::getAvailablePackages()
 		}
 	}
 	return result;
+}
+std::vector<std::string> ofPackageManager::getCoreAddons()
+{
+	std::vector<std::string> coreAddons;
+
+	auto globalAddonsDir = ofDirectory(ofFilePath::join(getOfPath(), "addons"));
+	globalAddonsDir.listDir();
+	for (auto file : globalAddonsDir.getFiles())
+	{
+		auto path = file.getAbsolutePath();
+		if (file.getFileName().find("ofx", 0) == 0 && file.isDirectory())
+		{
+			ofxGit::repository addon(path);
+			if (!addon.isRepository())
+			{
+				coreAddons.push_back(file.getFileName());
+			}
+		}
+	}
+
+	return coreAddons;
+}
+std::vector<ofPackage> ofPackageManager::getGloballyInstalledPackages()
+{
+	std::vector<ofPackage> globallyInstalledPackages;
+	auto globalAddonsDir = ofDirectory(ofFilePath::join(getOfPath(), "addons"));
+	globalAddonsDir.listDir();
+	for (auto file : globalAddonsDir.getFiles())
+	{
+		auto path = file.getAbsolutePath();
+		auto name = file.getFileName();
+		if (name.find("ofx", 0) == 0 && !isCoreAddon(name))
+		{
+
+			ofxGit::repository repo(path);
+			if (repo.isRepository())
+			{
+				globallyInstalledPackages.push_back(ofPackage(name, repo.getRemoteUrl(), repo.getCommitHash()));
+			}
+		}
+	}
+	return globallyInstalledPackages;
 }
 void ofPackageManager::generateProject()
 {
@@ -719,6 +761,9 @@ void ofPackageManager::updatePackagesDatabase()
 bool ofPackageManager::isCoreAddon(std::string id)
 {
 	id = ofSplitString(id, "@").front();
+	auto coreAddons = getCoreAddons();
+	return std::find(coreAddons.begin(), coreAddons.end(), id) != coreAddons.end();
+
 	auto globalAddonsDir = ofDirectory(ofFilePath::join(getOfPath(), "addons"));
 	globalAddonsDir.listDir();
 	for (auto file : globalAddonsDir.getFiles())
@@ -822,16 +867,6 @@ std::pair<std::string, std::string> ofPackageManager::getPathAndName(std::string
 		return std::make_pair(path, words[words.size() - 1]);
 	}
 	return std::make_pair("", name);
-}
-
-bool ofPackageManager::isGitRepository(std::string path)
-{
-	if (!ofFilePath::isAbsolute(path))
-	{
-		path = ofFilePath::join(_cwdPath, path);
-	}
-	ofDirectory gitDirectory(ofFilePath::join(path, ".git"));
-	return gitDirectory.exists();
 }
 
 bool ofPackageManager::isGitUrl(std::string path)

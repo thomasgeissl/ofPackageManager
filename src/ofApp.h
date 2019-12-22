@@ -29,6 +29,8 @@ public:
 	ofPackage installPackageByUrl(std::string url, std::string checkout = "", std::string destinationPath = "");
 	ofPackage maybeInstallOneOfThePackages(ofJson packages, std::string destinationPath);
 	ofJson getAvailablePackages();
+	std::vector<std::string> getCoreAddons();
+	std::vector<ofPackage> getGloballyInstalledPackages();
 
 	void generateProject();
 
@@ -48,7 +50,6 @@ public:
 	std::string getAbsolutePath(std::string path);
 	std::pair<std::string, std::string> getPathAndName(std::string name);
 
-	bool isGitRepository(std::string path);
 	bool isGitUrl(std::string path);
 	bool isGithubPair(std::string path);
 	bool hasAddonsMakeFile(std::string path);
