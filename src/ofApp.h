@@ -31,6 +31,7 @@ public:
 	ofJson getAvailablePackages();
 	std::vector<std::string> getCoreAddons();
 	std::vector<ofPackage> getGloballyInstalledPackages();
+	std::vector<ofPackage> getLocallyInstalledPackages();
 
 	void generateProject();
 

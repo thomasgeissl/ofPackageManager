@@ -459,6 +459,28 @@ std::vector<ofPackage> ofPackageManager::getGloballyInstalledPackages()
 	}
 	return globallyInstalledPackages;
 }
+
+std::vector<ofPackage> ofPackageManager::getLocallyInstalledPackages()
+{
+	std::vector<ofPackage> packages;
+	auto packagesDir = ofDirectory(getAbsolutePath("local_addons"));
+	packagesDir.listDir();
+	for (auto file : packagesDir.getFiles())
+	{
+		auto path = file.getAbsolutePath();
+		auto name = file.getFileName();
+		if (name.find("ofx", 0) == 0)
+		{
+			ofxGit::repository repo(path);
+			if (repo.isRepository())
+			{
+				packages.push_back(ofPackage(name, repo.getRemoteUrl(), repo.getCommitHash()));
+			}
+		}
+	}
+	return packages;
+}
+
 void ofPackageManager::generateProject()
 {
 	// ofSystem();

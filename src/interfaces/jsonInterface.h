@@ -12,6 +12,7 @@
 #define TYPE_GETAVAILABLEPACKAGES "GETAVAILABLEPACKAGES"
 #define TYPE_GETCOREADDONS "GETCOREADDONS"
 #define TYPE_GETGLOBALLYINSTALLEDPACKAGES "GETGLOBALLYINSTALLEDPACKAGES"
+#define TYPE_GETLOCALLYINSTALLEDPACKAGES "GETLOCALLYINSTALLEDPACKAGES"
 
 class jsonInterface
 {
@@ -225,6 +226,20 @@ public:
             else if (type == TYPE_GETGLOBALLYINSTALLEDPACKAGES)
             {
                 auto v = _app.getGloballyInstalledPackages();
+                result["success"] = true;
+                result["payload"]["data"] = ofJson::array();
+                for (auto &package : v)
+                {
+                    auto p = ofJson::object();
+                    p["path"] = package._path;
+                    p["checkout"] = package._checkout;
+                    p["url"] = package._url;
+                    result["payload"]["data"].push_back(p);
+                }
+            }
+            else if (type == TYPE_GETLOCALLYINSTALLEDPACKAGES)
+            {
+                auto v = _app.getLocallyInstalledPackages();
                 result["success"] = true;
                 result["payload"]["data"] = ofJson::array();
                 for (auto &package : v)
