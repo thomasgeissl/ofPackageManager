@@ -23,15 +23,17 @@ public:
 	bool installPackagesFromAddonsMakeFile();
 	void installDependenciesFromAddonConfig(std::string path, std::string destination);
 
+	bool installPackage(ofPackage package);
 	ofPackage installPackage(std::string key, std::string destinationPath = "");
 	ofPackage installPackageById(std::string id, std::string checkout = "", std::string destinationPath = "");
 	ofPackage installPackageByGithub(std::string github, std::string checkout = "", std::string destinationPath = "");
 	ofPackage installPackageByUrl(std::string url, std::string checkout = "", std::string destinationPath = "");
 	ofPackage maybeInstallOneOfThePackages(ofJson packages, std::string destinationPath);
 	ofJson getAvailablePackages();
-	std::vector<std::string> getCoreAddons();
+	std::vector<std::string> getCorePackages();
 	std::vector<ofPackage> getGloballyInstalledPackages();
 	std::vector<ofPackage> getLocallyInstalledPackages();
+	std::vector<ofPackage> getPackagesListedInAddonsMakeFile();
 
 	void generateProject();
 
@@ -39,7 +41,7 @@ public:
 	ofJson searchPackageOnGithubByName(std::string name);
 	ofJson searchPackageOnGithubByUser(std::string user);
 	void updatePackagesDatabase();
-	bool isCoreAddon(std::string id);
+	bool isCorePackage(std::string id);
 
 	std::string getOfPath();
 	ofJson getConfig();

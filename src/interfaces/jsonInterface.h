@@ -5,6 +5,7 @@
 #define TYPE_INSTALLPACKAGEBYGITHUB "INSTALLPACKAGEBYGITHUB"
 #define TYPE_INSTALLPACKAGEBYURL "INSTALLPACKAGEBYURL"
 #define TYPE_ADDPACKAGETOADDONSMAKEFILE "ADDPACKAGETOADDONSMAKEFILE"
+#define TYPE_GETPACKAGESLISTEDINADDONSMAKE "GETPACKAGESLISTEDINADDONSMAKE"
 #define TYPE_SEARCHPACKAGEINDATABASEBYID "SEARCHPACKAGEINDATABASEBYID"
 #define TYPE_SEARCHPACKAGEONGITHUBBYNAME "SEARCHPACKAGEONGITHUBBYNAME"
 #define TYPE_SEARCHPACKAGEONGITHUBBYUSER "SEARCHPACKAGEONGITHUBBYUSER"
@@ -158,6 +159,24 @@ public:
                     result["payload"]["package"]["path"] = p._path;
                 }
             }
+            else if (type == TYPE_GETPACKAGESLISTEDINADDONSMAKE)
+            {
+                result["payload"]["data"] = ofJson::array();
+
+                auto packages = _app.getPackagesListedInAddonsMakeFile();
+                for (auto &p : packages)
+                {
+                    auto o = ofJson::object();
+                    o["url"] = p._url;
+                    o["checkout"] = p._checkout;
+                    o["path"] = p._path;
+                    result["payload"]["data"].push_back(o);
+                }
+
+                {
+                    result["success"] = true;
+                }
+            }
             else if (type == TYPE_ADDPACKAGETOADDONSMAKEFILE)
             {
                 auto p = ofPackage(
@@ -215,7 +234,7 @@ public:
             }
             else if (type == TYPE_GETCOREADDONS)
             {
-                auto v = _app.getCoreAddons();
+                auto v = _app.getCorePackages();
                 result["success"] = true;
                 result["payload"]["data"] = ofJson::array();
                 for (auto &coreAddon : v)

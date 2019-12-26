@@ -22,7 +22,17 @@ bool ofPackageManager::addPackageToAddonsMakeFile(ofPackage package)
 	{
 		addonsMakeFile.create();
 	}
-	auto stringToAdd = package._path + " #" + package._url + "@" + package._checkout;
+
+	auto stringToAdd = package._path;
+	if (!package._url.empty())
+	{
+		stringToAdd += " #" + package._url;
+		if (!package._checkout.empty())
+		{
+			stringToAdd += "@" + package._checkout;
+		}
+	}
+
 	ofBuffer fileBuffer = addonsMakeFile.readToBuffer();
 	std::string content;
 	auto foundPackage = false;
@@ -417,7 +427,7 @@ ofJson ofPackageManager::getAvailablePackages()
 	}
 	return result;
 }
-std::vector<std::string> ofPackageManager::getCoreAddons()
+std::vector<std::string> ofPackageManager::getCorePackages()
 {
 	std::vector<std::string> coreAddons;
 
@@ -447,7 +457,7 @@ std::vector<ofPackage> ofPackageManager::getGloballyInstalledPackages()
 	{
 		auto path = file.getAbsolutePath();
 		auto name = file.getFileName();
-		if (name.find("ofx", 0) == 0 && !isCoreAddon(name))
+		if (name.find("ofx", 0) == 0 && !isCorePackage(name))
 		{
 
 			ofxGit::repository repo(path);
@@ -463,19 +473,76 @@ std::vector<ofPackage> ofPackageManager::getGloballyInstalledPackages()
 std::vector<ofPackage> ofPackageManager::getLocallyInstalledPackages()
 {
 	std::vector<ofPackage> packages;
-	auto packagesDir = ofDirectory(getAbsolutePath("local_addons"));
-	packagesDir.listDir();
-	for (auto file : packagesDir.getFiles())
+	auto packagesPath = getAbsolutePath(_configJson["localAddonsPath"].get<std::string>());
+	auto packagesDir = ofDirectory(packagesPath);
+	if (packagesDir.exists())
 	{
-		auto path = file.getAbsolutePath();
-		auto name = file.getFileName();
-		if (name.find("ofx", 0) == 0)
+		packagesDir.listDir();
+		for (auto file : packagesDir.getFiles())
 		{
-			ofxGit::repository repo(path);
-			if (repo.isRepository())
+			auto path = file.getAbsolutePath();
+			auto name = file.getFileName();
+			if (name.find("ofx", 0) == 0)
 			{
-				packages.push_back(ofPackage(name, repo.getRemoteUrl(), repo.getCommitHash()));
+				ofxGit::repository repo(path);
+				if (repo.isRepository())
+				{
+					packages.push_back(ofPackage(ofFilePath::join(_configJson["localAddonsPath"].get<std::string>(), name), repo.getRemoteUrl(), repo.getCommitHash()));
+				}
 			}
+		}
+	}
+	return packages;
+}
+std::vector<ofPackage> ofPackageManager::getPackagesListedInAddonsMakeFile()
+{
+	// local_addons/ofxMidi#url@checkout
+	// ofxMidi#url@checkout
+	// ofxMidi
+
+	std::vector<ofPackage> packages;
+	ofFile addonsMakeFile(getAbsolutePath("addons.make"));
+	if (addonsMakeFile.exists())
+	{
+		ofBuffer fileBuffer = addonsMakeFile.readToBuffer();
+		for (auto &line : fileBuffer.getLines())
+		{
+			auto parts = ofSplitString(ofTrim(line), "#");
+
+			auto path = parts[0];
+			std::string url = "";
+			std::string checkout = "latest";
+
+			auto dir = getPathAndName(path).first;
+			auto name = getPathAndName(path).second;
+
+			if (dir.empty())
+			{
+				dir = ofFilePath::join(getOfPath(), "addons");
+			}
+
+			switch (parts.size())
+			{
+			case 1:
+			{
+				// packages.push_back(ofPackage(name, "", "")); //path vs name
+				break;
+			}
+			case 2:
+			{
+				auto comment = parts[1];
+				url = ofSplitString(comment, "@").front();
+				checkout = ofSplitString(comment, "@").back();
+				if (url == checkout)
+				{
+					checkout = "latest";
+				}
+				break;
+			}
+			default:
+				break;
+			}
+			packages.push_back(ofPackage(ofTrim(path), ofTrim(url), ofTrim(checkout))); //path vs name
 		}
 	}
 	return packages;
@@ -557,69 +624,15 @@ ofJson ofPackageManager::searchPackageInDatabaseById(std::string name)
 bool ofPackageManager::installPackagesFromAddonsMakeFile()
 {
 	IFNOTSILENT(ofLogNotice("ofPackageManager") << "installing packages listed in addons.make";);
-	ofFile addonsMakeFile(getAbsolutePath("addons.make"));
-	if (addonsMakeFile.exists())
+	auto packages = getPackagesListedInAddonsMakeFile();
+	for (auto &package : packages)
 	{
-		ofBuffer fileBuffer = addonsMakeFile.readToBuffer();
-		for (auto line : fileBuffer.getLines())
+		if (!isCorePackage(package._path))
 		{
-			auto words = ofSplitString(ofTrim(line), "#");
-			auto path = getPathAndName(words[0]).first;
-			auto name = getPathAndName(words[0]).second;
-
-			if (path.empty())
-			{
-				path = ofFilePath::join(getOfPath(), "addons");
-			}
-
-			switch (words.size())
-			{
-			case 1:
-			{
-				if (!isCoreAddon(name))
-				{
-					installPackageById(name, "latest", path);
-				}
-				break;
-			}
-			case 2:
-			{
-				std::vector<std::string> packageParts = ofSplitString(words[1], "@");
-				std::string checkout = "latest";
-				std::string package = packageParts[0];
-				if (packageParts.size() > 1)
-				{
-					checkout = packageParts[1];
-				}
-				if (isGitUrl(words[1]))
-				{
-					installPackageByUrl(package, checkout, path);
-				}
-				else if (isGithubPair(package))
-				{
-					auto url = "https://github.com/" + package + ".git";
-					installPackageByUrl(url, checkout, path);
-				}
-				else
-				{
-					if (!isCoreAddon(package))
-					{
-						installPackageById(package, checkout, path);
-					}
-				}
-				break;
-			}
-			default:
-				break;
-			}
+			installPackage(package);
 		}
-		return true;
 	}
-	else
-	{
-		IFNOTSILENT(ofLogError("install") << "Sorry, but there is no addons.make file in this directory.";);
-		return false;
-	}
+	return true;
 }
 
 void ofPackageManager::installDependenciesFromAddonConfig(std::string path, std::string destination)
@@ -644,7 +657,7 @@ void ofPackageManager::installDependenciesFromAddonConfig(std::string path, std:
 				if (parts.size() > 1)
 				{ // contains a comment
 					auto key = parts[1];
-					if (!isCoreAddon(key))
+					if (!isCorePackage(key))
 					{
 						installPackage(key, destination);
 					}
@@ -653,7 +666,7 @@ void ofPackageManager::installDependenciesFromAddonConfig(std::string path, std:
 				{ // does not contain a comment
 					for (auto key : ofSplitString(ofTrim(rightSide), " "))
 					{
-						if (!isCoreAddon(key))
+						if (!isCorePackage(key))
 						{
 							installPackage(ofTrim(key), destination);
 						}
@@ -671,7 +684,7 @@ void ofPackageManager::installDependenciesFromAddonConfig(std::string path, std:
 				{ //contains a comment
 					auto key = parts[1];
 					ofLogNotice("install key") << key;
-					if (!isCoreAddon(key))
+					if (!isCorePackage(key))
 					{
 						installPackage(key, destination);
 					}
@@ -680,7 +693,7 @@ void ofPackageManager::installDependenciesFromAddonConfig(std::string path, std:
 				{
 					auto key = ofSplitString(line, "+=").back();
 					// TODO: multiple ids
-					if (!isCoreAddon(key))
+					if (!isCorePackage(key))
 					{
 						installPackage(ofTrim(key), destination);
 					}
@@ -694,6 +707,16 @@ void ofPackageManager::installDependenciesFromAddonConfig(std::string path, std:
 	}
 }
 
+bool ofPackageManager::installPackage(ofPackage package)
+{
+	auto result = false;
+	if (package._url != "")
+	{
+		auto installedPackage = installPackageByUrl(package._url, package._checkout, ofFilePath::getEnclosingDirectory(getAbsolutePath(package._path)));
+		result = true;
+	}
+	return result;
+}
 ofPackage ofPackageManager::installPackage(std::string addon, std::string destinationPath)
 {
 	auto parts = ofSplitString(addon, "@");
@@ -703,7 +726,7 @@ ofPackage ofPackageManager::installPackage(std::string addon, std::string destin
 	{
 		checkout = parts[1];
 	}
-	if (isCoreAddon(addon))
+	if (isCorePackage(addon))
 	{
 		IFNOTSILENT(ofLogNotice("install") << addon << " seems to be a core addon.";);
 		return ofPackage();
@@ -724,7 +747,7 @@ ofPackage ofPackageManager::installPackage(std::string addon, std::string destin
 }
 ofPackage ofPackageManager::installPackageById(std::string id, std::string checkout, std::string destinationPath)
 {
-	if (isCoreAddon(id))
+	if (isCorePackage(id))
 	{
 		IFNOTSILENT(ofLogNotice("install") << id << " seems to be a core addon.";);
 		return ofPackage();
@@ -780,10 +803,10 @@ void ofPackageManager::updatePackagesDatabase()
 		ofLogWarning("update") << "This is currently not yet implemented. Please pull the packages database manually.";);
 }
 
-bool ofPackageManager::isCoreAddon(std::string id)
+bool ofPackageManager::isCorePackage(std::string id)
 {
 	id = ofSplitString(id, "@").front();
-	auto coreAddons = getCoreAddons();
+	auto coreAddons = getCorePackages();
 	return std::find(coreAddons.begin(), coreAddons.end(), id) != coreAddons.end();
 
 	auto globalAddonsDir = ofDirectory(ofFilePath::join(getOfPath(), "addons"));
