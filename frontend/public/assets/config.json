@@ -1,0 +1,7 @@
+{
+  "localAddonsPath": "local_addons",
+  "ofPath": "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/",
+  "packagesPath": "/Users/thomas.geissl/.ofPackages",
+  "ofPackageManagerPath": "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/apps/packagemanager/ofPackageManager/bin/ofPackageManager.app/Contents/MacOS/ofPackageManager",
+  "pgPath": "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/apps/projectGenerator/commandLine/bin/projectGenerator.app/Contents/MacOS/projectGenerator"
+}
