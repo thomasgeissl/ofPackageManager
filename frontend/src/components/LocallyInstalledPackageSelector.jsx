@@ -51,11 +51,11 @@ export default () => {
   const database = useSelector(state => state.localPackages.database);
   const selectedPackages = useSelector(state => state.localPackages.selected);
   const isPackageInstalled = value => {
-    const index = packages.findIndex(item => item.path == value.path);
+    const index = packages.findIndex(item => item.path === value.path);
     return index > -1;
   };
   const isPackageSelected = value => {
-    const index = selectedPackages.findIndex(item => item.path == value.path);
+    const index = selectedPackages.findIndex(item => item.path === value.path);
     return index > -1;
   };
 
@@ -79,6 +79,7 @@ export default () => {
   const [searchModalOpen, setSearchModalOpen] = useState(false);
 
   const handleChange = (event, value) => {
+    console.log(value);
     if (value) {
       setCount(value);
     } else {
@@ -121,6 +122,7 @@ export default () => {
             options={database}
             getOptionLabel={option => option.name}
             style={{ width: 300 }}
+            freeSolo
             onChange={handleChange}
             renderInput={params => (
               <TextField
@@ -165,7 +167,7 @@ export default () => {
           </Button>
         </SearchButton>
       </Grid>
-      {count.name != "" && (
+      {count.name !== "" && (
         <PackageInfo>
           {/* {count.name} */}
           author: {count.author} <br></br>

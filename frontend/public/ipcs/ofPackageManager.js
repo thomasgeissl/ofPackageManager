@@ -171,3 +171,6 @@ ipcMain.on("getPackagesListedInAddonsMake", (event, arg) => {
   const response = packageManager(getPackagesListedInAddonsMake(arg));
   event.reply("getPackagesListedInAddonsMakeResponse", response);
 });
+ipcMain.on("getConfig", (event, arg) => {
+  event.reply("getConfigResponse", config);
+});

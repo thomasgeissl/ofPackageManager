@@ -16,8 +16,8 @@ export default (state = initialState, action) => {
     case types.SETAVAILABLELOCALPACKAGES: {
       let newState = { ...state, packages: [...state.packages] };
       action.payload.value.forEach(p => {
-        const index = newState.packages.findIndex(x => x.path == p.path);
-        if (index == -1) {
+        const index = newState.packages.findIndex(x => x.path === p.path);
+        if (index === -1) {
           newState.packages.push(p);
         }
       });
@@ -26,9 +26,9 @@ export default (state = initialState, action) => {
     case types.ADDLOCALPACKAGE: {
       let newState = { ...state, selected: [...state.selected] };
       const index = newState.selected.findIndex(
-        x => x.path == action.payload.value.path
+        x => x.path === action.payload.value.path
       );
-      if (index == -1) {
+      if (index === -1) {
         newState.selected.push(action.payload.value);
       }
 
@@ -36,13 +36,14 @@ export default (state = initialState, action) => {
     }
     case types.REMOVELOCALPACKAGE:
       const index = state.selected.findIndex(
-        item => item.path == action.payload.value.path
+        item => item.path === action.payload.value.path
       );
       if (index > -1) {
         let newState = { ...state, selected: [...state.selected] };
         newState.selected.splice(index, 1);
         return newState;
       }
+      break;
     default:
       return state;
   }

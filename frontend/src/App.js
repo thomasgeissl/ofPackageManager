@@ -1,6 +1,5 @@
-import { ipcRenderer } from "electron";
 import React from "react";
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import { Provider as StoreProvider } from "react-redux";
 import store from "./state/store";
 import NewOrOpen from "./components/NewOrOpen";

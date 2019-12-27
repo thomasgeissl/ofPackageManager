@@ -15,6 +15,7 @@ export default () => {
       if (result.filePaths.length) {
         const cwd = result.filePaths[0];
         dispatch(setCwdCreator(cwd));
+        ipcRenderer.send("getConfig", {});
         ipcRenderer.send("getCoreAddons", {});
         ipcRenderer.send("getGloballyInstalledPackages", {});
         ipcRenderer.send("getLocallyInstalledPackages", {

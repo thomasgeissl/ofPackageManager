@@ -1,11 +1,10 @@
 import { ipcRenderer } from "electron";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
+import { useHistory } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
-import { useHistory } from "react-router-dom";
 import { setCwd as setCwdCreator } from "../state/reducers/config";
-import store from "../state/store";
 const { dialog } = require("electron").remote;
 
 export default () => {
@@ -58,6 +57,7 @@ export default () => {
         disabled={!valid}
         onClick={event => {
           //   ipcRenderer.send("createDirectory", { path: cwd });
+          ipcRenderer.send("getConfig", {});
           ipcRenderer.send("createProject", { path: cwd });
           ipcRenderer.send("getCoreAddons", {});
           ipcRenderer.send("getGloballyInstalledPackages", {});

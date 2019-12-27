@@ -13,7 +13,7 @@ export default (state = initialState, action) => {
       return newState;
     case "REMOVEGLOBALPACKAGE":
       const index = state.selected.findIndex(
-        item => item.path == action.payload.value.path
+        item => item.path === action.payload.value.path
       );
       if (index > -1) {
         let newState = { ...state, selected: [...state.selected] };

@@ -1,16 +1,32 @@
 const initialState = {
   cwd: "",
-  name: ""
+  name: "",
+  localAddonsPath: "",
+  ofPath: "",
+  packagesPath: "",
+  ofPackageManagerPath: "",
+  pgPath: ""
+};
+
+const types = {
+  SETCONFIG: "SETCONFIG",
+  SETCWD: "SETCWD",
+  SETNAME: "SETNAME"
 };
 
 export default (state = initialState, action) => {
   switch (action.type) {
-    case "SETCWD":
+    case types.SETCONFIG:
+      return {
+        ...state,
+        ...action.payload.value
+      };
+    case types.SETCWD:
       return {
         ...state,
         cwd: action.payload.value
       };
-    case "SETNAME":
+    case types.SETNAME:
       return {
         ...state,
         name: action.payload.value
@@ -20,9 +36,18 @@ export default (state = initialState, action) => {
   }
 };
 
+export const setConfig = value => {
+  return {
+    type: types.SETCONFIG,
+    payload: {
+      value
+    }
+  };
+};
+
 export const setCwd = value => {
   return {
-    type: "SETCWD",
+    type: types.SETCWD,
     payload: {
       value
     }
@@ -31,7 +56,7 @@ export const setCwd = value => {
 
 export const setName = value => {
   return {
-    type: "SETNAME",
+    type: types.SETNAME,
     payload: {
       value
     }

@@ -13,9 +13,9 @@ const PackageList = styled.ul`
   list-style-type: none;
 `;
 
-const Info = styled.span`
-  font-size: 8px;
-`;
+// const Info = styled.span`
+//   font-size: 8px;
+// `;
 
 export default () => {
   const dispatch = useDispatch();
@@ -30,12 +30,12 @@ export default () => {
   };
   const packages = useSelector(state => state.globalPackages.globalPackages);
   const selectedPackages = useSelector(state => state.globalPackages.selected);
-  const isPackageInstalled = value => {
-    const index = packages.findIndex(item => item.path == value.path);
-    return index > -1;
-  };
+  // const isPackageInstalled = value => {
+  //   const index = packages.findIndex(item => item.path === value.path);
+  //   return index > -1;
+  // };
   const isPackageSelected = value => {
-    const index = selectedPackages.findIndex(item => item.path == value.path);
+    const index = selectedPackages.findIndex(item => item.path === value.path);
     return index > -1;
   };
   return (

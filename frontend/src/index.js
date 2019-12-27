@@ -5,6 +5,7 @@ import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 import { ipcRenderer } from "electron";
 import store from "./state/store";
+import { setConfig } from "./state/reducers/config";
 import {
   setAvailableCoreAddons,
   addCoreAddon
@@ -21,6 +22,10 @@ import {
 
 ReactDOM.render(<App />, document.getElementById("root"));
 serviceWorker.unregister();
+
+ipcRenderer.on("getConfigResponse", (event, arg) => {
+  store.dispatch(setConfig(arg));
+});
 
 ipcRenderer.on("getCoreAddonsResponse", (event, arg) => {
   store.dispatch(setAvailableCoreAddons(arg.payload.data));

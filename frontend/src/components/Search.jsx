@@ -1,17 +1,12 @@
 import { ipcRenderer } from "electron";
 import React, { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { Button, Grid, TextField } from "@material-ui/core";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import Input from "@material-ui/core/Input";
-import InputLabel from "@material-ui/core/InputLabel";
+import Select from "@material-ui/core/Select";
+import MenuItem from "@material-ui/core/MenuItem";
 import InputAdornment from "@material-ui/core/InputAdornment";
-import FormControl from "@material-ui/core/FormControl";
 import styled from "styled-components";
-import store from "../state/store";
 
-import CloseIcon from "@material-ui/icons/Close";
 import SearchIcon from "@material-ui/icons/Search";
 import GitHubIcon from "@material-ui/icons/GitHub";
 import StarIcon from "@material-ui/icons/Star";
@@ -50,7 +45,10 @@ const StyledListItemContent = styled.div`
 `;
 
 const StyledTextField = styled(TextField)`
-  width: 90%;
+  width: 80%;
+`;
+const StyledSelect = styled(Select)`
+  width: 10%;
 `;
 const StyledButton = styled(Button)`
   width: 10%;
@@ -58,8 +56,32 @@ const StyledButton = styled(Button)`
 
 export default () => {
   const [query, setQuery] = useState("");
+  const [searchType, setSearchType] = useState("name");
   const [result, setResult] = useState([]);
   const cwd = useSelector(state => state.config.cwd);
+
+  const handleSearchTypeChange = event => {
+    setSearchType(event.target.value);
+  };
+  const handleSearch = () => {
+    if (searchType === "name") {
+      fetch(
+        `https://api.github.com/search/repositories?q=${query}&sort=stars&order=desc`
+      )
+        .then(res => res.json())
+        .then(data => {
+          setResult(data.items);
+        })
+        .catch(console.log);
+    } else if (searchType === "user") {
+      fetch(`https://api.github.com/users/${query}/repos?per_page=100`)
+        .then(res => res.json())
+        .then(data => {
+          setResult(data.filter(item => item.name.startsWith("ofx")));
+        })
+        .catch(console.log);
+    }
+  };
   return (
     <Container>
       <h2>Search</h2>
@@ -77,32 +99,25 @@ export default () => {
           setQuery(event.target.value);
         }}
         onKeyPress={event => {
-          if (event.charCode == 13) {
-            fetch(
-              `https://api.github.com/search/repositories?q=${query}&sort=stars&order=desc`
-            )
-              .then(res => res.json())
-              .then(data => {
-                console.log(data.items);
-                setResult(data.items);
-              })
-              .catch(console.log);
+          if (event.charCode === 13) {
+            handleSearch();
           }
         }}
         // fullWidth
       />
+      <StyledSelect
+        labelId="demo-simple-select-label"
+        id="demo-simple-select"
+        value={searchType}
+        onChange={handleSearchTypeChange}
+      >
+        <MenuItem value={"name"}>name</MenuItem>
+        <MenuItem value={"user"}>user</MenuItem>
+      </StyledSelect>
       <StyledButton
         variant="contained"
         onClick={event => {
-          fetch(
-            `https://api.github.com/search/repositories?q=${query}&sort=stars&order=desc`
-          )
-            .then(res => res.json())
-            .then(data => {
-              console.log(data.items);
-              setResult(data.items);
-            })
-            .catch(console.log);
+          handleSearch();
         }}
       >
         <SearchIcon></SearchIcon>

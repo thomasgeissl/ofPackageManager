@@ -29,12 +29,12 @@ const StyledGenerator = styled(Generator)`
 
 export default () => {
   const cwd = useSelector(state => state.config.cwd);
-  //   const ofPath = useSelector(state => state.config.ofPath);
+  const ofPath = useSelector(state => state.config.ofPath);
   return (
     <>
       <ProjectInfo>
         <div>project path: {cwd}</div>
-        <div>oF path</div>
+        <div>oF path: {ofPath}</div>
       </ProjectInfo>
       <Headline>
         core addons{" "}
