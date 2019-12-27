@@ -9,6 +9,7 @@ import { Button, FormControlLabel, Grid, Switch } from "@material-ui/core";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
 import TextField from "@material-ui/core/TextField";
+import Tooltip from "@material-ui/core/Tooltip";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 
 import styled from "styled-components";
@@ -250,17 +251,19 @@ export default () => {
         {packages.map(function(value, index) {
           return (
             <li key={index}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    color="primary"
-                    checked={isPackageSelected(value)}
-                    onChange={handleSelectedChange(value)}
-                    value={value.path}
-                  />
-                }
-                label={value.path}
-              />
+              <Tooltip title={`${value.url}@${value.checkout}`}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      color="primary"
+                      checked={isPackageSelected(value)}
+                      onChange={handleSelectedChange(value)}
+                      value={value.path}
+                    />
+                  }
+                  label={value.path}
+                />
+              </Tooltip>
             </li>
           );
         })}

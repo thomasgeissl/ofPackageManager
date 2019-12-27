@@ -1,6 +1,7 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { FormControlLabel, Switch } from "@material-ui/core";
+import Tooltip from "@material-ui/core/Tooltip";
 import styled from "styled-components";
 import {
   addGlobalPackage,
@@ -44,7 +45,7 @@ export default () => {
         {packages.map(function(value, index) {
           return (
             <li key={index}>
-              <section>
+              <Tooltip title={`${value.url}@${value.checkout}`}>
                 <FormControlLabel
                   control={
                     <Switch
@@ -59,7 +60,7 @@ export default () => {
                 {/* <Info>
                   {value.url}@{value.checkout}
                 </Info> */}
-              </section>
+              </Tooltip>
             </li>
           );
         })}
