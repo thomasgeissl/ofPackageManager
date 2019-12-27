@@ -1,6 +1,7 @@
 import React from "react";
 import { useHistory } from "react-router-dom";
 import styled from "styled-components";
+import Button from "@material-ui/core/Button";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 
 const Container = styled.footer`
@@ -11,12 +12,15 @@ export default () => {
   const history = useHistory();
   return (
     <Container>
-      <ArrowBackIcon
+      <Button
+        variant="contained"
         onClick={event =>
           // history.goBack()
           history.push("/")
         }
-      ></ArrowBackIcon>
+      >
+        <ArrowBackIcon></ArrowBackIcon>
+      </Button>
     </Container>
   );
 };

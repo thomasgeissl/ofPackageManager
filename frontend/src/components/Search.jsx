@@ -86,7 +86,7 @@ export default () => {
     <Container>
       <h2>Search</h2>
       <StyledTextField
-        id="input-with-icon-textfield"
+        variant="outlined"
         label="name"
         InputProps={{
           startAdornment: (
@@ -106,10 +106,9 @@ export default () => {
         // fullWidth
       />
       <StyledSelect
-        labelId="demo-simple-select-label"
-        id="demo-simple-select"
         value={searchType}
         onChange={handleSearchTypeChange}
+        variant="outlined"
       >
         <MenuItem value={"name"}>name</MenuItem>
         <MenuItem value={"user"}>user</MenuItem>
