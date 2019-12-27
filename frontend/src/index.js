@@ -27,7 +27,6 @@ ipcRenderer.on("getConfigResponse", (event, arg) => {
   store.dispatch(setConfig(arg));
 });
 ipcRenderer.on("getVersionResponse", (event, arg) => {
-  console.log(arg.payload);
   // if (arg.success) {
   store.dispatch(setPackageManagerVersion(arg.payload));
   // }

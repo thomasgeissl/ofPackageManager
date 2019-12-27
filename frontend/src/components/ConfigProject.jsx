@@ -2,6 +2,7 @@ import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import styled from "styled-components";
 
+import Header from "./Header";
 import CorePackageSelector from "./CorePackageSelector";
 import GloballyInstalledPackageSelector from "./GloballyInstalledPackageSelector";
 import LocallyInstalledPackageSelector from "./LocallyInstalledPackageSelector";
@@ -32,6 +33,7 @@ export default () => {
   const ofPath = useSelector(state => state.config.ofPath);
   return (
     <>
+      <Header></Header>
       <ProjectInfo>
         <div>project path: {cwd}</div>
         <div>oF path: {ofPath}</div>

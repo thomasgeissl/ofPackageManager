@@ -9,6 +9,7 @@ import ConfigProject from "./components/ConfigProject";
 import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
 import "./App.css";
 import Footer from "./components/Footer";
+import Header from "./components/Header";
 
 const theme = createMuiTheme({
   palette: {
@@ -20,29 +21,6 @@ const theme = createMuiTheme({
     danger: "orange"
   }
 });
-
-// ipcRenderer.on("getVersionResponse", (event, arg) => {
-//   console.log(arg);
-// });
-// ipcRenderer.on("installPackageByIdResponse", (event, arg) => {
-//   console.log(arg);
-// });
-// ipcRenderer.on("installPackageByGithubResponse", (event, arg) => {
-//   console.log(arg);
-// });
-// ipcRenderer.on("installPackageByUrlResponse", (event, arg) => {
-//   console.log(arg);
-// });
-
-// ipcRenderer.send("getVersion", "");
-// ipcRenderer.send("getCoreAddons", "");
-// ipcRenderer.send("getAvailablePackages", "");
-// ipcRenderer.send("installPackageById", "ofxMidi");
-// ipcRenderer.send("installPackageByGithub", "thomasgeissl/ofxGit2");
-// ipcRenderer.send(
-//   "installPackageByUrl",
-//   "https://github.com/danomatika/ofxLua.git"
-// );
 
 function App() {
   return (
