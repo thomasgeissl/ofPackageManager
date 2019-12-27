@@ -12,6 +12,13 @@ import ConfigApp from "./ConfigApp";
 const Container = styled.div`
   padding: 100px;
 `;
+
+const StyledCliSection = styled.section`
+  margin-top: 100px;
+  margin-bottom: 50px;
+  font-size: 1.25em;
+  text-align: left;
+`;
 const StyledModal = styled(Modal)`
   overflow: scroll;
   display: flex;
@@ -83,6 +90,18 @@ export default () => {
           </Grid>
         )}
       </Grid>
+      <StyledCliSection>
+        By the way, <br></br>
+        there is also a cli version of the package manager available.<br></br>
+        Feel free to check out the its{" "}
+        <a
+          href="https://thomasgeissl.github.io/ofPackageManager/"
+          target="_blank"
+        >
+          website
+        </a>
+        .
+      </StyledCliSection>
       <StyledModal
         open={configModalOpen}
         onClose={event => {
