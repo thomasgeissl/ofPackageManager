@@ -1,6 +1,7 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { FormControlLabel, Switch } from "@material-ui/core";
+import Checkbox from "@material-ui/core/Checkbox";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
 import styled from "styled-components";
 import { addCoreAddon, removeCoreAddon } from "../state/reducers/corePackages";
 
@@ -35,11 +36,12 @@ export default () => {
             <li key={index}>
               <FormControlLabel
                 control={
-                  <Switch
+                  <Checkbox
                     color="primary"
                     checked={isCoreAddonSelected(name)}
                     onChange={handleChange(name)}
                     value={name}
+                    size="small"
                   />
                 }
                 label={name}

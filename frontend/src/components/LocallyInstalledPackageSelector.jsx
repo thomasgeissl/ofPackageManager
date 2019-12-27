@@ -5,7 +5,8 @@ import {
   addLocalPackage,
   removeLocalPackage
 } from "../state/reducers/localPackages";
-import { Button, FormControlLabel, Grid, Switch } from "@material-ui/core";
+import { Button, FormControlLabel, Grid } from "@material-ui/core";
+import Checkbox from "@material-ui/core/Checkbox";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
 import TextField from "@material-ui/core/TextField";
@@ -254,11 +255,12 @@ export default () => {
               <Tooltip title={`${value.url}@${value.checkout}`}>
                 <FormControlLabel
                   control={
-                    <Switch
+                    <Checkbox
                       color="primary"
                       checked={isPackageSelected(value)}
                       onChange={handleSelectedChange(value)}
                       value={value.path}
+                      size="small"
                     />
                   }
                   label={value.path}
