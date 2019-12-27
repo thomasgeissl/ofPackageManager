@@ -8,6 +8,7 @@ import Open from "./components/Open";
 import ConfigProject from "./components/ConfigProject";
 import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
 import "./App.css";
+import Footer from "./components/Footer";
 
 const theme = createMuiTheme({
   palette: {
@@ -63,6 +64,7 @@ function App() {
                 <NewOrOpen></NewOrOpen>
               </Route>
             </Switch>
+            <Footer></Footer>
           </Router>
         </ThemeProvider>
       </StoreProvider>

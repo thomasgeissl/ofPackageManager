@@ -5,7 +5,7 @@ import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 import { ipcRenderer } from "electron";
 import store from "./state/store";
-import { setConfig } from "./state/reducers/config";
+import { setConfig, setPackageManagerVersion } from "./state/reducers/config";
 import {
   setAvailableCoreAddons,
   addCoreAddon
@@ -25,6 +25,12 @@ serviceWorker.unregister();
 
 ipcRenderer.on("getConfigResponse", (event, arg) => {
   store.dispatch(setConfig(arg));
+});
+ipcRenderer.on("getVersionResponse", (event, arg) => {
+  console.log(arg.payload);
+  // if (arg.success) {
+  store.dispatch(setPackageManagerVersion(arg.payload));
+  // }
 });
 
 ipcRenderer.on("getCoreAddonsResponse", (event, arg) => {
@@ -60,3 +66,4 @@ ipcRenderer.on("getPackagesListedInAddonsMakeResponse", (event, arg) => {
     }
   });
 });
+ipcRenderer.send("getVersion", {});

@@ -1,6 +1,7 @@
 const initialState = {
   cwd: "",
   name: "",
+  ofPackageManagerVersion: { major: -1, minor: -1, patch: -1 },
   localAddonsPath: "",
   ofPath: "",
   packagesPath: "",
@@ -10,6 +11,7 @@ const initialState = {
 
 const types = {
   SETCONFIG: "SETCONFIG",
+  SETPACKAGEMANAGERVERSION: "SETPACKAGEMANAGERVERSION",
   SETCWD: "SETCWD",
   SETNAME: "SETNAME"
 };
@@ -20,6 +22,11 @@ export default (state = initialState, action) => {
       return {
         ...state,
         ...action.payload.value
+      };
+    case types.SETPACKAGEMANAGERVERSION:
+      return {
+        ...state,
+        ofPackageManagerVersion: action.payload.value
       };
     case types.SETCWD:
       return {
@@ -44,7 +51,14 @@ export const setConfig = value => {
     }
   };
 };
-
+export const setPackageManagerVersion = value => {
+  return {
+    type: types.SETPACKAGEMANAGERVERSION,
+    payload: {
+      value
+    }
+  };
+};
 export const setCwd = value => {
   return {
     type: types.SETCWD,
