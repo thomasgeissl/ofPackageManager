@@ -2,7 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import { Provider as StoreProvider } from "react-redux";
 import store from "./state/store";
-import NewOrOpen from "./components/NewOrOpen";
+import Home from "./components/Home";
 import New from "./components/New";
 import Open from "./components/Open";
 import ConfigProject from "./components/ConfigProject";
@@ -39,7 +39,7 @@ function App() {
                 <Open></Open>
               </Route>
               <Route path="/">
-                <NewOrOpen></NewOrOpen>
+                <Home></Home>
               </Route>
             </Switch>
             <Footer></Footer>

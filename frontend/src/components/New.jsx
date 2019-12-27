@@ -5,6 +5,7 @@ import { useHistory } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
 import { setCwd as setCwdCreator } from "../state/reducers/config";
+import Header from "./Header";
 const { dialog } = require("electron").remote;
 
 export default () => {
@@ -20,6 +21,7 @@ export default () => {
   });
   return (
     <>
+      <Header></Header>
       <TextField
         id="input-with-icon-textfield"
         label="location"
