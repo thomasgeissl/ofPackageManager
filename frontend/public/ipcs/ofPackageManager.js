@@ -140,12 +140,17 @@ ipcMain.on("installPackageById", (event, arg) => {
 
 ipcMain.on("installPackageByGithub", (event, arg) => {
   const response = packageManager(installPackageByGithub(arg));
-  event.reply("installPackageByGithubResponse", response);
+  // console.log(response);
+  // event.reply("installPackageByGithubResponse", response);
+  if (response.success) {
+    const response = packageManager(getLocallyInstalledPackages(arg));
+    event.reply("getLocallyInstalledPackagesResponse", response);
+  }
 });
 
 ipcMain.on("installPackageByUrl", (event, arg) => {
   const response = packageManager(installPackageByUrl(arg));
-  event.reply("installPackageByUrlResponse", response);
+  // event.reply("installPackageByUrlResponse", response);
   if (response.success) {
     const response = packageManager(getLocallyInstalledPackages(arg));
     event.reply("getLocallyInstalledPackagesResponse", response);
