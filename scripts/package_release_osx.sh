@@ -11,6 +11,7 @@ mkdir -p ../../tmp
 cd ../../tmp
 rm -rf *
 cp -R ../ofPackageManager ofPackageManager
+rm -rf ofPackageManager/frontend
 zip -r ofPackageManager_osx_version.zip ofPackageManager
 openssl dgst -sha256 ofPackageManager_osx_version.zip
 
