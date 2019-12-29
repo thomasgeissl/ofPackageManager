@@ -41,10 +41,16 @@ ipcMain.on("updateMultiple", (event, arg) => {
   let response;
   if (process.platform == "win32") {
     response = execSync(
-      `${config.pgPath} /ofPath"${config.ofPath}" /r ${arg.path}`
+      `${config.pgPath} /ofPath"${config.ofPath}" /r ${
+        arg.verboseOutput ? " /verbose " : " "
+      } ${arg.path}`
     );
   } else {
-    response = execSync(`${config.pgPath} -o"${config.ofPath}" -r ${arg.path}`);
+    response = execSync(
+      `${config.pgPath} -o"${config.ofPath}" -r ${
+        arg.verboseOutput ? " -v " : " "
+      } ${arg.path}`
+    );
   }
 
   logAndSendToWebConsole(response.toString(), event);

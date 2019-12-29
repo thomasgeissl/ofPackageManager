@@ -27,6 +27,7 @@ ipcRenderer.on("doesDirectoryExistResponse", (event, arg) => {
 export default () => {
   const dispatch = useDispatch();
   const defaultProjectPath = useSelector(state => state.config);
+  const verboseOutput = useSelector(state => state.config.verboseOutput);
   const [location, setLocation] = useState("");
   const [cwd, setCwd] = useState("");
   const [valid, setValid] = useState(false);
@@ -74,7 +75,10 @@ export default () => {
                 //   ipcRenderer.send("createDirectory", { path: cwd });
                 console.log("updating multipe request", cwd);
                 // ipcRenderer.send("getConfig", {});
-                ipcRenderer.send("updateMultiple", { path: cwd });
+                ipcRenderer.send("updateMultiple", {
+                  path: cwd,
+                  verboseOutput
+                });
               }}
             >
               next

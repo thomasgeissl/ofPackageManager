@@ -4,7 +4,10 @@ import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Switch from "@material-ui/core/Switch";
 import styled from "styled-components";
 
-import { setShowAdvancedFeatures } from "../state/reducers/config";
+import {
+  setShowAdvancedFeatures,
+  setVerboseOutput
+} from "../state/reducers/config";
 const Container = styled.div`
   background-color: white;
   position: relative;
@@ -20,6 +23,7 @@ export default () => {
   const showAdvancedFeatures = useSelector(
     state => state.config.showAdvancedFeatures
   );
+  const verboseOutput = useSelector(state => state.config.verboseOutput);
   const dispatch = useDispatch();
   return (
     <Container>
@@ -37,6 +41,21 @@ export default () => {
               />
             }
             label="show advanced features"
+          />
+        </li>
+        <li>
+          <FormControlLabel
+            control={
+              <Switch
+                color="primary"
+                checked={verboseOutput}
+                onChange={(event, value) => {
+                  dispatch(setVerboseOutput(value));
+                }}
+                value={verboseOutput}
+              />
+            }
+            label="verbose output"
           />
         </li>
       </List>

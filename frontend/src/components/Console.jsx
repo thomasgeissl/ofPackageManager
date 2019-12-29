@@ -7,20 +7,23 @@ const Container = styled.div`
   color: white;
   text-align: left;
   overflow-y: scroll;
-  padding: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
 `;
 export default () => {
   const output = useSelector(state => state.console.output);
   return (
     <Container>
-      {output.split("\n").map(function(item, key) {
-        return (
-          <span key={key}>
-            {item}
-            <br />
-          </span>
-        );
-      })}
+      {output === ""
+        ? output
+        : output.split("\n").map(function(item, key) {
+            return (
+              <span key={key}>
+                {item}
+                <br />
+              </span>
+            );
+          })}
     </Container>
   );
 };
