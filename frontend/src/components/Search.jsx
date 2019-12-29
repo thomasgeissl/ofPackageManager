@@ -12,6 +12,11 @@ import GitHubIcon from "@material-ui/icons/GitHub";
 import StarIcon from "@material-ui/icons/Star";
 import ForkIcon from "@material-ui/icons/Restaurant";
 import InstallIcon from "@material-ui/icons/GetApp";
+import LastUpdatedIcon from "@material-ui/icons/Timer";
+
+import toDate from "date-fns/toDate";
+import parseISODate from "date-fns/parseISO";
+import formatDate from "date-fns/format";
 
 const Container = styled.div`
   background-color: white;
@@ -145,7 +150,10 @@ export default () => {
                         <ForkIcon></ForkIcon> {item.forks_count}
                       </a>
                     </Grid>
-                    <Grid item>{item.updated_at}</Grid>
+                    <Grid item>
+                      <LastUpdatedIcon></LastUpdatedIcon>
+                      {formatDate(parseISODate(item.updated_at), "yyyy/MM/dd")}
+                    </Grid>
                   </Grid>
                 </StyledListItemContent>
                 <StyledButton
