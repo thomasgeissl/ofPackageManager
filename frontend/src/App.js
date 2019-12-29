@@ -23,9 +23,7 @@ const StyledApp = styled.div`
 const StyledContent = styled.div`
   flex-grow: 1;
 `;
-const StyledConsole = styled(Console)`
-  max-height: 25%;
-`;
+const StyledConsole = styled(Console)``;
 
 const theme = createMuiTheme({
   palette: {

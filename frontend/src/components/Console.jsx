@@ -9,6 +9,7 @@ const Container = styled.div`
   overflow-y: scroll;
   padding-left: 5px;
   padding-right: 5px;
+  max-height: 20%;
 `;
 export default () => {
   const output = useSelector(state => state.console.output);
