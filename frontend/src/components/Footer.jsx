@@ -7,9 +7,6 @@ import store from "../state/store";
 
 const Container = styled.footer`
   text-align: left;
-  position: fixed;
-  bottom: 0;
-  width: 100%;
 `;
 export default () => {
   const version = useSelector(state => state.config.ofPackageManagerVersion);

@@ -19,6 +19,8 @@ const Subline = styled.span`
 `;
 
 const ProjectInfo = styled.section`
+  margin-top: 15px;
+  margin-bottom: 15px;
   text-align: left;
 `;
 

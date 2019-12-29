@@ -4,8 +4,10 @@ const path = require("path");
 
 ipcMain.on("doesDirectoryExist", (event, arg) => {
   event.reply("doesDirectoryExistResponse", {
-    path: path.join(arg.location, arg.name),
-    value: fs.existsSync(path.join(arg.location, arg.name))
+    path: arg.name ? path.join(arg.location, arg.name) : arg.location,
+    value: arg.name
+      ? fs.existsSync(path.join(arg.location, arg.name))
+      : fs.existsSync(arg.location)
   });
 });
 

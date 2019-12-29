@@ -75,7 +75,7 @@ export default () => {
           <StyledButton
             variant="contained"
             onClick={() => {
-              history.push("/open");
+              history.push("/update");
             }}
             size="large"
           >
@@ -84,7 +84,13 @@ export default () => {
         </Grid>
         {showAdvancedFeatures && (
           <Grid item>
-            <StyledButton variant="contained" onClick={() => {}} size="large">
+            <StyledButton
+              variant="contained"
+              onClick={() => {
+                history.push("/updateMultiple");
+              }}
+              size="large"
+            >
               update multiple
             </StyledButton>
           </Grid>
@@ -93,7 +99,7 @@ export default () => {
       <StyledCliSection>
         By the way, <br></br>
         there is also a cli version of the package manager available.<br></br>
-        Feel free to check out the its{" "}
+        Feel free to check out its{" "}
         <a
           href="https://thomasgeissl.github.io/ofPackageManager/"
           target="_blank"

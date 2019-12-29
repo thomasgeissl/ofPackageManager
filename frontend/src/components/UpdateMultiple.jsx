@@ -20,7 +20,6 @@ const Actions = styled(Grid)`
 `;
 
 let doesDirectoryExistResponseCallback = (event, arg) => {};
-
 ipcRenderer.on("doesDirectoryExistResponse", (event, arg) => {
   doesDirectoryExistResponseCallback(event, arg);
 });
@@ -29,17 +28,14 @@ export default () => {
   const dispatch = useDispatch();
   const defaultProjectPath = useSelector(state => state.config);
   const [location, setLocation] = useState("");
-  const [name, setName] = useState("");
   const [cwd, setCwd] = useState("");
   const [valid, setValid] = useState(false);
   const history = useHistory();
-
   doesDirectoryExistResponseCallback = (event, arg) => {
-    setValid(!arg.value);
+    setValid(arg.value);
     setCwd(arg.path);
     dispatch(setCwdCreator(arg.path));
   };
-
   return (
     <Container>
       <Header></Header>
@@ -58,25 +54,15 @@ export default () => {
               .then(result => {
                 if (result.filePaths.length) {
                   setLocation(result.filePaths[0]);
+                  ipcRenderer.send("doesDirectoryExist", {
+                    location: result.filePaths[0]
+                  });
                 }
               })
               .catch(err => {
                 console.log(err);
               });
           }}
-          fullWidth
-        />
-        <TextField
-          label="name"
-          value={name}
-          onChange={event => {
-            setName(event.target.value);
-            ipcRenderer.send("doesDirectoryExist", {
-              location,
-              name: event.target.value
-            });
-          }}
-          onKeyPress={event => {}}
           fullWidth
         />
         <Actions container alignItems="flex-start" justify="flex-end">
@@ -86,15 +72,9 @@ export default () => {
               disabled={!valid}
               onClick={event => {
                 //   ipcRenderer.send("createDirectory", { path: cwd });
-                ipcRenderer.send("getConfig", {});
-                ipcRenderer.send("createProject", { path: cwd });
-                ipcRenderer.send("getCoreAddons", {});
-                ipcRenderer.send("getGloballyInstalledPackages", {});
-                ipcRenderer.send("getLocallyInstalledPackages", {
-                  cwd
-                });
-                ipcRenderer.send("getAvailablePackages", {});
-                history.push("/configProject");
+                console.log("updating multipe request", cwd);
+                // ipcRenderer.send("getConfig", {});
+                ipcRenderer.send("updateMultiple", { path: cwd });
               }}
             >
               next

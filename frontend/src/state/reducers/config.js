@@ -5,6 +5,7 @@ const initialState = {
   ofPackageManagerVersion: { major: -1, minor: -1, patch: -1 },
   localAddonsPath: "",
   ofPath: "",
+  defaultProjectPath: "",
   packagesPath: "",
   ofPackageManagerPath: "",
   pgPath: ""
@@ -21,10 +22,13 @@ const types = {
 export default (state = initialState, action) => {
   switch (action.type) {
     case types.SETCONFIG:
-      return {
+      const newState = {
         ...state,
         ...action.payload.value
       };
+      console.log("payload.value", action.payload.value);
+      console.log("new state", newState);
+      return newState;
     case types.SETSHOWADVANCEDFEATURES:
       return {
         ...state,
