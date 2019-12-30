@@ -61,6 +61,7 @@ const StyledButton = styled(Button)`
 
 export default () => {
   const [query, setQuery] = useState("");
+  const [checkout, setCheckout] = useState({ value: "latest" });
   const [searchType, setSearchType] = useState("name");
   const [result, setResult] = useState([]);
   const cwd = useSelector(state => state.config.cwd);
@@ -90,6 +91,14 @@ export default () => {
   return (
     <Container>
       <h2>Search</h2>
+      <StyledSelect
+        value={searchType}
+        onChange={handleSearchTypeChange}
+        variant="outlined"
+      >
+        <MenuItem value={"name"}>name</MenuItem>
+        <MenuItem value={"user"}>user</MenuItem>
+      </StyledSelect>
       <StyledTextField
         variant="outlined"
         label="name"
@@ -110,14 +119,7 @@ export default () => {
         }}
         // fullWidth
       />
-      <StyledSelect
-        value={searchType}
-        onChange={handleSearchTypeChange}
-        variant="outlined"
-      >
-        <MenuItem value={"name"}>name</MenuItem>
-        <MenuItem value={"user"}>user</MenuItem>
-      </StyledSelect>
+
       <StyledButton
         variant="contained"
         onClick={event => {

@@ -1,4 +1,10 @@
 const initialState = { coreAddons: [], selected: [] };
+const types = {
+  SETAVAILABLEGLOBALPACKAGES: "SETAVAILABLECOREPACKAGES",
+  ADDCOREPACKAGE: "ADDCOREPACKAGE",
+  REMOVECOREPACKAGE: "REMOVECOREPACKAGE",
+  CLEARCOREPACKAGES: "CLEARCOREPACKAGES"
+};
 
 export default (state = initialState, action) => {
   switch (action.type) {
@@ -20,6 +26,11 @@ export default (state = initialState, action) => {
         return newState;
       }
       break;
+    case types.CLEARCOREPACKAGES:
+      return {
+        ...state,
+        selected: []
+      };
     default:
       return state;
   }
@@ -48,5 +59,10 @@ export const removeCoreAddon = value => {
     payload: {
       value
     }
+  };
+};
+export const clearCorePackages = () => {
+  return {
+    type: types.CLEARCOREPACKAGES
   };
 };

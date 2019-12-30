@@ -1,13 +1,12 @@
-import React, { useState } from "react";
+import React from "react";
 import { useHistory } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
-import Modal from "@material-ui/core/Modal";
-import SettingsIcon from "@material-ui/icons/Settings";
 import styled from "styled-components";
-
-import ConfigApp from "./ConfigApp";
+import { clearCorePackages } from "../state/reducers/corePackages";
+import { clearGlobalPackages } from "../state/reducers/globalPackages";
+import { clearLocalPackages } from "../state/reducers/localPackages";
 
 const Container = styled.div`
   padding: 100px;
@@ -19,40 +18,20 @@ const StyledCliSection = styled.section`
   font-size: 1.25em;
   text-align: left;
 `;
-const StyledModal = styled(Modal)`
-  overflow: scroll;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
 const StyledButton = styled(Button)`
   width: 200px;
   height: 100px;
 `;
 
-const ConfigButton = styled(Button)`
-  /* TODO: fix the evil important  */
-  position: fixed !important;
-  top: 15px;
-  right: 15px;
-`;
-
 export default () => {
   const history = useHistory();
+  const dispatch = useDispatch();
   const showAdvancedFeatures = useSelector(
     state => state.config.showAdvancedFeatures
   );
-  const [configModalOpen, setConfigModalOpen] = useState(false);
 
   return (
     <Container>
-      <ConfigButton
-        onClick={event => {
-          setConfigModalOpen(true);
-        }}
-      >
-        <SettingsIcon></SettingsIcon>
-      </ConfigButton>
       <Grid
         container
         direction="row"
@@ -64,6 +43,9 @@ export default () => {
           <StyledButton
             variant="contained"
             onClick={() => {
+              dispatch(clearCorePackages());
+              dispatch(clearGlobalPackages());
+              dispatch(clearLocalPackages());
               history.push("/new");
             }}
             size="large"
@@ -75,6 +57,9 @@ export default () => {
           <StyledButton
             variant="contained"
             onClick={() => {
+              dispatch(clearCorePackages());
+              dispatch(clearGlobalPackages());
+              dispatch(clearLocalPackages());
               history.push("/update");
             }}
             size="large"
@@ -87,6 +72,9 @@ export default () => {
             <StyledButton
               variant="contained"
               onClick={() => {
+                dispatch(clearCorePackages());
+                dispatch(clearGlobalPackages());
+                dispatch(clearLocalPackages());
                 history.push("/updateMultiple");
               }}
               size="large"
@@ -108,14 +96,6 @@ export default () => {
         </a>
         .
       </StyledCliSection>
-      <StyledModal
-        open={configModalOpen}
-        onClose={event => {
-          setConfigModalOpen(false);
-        }}
-      >
-        <ConfigApp></ConfigApp>
-      </StyledModal>
     </Container>
   );
 };

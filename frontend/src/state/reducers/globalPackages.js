@@ -1,4 +1,10 @@
 const initialState = { globalPackages: [], selected: [] };
+const types = {
+  SETAVAILABLEGLOBALPACKAGES: "SETAVAILABLEGLOBALPACKAGES",
+  ADDGLOBALPACKAGE: "ADDGLOBALPACKAGE",
+  REMOVEGLOBALPACKAGE: "REMOVEGLOBALPACKAGE",
+  CLEARGLOBALPACKAGES: "CLEARGLOBALPACKAGES"
+};
 
 export default (state = initialState, action) => {
   switch (action.type) {
@@ -20,6 +26,8 @@ export default (state = initialState, action) => {
         newState.selected.splice(index, 1);
         return newState;
       }
+    case types.CLEARGLOBALPACKAGES:
+      return { ...state, selected: [] };
     default:
       return state;
   }
@@ -48,5 +56,11 @@ export const removeGlobalPackage = value => {
     payload: {
       value
     }
+  };
+};
+
+export const clearGlobalPackages = () => {
+  return {
+    type: types.CLEARGLOBALPACKAGES
   };
 };

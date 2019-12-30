@@ -12,6 +12,24 @@ export default () => (
         variant="contained"
         onClick={event => {
           const state = store.getState();
+
+          let packagesList = "";
+          state.corePackages.selected.forEach(p => {
+            packagesList += `${p}, `;
+          });
+
+          [
+            ...state.globalPackages.selected,
+            ...state.localPackages.selected
+          ].forEach(p => {
+            // packagesList += `${p.path}` + "#" + `${p.url}@${p.checkout}, `;
+            packagesList += `${p.path}, `;
+          });
+          ipcRenderer.send("updateProject", {
+            path: state.config.cwd,
+            packagesList
+          });
+
           ipcRenderer.send("removeAddonsMakeFile", {
             cwd: state.config.cwd
           });
@@ -22,23 +40,17 @@ export default () => (
               checkout: "",
               cwd: state.config.cwd
             });
-            console.log("install", p);
           });
-          state.globalPackages.selected.forEach(p => {
+
+          [
+            ...state.globalPackages.selected,
+            ...state.localPackages.selected
+          ].forEach(p => {
             ipcRenderer.send("addPackageToAddonsMakeFile", {
               ...p,
               cwd: state.config.cwd
             });
-            console.log("install", p);
           });
-          state.localPackages.selected.forEach(p => {
-            ipcRenderer.send("addPackageToAddonsMakeFile", {
-              ...p,
-              cwd: state.config.cwd
-            });
-            console.log("install", p);
-          });
-          ipcRenderer.send("updateProject", { path: state.config.cwd });
         }}
       >
         generate

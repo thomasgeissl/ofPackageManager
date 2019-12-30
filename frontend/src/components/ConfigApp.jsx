@@ -6,6 +6,7 @@ import styled from "styled-components";
 
 import {
   setShowAdvancedFeatures,
+  setShowConsole,
   setVerboseOutput
 } from "../state/reducers/config";
 const Container = styled.div`
@@ -23,6 +24,7 @@ export default () => {
   const showAdvancedFeatures = useSelector(
     state => state.config.showAdvancedFeatures
   );
+  const showConsole = useSelector(state => state.config.showConsole);
   const verboseOutput = useSelector(state => state.config.verboseOutput);
   const dispatch = useDispatch();
   return (
@@ -56,6 +58,21 @@ export default () => {
               />
             }
             label="verbose output"
+          />
+        </li>
+        <li>
+          <FormControlLabel
+            control={
+              <Switch
+                color="primary"
+                checked={showConsole}
+                onChange={(event, value) => {
+                  dispatch(setShowConsole(value));
+                }}
+                value={showConsole}
+              />
+            }
+            label="show console"
           />
         </li>
       </List>

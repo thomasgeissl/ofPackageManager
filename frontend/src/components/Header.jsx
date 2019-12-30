@@ -7,6 +7,8 @@ import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 const Container = styled.footer`
   text-align: left;
   width: 100%;
+  padding-top: 15px;
+  padding-left: 15px;
 `;
 export default () => {
   const history = useHistory();

@@ -2,6 +2,7 @@ const initialState = {
   cwd: "",
   name: "",
   showAdvancedFeatures: false,
+  showConsole: false,
   verboseOutput: false,
   ofPackageManagerVersion: { major: -1, minor: -1, patch: -1 },
   localAddonsPath: "",
@@ -15,6 +16,7 @@ const initialState = {
 const types = {
   SETCONFIG: "SETCONFIG",
   SETSHOWADVANCEDFEATURES: "SETSHOWADVANCEDFEATURES",
+  SETSHOWCONSOLE: "SETSHOWCONSOLE",
   SETVERBOSEOUTPUT: "SETVERBOSEOUTPUT",
   SETPACKAGEMANAGERVERSION: "SETPACKAGEMANAGERVERSION",
   SETCWD: "SETCWD",
@@ -35,6 +37,11 @@ export default (state = initialState, action) => {
       return {
         ...state,
         showAdvancedFeatures: action.payload.value
+      };
+    case types.SETSHOWCONSOLE:
+      return {
+        ...state,
+        showConsole: action.payload.value
       };
     case types.SETVERBOSEOUTPUT:
       return {
@@ -72,6 +79,14 @@ export const setConfig = value => {
 export const setShowAdvancedFeatures = value => {
   return {
     type: types.SETSHOWADVANCEDFEATURES,
+    payload: {
+      value
+    }
+  };
+};
+export const setShowConsole = value => {
+  return {
+    type: types.SETSHOWCONSOLE,
     payload: {
       value
     }

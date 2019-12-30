@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import { useSelector } from "react-redux";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import { Provider as StoreProvider } from "react-redux";
 import store from "./state/store";
@@ -7,11 +8,15 @@ import New from "./components/New";
 import Update from "./components/Open";
 import UpdateMultiple from "./components/UpdateMultiple";
 import ConfigProject from "./components/ConfigProject";
+import Button from "@material-ui/core/Button";
+import Modal from "@material-ui/core/Modal";
+import SettingsIcon from "@material-ui/icons/Settings";
 import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
 import "./App.css";
 import Footer from "./components/Footer";
 import Header from "./components/Header";
 import Console from "./components/Console";
+import ConfigApp from "./components/ConfigApp";
 import styled from "styled-components";
 
 const StyledApp = styled.div`
@@ -24,6 +29,18 @@ const StyledContent = styled.div`
   flex-grow: 1;
 `;
 const StyledConsole = styled(Console)``;
+const StyledModal = styled(Modal)`
+  overflow: scroll;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+const ConfigButton = styled(Button)`
+  /* TODO: fix the evil important  */
+  position: fixed !important;
+  top: 15px;
+  right: 15px;
+`;
 
 const theme = createMuiTheme({
   palette: {
@@ -37,11 +54,20 @@ const theme = createMuiTheme({
 });
 
 function App() {
+  const [configModalOpen, setConfigModalOpen] = useState(false);
+  const showConsole = store.getState().config.showConsole;
   return (
     <StyledApp className="App">
       <StoreProvider store={store}>
         <ThemeProvider theme={theme}>
           <StyledContent>
+            <ConfigButton
+              onClick={event => {
+                setConfigModalOpen(true);
+              }}
+            >
+              <SettingsIcon></SettingsIcon>
+            </ConfigButton>
             <Router>
               <Switch>
                 <Route path="/configProject">
@@ -62,8 +88,16 @@ function App() {
               </Switch>
             </Router>
           </StyledContent>
-          <StyledConsole></StyledConsole>
+          {showConsole && <StyledConsole></StyledConsole>}
           <Footer></Footer>
+          <StyledModal
+            open={configModalOpen}
+            onClose={event => {
+              setConfigModalOpen(false);
+            }}
+          >
+            <ConfigApp></ConfigApp>
+          </StyledModal>
         </ThemeProvider>
       </StoreProvider>
     </StyledApp>

@@ -1,5 +1,6 @@
 const { ipcMain } = require("electron");
 const { execSync } = require("child_process");
+const { logAndSendToWebConsole } = require("./utils");
 const config = require("../assets/config.json");
 
 const getVersion = () => {
@@ -120,8 +121,10 @@ const packageManager = command => {
 };
 
 ipcMain.on("getVersion", (event, arg) => {
-  const version = packageManager(getVersion());
-  event.reply("getVersionResponse", version);
+  logAndSendToWebConsole("getting version", event);
+  const response = packageManager(getVersion());
+  event.reply("getVersionResponse", response);
+  logAndSendToWebConsole(JSON.stringify(response, {}, 4), event);
 });
 
 ipcMain.on("getAvailablePackages", (event, arg) => {

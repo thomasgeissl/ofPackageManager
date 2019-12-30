@@ -1,11 +1,7 @@
+const { logAndSendToWebConsole } = require("./utils.js");
 const { ipcMain } = require("electron");
 const { execSync } = require("child_process");
 const config = require("../assets/config.json");
-
-const logAndSendToWebConsole = (value, event) => {
-  console.log(value);
-  event.reply("output", { value });
-};
 
 ipcMain.on("createProject", (event, arg) => {
   let output = "creating project at " + arg.path;
@@ -23,13 +19,17 @@ ipcMain.on("createProject", (event, arg) => {
 });
 
 ipcMain.on("updateProject", (event, arg) => {
+  let output = "updating project at " + arg.path;
+  logAndSendToWebConsole(output, event);
   let response;
   if (process.platform == "win32") {
-    response = execSync(
-      `${config.pgPath} /ofPath"${config.ofPath}" /dryRun ${arg.path}`
-    );
+    const command = `${config.pgPath} /ofPath"${config.ofPath}" /dryRun ${arg.path}`;
+    logAndSendToWebConsole(command, event);
+    response = execSync(command);
   } else {
-    response = execSync(`${config.pgPath} -o"${config.ofPath}" -d ${arg.path}`);
+    const command = `${config.pgPath} -o"${config.ofPath}" -a"${arg.packagesList}" ${arg.path}`;
+    logAndSendToWebConsole(command, event);
+    response = execSync(command);
   }
   console.log(response.toString());
   event.reply("output", { value: response.toString() });

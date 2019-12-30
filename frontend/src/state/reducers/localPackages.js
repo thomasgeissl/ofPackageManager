@@ -3,7 +3,8 @@ const types = {
   SETPACKAGESDATABASE: "SETPACKAGESDATABASE",
   SETAVAILABLELOCALPACKAGES: "SETAVAILABLELOCALPACKAGES",
   ADDLOCALPACKAGE: "ADDLOCALPACKAGE",
-  REMOVELOCALPACKAGE: "REMOVELOCALPACKAGE"
+  REMOVELOCALPACKAGE: "REMOVELOCALPACKAGE",
+  CLEARLOCALPACKAGES: "CLEARLOCALPACKAGES"
 };
 
 export default (state = initialState, action) => {
@@ -44,6 +45,8 @@ export default (state = initialState, action) => {
         return newState;
       }
       break;
+    case types.CLEARLOCALPACKAGES:
+      return { ...state, selected: [] };
     default:
       return state;
   }
@@ -80,6 +83,11 @@ export const removeLocalPackage = value => {
     payload: {
       value
     }
+  };
+};
+export const clearLocalPackages = () => {
+  return {
+    type: types.CLEARLOCALPACKAGES
   };
 };
 

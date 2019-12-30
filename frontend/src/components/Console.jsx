@@ -13,6 +13,7 @@ const Container = styled.div`
 `;
 export default () => {
   const output = useSelector(state => state.console.output);
+  const showConsole = useSelector(state => state.config.showConsole);
   return (
     <Container>
       {output === ""
