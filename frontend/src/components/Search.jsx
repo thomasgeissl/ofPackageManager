@@ -53,6 +53,11 @@ const StyledButton = styled(Button)`
   width: 10%;
 `;
 
+const Download = styled(Grid)`
+  margin-top: 15px;
+  width: 100%;
+`;
+
 export default () => {
   const config = useSelector(state => state.config);
   const cwd = useSelector(state => state.project.cwd);
@@ -153,19 +158,34 @@ export default () => {
                     </Grid>
                   </Grid>
                 </StyledListItemContent>
-                <StyledButton
-                  variant="contained"
-                  onClick={event => {
-                    ipcRenderer.send("installPackageByUrl", {
-                      config,
-                      url: item.clone_url,
-                      checkout: "latest",
-                      cwd
-                    });
-                  }}
-                >
-                  <InstallIcon></InstallIcon>
-                </StyledButton>
+                <Download container spacing="3">
+                  <Grid item>
+                    <TextField
+                      size="small"
+                      label="commit hash or tag"
+                      variant="outlined"
+                      defaultValue={checkout.value}
+                      onChange={event => {
+                        setCheckout({ value: event.target.value });
+                      }}
+                    />
+                  </Grid>
+                  <Grid item>
+                    <StyledButton
+                      variant="contained"
+                      onClick={event => {
+                        ipcRenderer.send("installPackageByUrl", {
+                          config,
+                          url: item.clone_url,
+                          checkout,
+                          cwd
+                        });
+                      }}
+                    >
+                      <InstallIcon></InstallIcon>
+                    </StyledButton>
+                  </Grid>
+                </Download>
               </li>
             );
           })}
