@@ -5,7 +5,7 @@ import { useHistory } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
 import Grid from "@material-ui/core/Grid";
-import { setCwd as setCwdCreator } from "../state/reducers/config";
+import { setCwd as setCwdCreator } from "../state/reducers/project";
 import Header from "./Header";
 import styled from "styled-components";
 const { dialog } = require("electron").remote;
@@ -27,8 +27,11 @@ ipcRenderer.on("doesDirectoryExistResponse", (event, arg) => {
 
 export default () => {
   const dispatch = useDispatch();
-  const defaultProjectPath = useSelector(state => state.config);
-  const [location, setLocation] = useState("");
+  const config = useSelector(state => state.config);
+  const defaultProjectPath = useSelector(
+    state => state.config.defaultProjectPath
+  );
+  const [location, setLocation] = useState(defaultProjectPath);
   const [name, setName] = useState("");
   const [cwd, setCwd] = useState("");
   const [valid, setValid] = useState(false);
@@ -52,7 +55,7 @@ export default () => {
           onClick={event => {
             dialog
               .showOpenDialog({
-                // defaultPath: defaultProjectPath,
+                defaultPath: defaultProjectPath,
                 properties: ["openDirectory"]
               })
               .then(result => {
@@ -86,14 +89,14 @@ export default () => {
               disabled={!valid}
               onClick={event => {
                 //   ipcRenderer.send("createDirectory", { path: cwd });
-                ipcRenderer.send("getConfig", {});
-                ipcRenderer.send("createProject", { path: cwd });
-                ipcRenderer.send("getCoreAddons", {});
-                ipcRenderer.send("getGloballyInstalledPackages", {});
+                ipcRenderer.send("createProject", { config, path: cwd });
+                ipcRenderer.send("getCoreAddons", { config });
+                ipcRenderer.send("getGloballyInstalledPackages", { config });
                 ipcRenderer.send("getLocallyInstalledPackages", {
+                  config,
                   cwd
                 });
-                ipcRenderer.send("getAvailablePackages", {});
+                ipcRenderer.send("getAvailablePackages", { config });
                 history.push("/configProject");
               }}
             >

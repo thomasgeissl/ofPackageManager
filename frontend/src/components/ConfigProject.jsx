@@ -8,9 +8,6 @@ import GloballyInstalledPackageSelector from "./GloballyInstalledPackageSelector
 import LocallyInstalledPackageSelector from "./LocallyInstalledPackageSelector";
 import Generator from "./Generator";
 
-// import config from "../../public/assets/config.json";
-// const ofPath = config.ofPath;
-
 const Headline = styled.h2`
   text-align: left;
 `;
@@ -31,7 +28,7 @@ const StyledGenerator = styled(Generator)`
 `;
 
 export default () => {
-  const cwd = useSelector(state => state.config.cwd);
+  const cwd = useSelector(state => state.project.cwd);
   const ofPath = useSelector(state => state.config.ofPath);
   return (
     <>

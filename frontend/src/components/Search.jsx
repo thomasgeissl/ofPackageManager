@@ -14,7 +14,6 @@ import ForkIcon from "@material-ui/icons/Restaurant";
 import InstallIcon from "@material-ui/icons/GetApp";
 import LastUpdatedIcon from "@material-ui/icons/Timer";
 
-import toDate from "date-fns/toDate";
 import parseISODate from "date-fns/parseISO";
 import formatDate from "date-fns/format";
 
@@ -25,11 +24,6 @@ const Container = styled.div`
   height: 90%;
   padding: 15px;
   overflow: auto;
-`;
-const CloseButton = styled(Button)`
-  position: fixed;
-  top: 15px;
-  right: 15px;
 `;
 
 const Results = styled.div`
@@ -60,11 +54,12 @@ const StyledButton = styled(Button)`
 `;
 
 export default () => {
+  const config = useSelector(state => state.config);
+  const cwd = useSelector(state => state.project.cwd);
   const [query, setQuery] = useState("");
   const [checkout, setCheckout] = useState({ value: "latest" });
   const [searchType, setSearchType] = useState("name");
   const [result, setResult] = useState([]);
-  const cwd = useSelector(state => state.config.cwd);
 
   const handleSearchTypeChange = event => {
     setSearchType(event.target.value);
@@ -162,6 +157,7 @@ export default () => {
                   variant="contained"
                   onClick={event => {
                     ipcRenderer.send("installPackageByUrl", {
+                      config,
                       url: item.clone_url,
                       checkout: "latest",
                       cwd

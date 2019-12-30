@@ -1,15 +1,14 @@
-import { ipcRenderer } from "electron";
 import React from "react";
 import { useSelector } from "react-redux";
-import { Button, Grid } from "@material-ui/core";
 import styled from "styled-components";
-import store from "../state/store";
 
 const Container = styled.footer`
   text-align: left;
+  padding-top: 5px;
+  padding-bottom: 5px;
 `;
 export default () => {
-  const version = useSelector(state => state.config.ofPackageManagerVersion);
+  const version = useSelector(state => state.meta.ofPackageManagerVersion);
   return (
     <Container>
       <a

@@ -1,8 +1,16 @@
 {
-  "localAddonsPath": "local_addons",
-  "ofPath": "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/",
   "defaultProjectPath": "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/apps/myApps",
-  "packagesPath": "/Users/thomas.geissl/.ofPackages",
+  "localAddonsPath": "local_addons",
   "ofPackageManagerPath": "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/apps/packagemanager/ofPackageManager/bin/ofPackageManager.app/Contents/MacOS/ofPackageManager",
-  "pgPath": "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/apps/projectGenerator/commandLine/bin/projectGenerator.app/Contents/MacOS/projectGenerator"
+  "ofPackageManagerVersion": {
+    "major": -1,
+    "minor": -1,
+    "patch": -1
+  },
+  "ofPath": "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/",
+  "packagesPath": "/Users/thomas.geissl/.ofPackages",
+  "pgPath": "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/apps/projectGenerator/commandLine/bin/projectGenerator.app/Contents/MacOS/projectGenerator",
+  "showAdvancedFeatures": true,
+  "showConsole": true,
+  "verboseOutput": false
 }

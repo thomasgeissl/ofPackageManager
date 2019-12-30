@@ -6,7 +6,8 @@ import * as serviceWorker from "./serviceWorker";
 import { ipcRenderer } from "electron";
 import store from "./state/store";
 import { appendOutput } from "./state/reducers/console";
-import { setConfig, setPackageManagerVersion } from "./state/reducers/config";
+import { setOfPackageManagerVersion } from "./state/reducers/meta";
+import { setConfig } from "./state/reducers/config";
 import {
   setAvailableCoreAddons,
   addCoreAddon
@@ -24,13 +25,14 @@ import {
 ReactDOM.render(<App />, document.getElementById("root"));
 serviceWorker.unregister();
 
-ipcRenderer.on("getConfigResponse", (event, arg) => {
-  store.dispatch(setConfig(arg));
+ipcRenderer.on("readJsonFileResponse", (event, arg) => {
+  store.dispatch(setConfig(arg.content));
+  ipcRenderer.send("getVersion", { config: arg.content });
 });
 ipcRenderer.on("getVersionResponse", (event, arg) => {
-  // if (arg.success) {
-  store.dispatch(setPackageManagerVersion(arg.payload));
-  // }
+  if (arg.success) {
+    store.dispatch(setOfPackageManagerVersion(arg.payload));
+  }
 });
 
 ipcRenderer.on("getCoreAddonsResponse", (event, arg) => {
@@ -69,5 +71,5 @@ ipcRenderer.on("getPackagesListedInAddonsMakeResponse", (event, arg) => {
 ipcRenderer.on("output", (event, arg) => {
   store.dispatch(appendOutput(arg.value));
 });
-ipcRenderer.send("getVersion", {});
-ipcRenderer.send("getConfig", {});
+
+ipcRenderer.send("readJsonFile", { path: "assets/config.json" });

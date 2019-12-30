@@ -1,14 +1,15 @@
 const { ipcMain } = require("electron");
 const { execSync } = require("child_process");
 const { logAndSendToWebConsole } = require("./utils");
-const config = require("../assets/config.json");
 
-const getVersion = () => {
+const getVersion = values => {
+  const { config } = values;
   return {
     type: "GETVERSION"
   };
 };
-const getAvailablePackages = () => {
+const getAvailablePackages = values => {
+  const { config } = values;
   return {
     type: "GETAVAILABLEPACKAGES",
     payload: {
@@ -17,6 +18,7 @@ const getAvailablePackages = () => {
   };
 };
 const installPackageById = values => {
+  const { config } = values;
   return {
     type: "INSTALLPACKAGEBYID",
     payload: {
@@ -30,6 +32,7 @@ const installPackageById = values => {
 };
 
 const installPackageByGithub = values => {
+  const { config } = values;
   return {
     type: "INSTALLPACKAGEBYGITHUB",
     payload: {
@@ -43,19 +46,21 @@ const installPackageByGithub = values => {
 };
 
 const installPackageByUrl = values => {
+  const { config } = values;
   return {
     type: "INSTALLPACKAGEBYURL",
     payload: {
+      config,
       url: values.url,
       checkout: typeof checkout == "undefined" ? "latest" : values.checkout,
       destination: config.localAddonsPath,
-      config,
       cwd: values.cwd
     }
   };
 };
 
-const getCoreAddons = () => {
+const getCoreAddons = values => {
+  const { config } = values;
   return {
     type: "GETCOREADDONS",
     payload: {
@@ -63,7 +68,8 @@ const getCoreAddons = () => {
     }
   };
 };
-const getGloballyInstalledPackages = () => {
+const getGloballyInstalledPackages = values => {
+  const { config } = values;
   return {
     type: "GETGLOBALLYINSTALLEDPACKAGES",
     payload: {
@@ -72,6 +78,7 @@ const getGloballyInstalledPackages = () => {
   };
 };
 const getLocallyInstalledPackages = values => {
+  const { config } = values;
   return {
     type: "GETLOCALLYINSTALLEDPACKAGES",
     payload: {
@@ -81,6 +88,7 @@ const getLocallyInstalledPackages = values => {
   };
 };
 const addPackageToAddonsMakeFile = values => {
+  const { config } = values;
   return {
     type: "ADDPACKAGETOADDONSMAKEFILE",
     payload: {
@@ -95,6 +103,7 @@ const addPackageToAddonsMakeFile = values => {
   };
 };
 const getPackagesListedInAddonsMake = values => {
+  const { config } = values;
   return {
     type: "GETPACKAGESLISTEDINADDONSMAKE",
     payload: {
@@ -104,7 +113,7 @@ const getPackagesListedInAddonsMake = values => {
   };
 };
 
-const packageManager = command => {
+const packageManager = (config, command) => {
   const rawResponse = execSync(
     `${config.ofPackageManagerPath} "${JSON.stringify(command).replace(
       /\\([\s\S])|(")/g,
@@ -122,63 +131,70 @@ const packageManager = command => {
 
 ipcMain.on("getVersion", (event, arg) => {
   logAndSendToWebConsole("getting version", event);
-  const response = packageManager(getVersion());
+  const { config } = arg;
+  const response = packageManager(config, getVersion(arg));
   event.reply("getVersionResponse", response);
   logAndSendToWebConsole(JSON.stringify(response, {}, 4), event);
 });
 
 ipcMain.on("getAvailablePackages", (event, arg) => {
-  const response = packageManager(getAvailablePackages());
+  const { config } = arg;
+  const response = packageManager(config, getAvailablePackages(arg));
   event.reply("getAvailablePackagesResponse", response);
 });
 
 ipcMain.on("installPackageById", (event, arg) => {
-  const response = packageManager(installPackageById(arg));
+  const { config } = arg;
+  const response = packageManager(config, installPackageById(arg));
   if (response.success) {
-    const response = packageManager(getLocallyInstalledPackages(arg));
+    const response = packageManager(config, getLocallyInstalledPackages(arg));
     event.reply("getLocallyInstalledPackagesResponse", response);
   }
   // event.reply("installPackageByIdResponse", JSON.stringify(response));
 });
 
 ipcMain.on("installPackageByGithub", (event, arg) => {
-  const response = packageManager(installPackageByGithub(arg));
+  const { config } = arg;
+  const response = packageManager(config, installPackageByGithub(arg));
   // console.log(response);
   // event.reply("installPackageByGithubResponse", response);
   if (response.success) {
-    const response = packageManager(getLocallyInstalledPackages(arg));
+    const response = packageManager(config, getLocallyInstalledPackages(arg));
     event.reply("getLocallyInstalledPackagesResponse", response);
   }
 });
 
 ipcMain.on("installPackageByUrl", (event, arg) => {
-  const response = packageManager(installPackageByUrl(arg));
+  const { config } = arg;
+  const response = packageManager(config, installPackageByUrl(arg));
   // event.reply("installPackageByUrlResponse", response);
   if (response.success) {
-    const response = packageManager(getLocallyInstalledPackages(arg));
+    const response = packageManager(config, getLocallyInstalledPackages(arg));
     event.reply("getLocallyInstalledPackagesResponse", response);
   }
 });
 ipcMain.on("getCoreAddons", (event, arg) => {
-  const response = packageManager(getCoreAddons());
+  const { config } = arg;
+  const response = packageManager(config, getCoreAddons(arg));
   event.reply("getCoreAddonsResponse", response);
 });
 ipcMain.on("getGloballyInstalledPackages", (event, arg) => {
-  const response = packageManager(getGloballyInstalledPackages());
+  const { config } = arg;
+  const response = packageManager(config, getGloballyInstalledPackages(arg));
   event.reply("getGloballyInstalledPackagesResponse", response);
 });
 ipcMain.on("getLocallyInstalledPackages", (event, arg) => {
-  const response = packageManager(getLocallyInstalledPackages(arg));
+  const { config } = arg;
+  const response = packageManager(config, getLocallyInstalledPackages(arg));
   event.reply("getLocallyInstalledPackagesResponse", response);
 });
 ipcMain.on("addPackageToAddonsMakeFile", (event, arg) => {
-  const response = packageManager(addPackageToAddonsMakeFile(arg));
+  const { config } = arg;
+  const response = packageManager(config, addPackageToAddonsMakeFile(arg));
   event.reply("addPackageToAddonsMakeFileResponse", response);
 });
 ipcMain.on("getPackagesListedInAddonsMake", (event, arg) => {
-  const response = packageManager(getPackagesListedInAddonsMake(arg));
+  const { config } = arg;
+  const response = packageManager(config, getPackagesListedInAddonsMake(arg));
   event.reply("getPackagesListedInAddonsMakeResponse", response);
-});
-ipcMain.on("getConfig", (event, arg) => {
-  event.reply("getConfigResponse", config);
 });

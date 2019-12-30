@@ -53,6 +53,8 @@ const StyledModal = styled(Modal)`
 
 export default () => {
   const dispatch = useDispatch();
+  const config = useSelector(state => state.config);
+  const cwd = useSelector(state => state.project.cwd);
   const packages = useSelector(state => state.localPackages.packages);
   const database = useSelector(state => state.localPackages.database);
   const selectedPackages = useSelector(state => state.localPackages.selected);
@@ -202,24 +204,26 @@ export default () => {
             onClick={event => {
               if (searchType === "id") {
                 ipcRenderer.send("installPackageById", {
+                  config,
                   id: packageToInstall.name,
                   checkout,
-                  cwd: store.getState().config.cwd
+                  cwd
                 });
               }
               if (searchType === "github") {
-                console.log("install via github handle");
                 ipcRenderer.send("installPackageByGithub", {
+                  config,
                   github: githubToInstall,
                   checkout,
-                  cwd: store.getState().config.cwd
+                  cwd
                 });
               }
               if (searchType === "url") {
                 ipcRenderer.send("installPackageByUrl", {
+                  config,
                   url: urlToInstall,
                   checkout,
-                  cwd: store.getState().config.cwd
+                  cwd
                 });
               }
             }}
@@ -282,10 +286,10 @@ export default () => {
                     {value.url && (
                       <InstallButton
                         onClick={event => {
-                          console.log("install");
                           ipcRenderer.send("installPackageByUrl", {
+                            config,
                             ...value,
-                            cwd: store.getState().config.cwd
+                            cwd
                           });
                         }}
                       ></InstallButton>

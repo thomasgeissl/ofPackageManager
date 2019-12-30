@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useSelector } from "react-redux";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import { Provider as StoreProvider } from "react-redux";
 import store from "./state/store";
@@ -14,7 +13,6 @@ import SettingsIcon from "@material-ui/icons/Settings";
 import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
 import "./App.css";
 import Footer from "./components/Footer";
-import Header from "./components/Header";
 import Console from "./components/Console";
 import ConfigApp from "./components/ConfigApp";
 import styled from "styled-components";
@@ -28,7 +26,6 @@ const StyledApp = styled.div`
 const StyledContent = styled.div`
   flex-grow: 1;
 `;
-const StyledConsole = styled(Console)``;
 const StyledModal = styled(Modal)`
   overflow: scroll;
   display: flex;
@@ -55,7 +52,6 @@ const theme = createMuiTheme({
 
 function App() {
   const [configModalOpen, setConfigModalOpen] = useState(false);
-  const showConsole = store.getState().config.showConsole;
   return (
     <StyledApp className="App">
       <StoreProvider store={store}>
@@ -88,7 +84,7 @@ function App() {
               </Switch>
             </Router>
           </StyledContent>
-          {showConsole && <StyledConsole></StyledConsole>}
+          <Console></Console>
           <Footer></Footer>
           <StyledModal
             open={configModalOpen}

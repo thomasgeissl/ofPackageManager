@@ -26,6 +26,7 @@ export default (state = initialState, action) => {
         newState.selected.splice(index, 1);
         return newState;
       }
+      return state;
     case types.CLEARGLOBALPACKAGES:
       return { ...state, selected: [] };
     default:

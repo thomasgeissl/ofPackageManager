@@ -1,6 +1,4 @@
 const initialState = {
-  cwd: "",
-  name: "",
   showAdvancedFeatures: false,
   showConsole: false,
   verboseOutput: false,
@@ -19,8 +17,10 @@ const types = {
   SETSHOWCONSOLE: "SETSHOWCONSOLE",
   SETVERBOSEOUTPUT: "SETVERBOSEOUTPUT",
   SETPACKAGEMANAGERVERSION: "SETPACKAGEMANAGERVERSION",
-  SETCWD: "SETCWD",
-  SETNAME: "SETNAME"
+  SETOFPATH: "SETOFPATH",
+  SETDEFAULTPROJECTPATH: "SETDEFAULTPROJECTPATH",
+  SETPROJECTGENERATORPATH: "SETPROJECTGENERATORPATH",
+  SETOFPACKAGEMANAGERPATH: "SETOFPACKAGEMANAGERPATH"
 };
 
 export default (state = initialState, action) => {
@@ -48,21 +48,32 @@ export default (state = initialState, action) => {
         ...state,
         verboseOutput: action.payload.value
       };
+    case types.SETOFPATH:
+      return {
+        ...state,
+        ofPath: action.payload.value
+      };
+    case types.SETDEFAULTPROJECTPATH:
+      return {
+        ...state,
+        defaultProjectPath: action.payload.value
+      };
+    case types.SETOFPACKAGEMANAGERPATH:
+      return {
+        ...state,
+        ofPackageManagerPath: action.payload.value
+      };
+    case types.SETPROJECTGENERATORPATH:
+      return {
+        ...state,
+        pgPath: action.payload.value
+      };
     case types.SETPACKAGEMANAGERVERSION:
       return {
         ...state,
         ofPackageManagerVersion: action.payload.value
       };
-    case types.SETCWD:
-      return {
-        ...state,
-        cwd: action.payload.value
-      };
-    case types.SETNAME:
-      return {
-        ...state,
-        name: action.payload.value
-      };
+
     default:
       return state;
   }
@@ -108,18 +119,35 @@ export const setPackageManagerVersion = value => {
     }
   };
 };
-export const setCwd = value => {
+
+export const setOfPath = value => {
   return {
-    type: types.SETCWD,
+    type: types.SETOFPATH,
+    payload: {
+      value
+    }
+  };
+};
+export const setDefaultProjectPath = value => {
+  return {
+    type: types.SETDEFAULTPROJECTPATH,
+    payload: {
+      value
+    }
+  };
+};
+export const setOfPackageManagerPath = value => {
+  return {
+    type: types.SETOFPACKAGEMANAGERPATH,
     payload: {
       value
     }
   };
 };
 
-export const setName = value => {
+export const setProjectGeneratorPath = value => {
   return {
-    type: types.SETNAME,
+    type: types.SETPROJECTGENERATORPATH,
     payload: {
       value
     }
