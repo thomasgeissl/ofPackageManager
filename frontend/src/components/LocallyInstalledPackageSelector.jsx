@@ -34,8 +34,8 @@ const Headline = styled.h3`
 `;
 
 const SearchButton = styled(Grid)`
-  position: absolute;
-  right: 0;
+  flex-grow: 1;
+  text-align: right;
 `;
 
 const PackageInfo = styled.section`
