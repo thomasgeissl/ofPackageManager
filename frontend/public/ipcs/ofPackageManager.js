@@ -150,18 +150,18 @@ ipcMain.on("installPackageById", (event, arg) => {
     const response = packageManager(config, getLocallyInstalledPackages(arg));
     event.reply("getLocallyInstalledPackagesResponse", response);
   }
-  // event.reply("installPackageByIdResponse", JSON.stringify(response));
+  event.reply("installPackageByIdResponse", response);
 });
 
 ipcMain.on("installPackageByGithub", (event, arg) => {
   const { config } = arg;
   const response = packageManager(config, installPackageByGithub(arg));
   // console.log(response);
-  // event.reply("installPackageByGithubResponse", response);
   if (response.success) {
     const response = packageManager(config, getLocallyInstalledPackages(arg));
     event.reply("getLocallyInstalledPackagesResponse", response);
   }
+  event.reply("installPackageByGithubResponse", response);
 });
 
 ipcMain.on("installPackageByUrl", (event, arg) => {
@@ -172,6 +172,7 @@ ipcMain.on("installPackageByUrl", (event, arg) => {
     const response = packageManager(config, getLocallyInstalledPackages(arg));
     event.reply("getLocallyInstalledPackagesResponse", response);
   }
+  event.reply("installPackageByUrlResponse", response);
 });
 ipcMain.on("getCoreAddons", (event, arg) => {
   const { config } = arg;

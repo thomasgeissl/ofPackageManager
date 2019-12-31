@@ -15,6 +15,7 @@ import "./App.css";
 import Footer from "./components/Footer";
 import Console from "./components/Console";
 import ConfigApp from "./components/ConfigApp";
+import Notification from "./components/Notification";
 import styled from "styled-components";
 
 const StyledApp = styled.div`
@@ -94,6 +95,7 @@ function App() {
           >
             <ConfigApp></ConfigApp>
           </StyledModal>
+          <Notification></Notification>
         </ThemeProvider>
       </StoreProvider>
     </StyledApp>

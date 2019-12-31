@@ -17,6 +17,7 @@ ipcMain.on("createProject", (event, arg) => {
     response = execSync(`${config.pgPath} -o"${config.ofPath}" ${arg.path}`);
   }
   logAndSendToWebConsole(response.toString(), event);
+  event.reply("createProjectResponse", { success: true });
 });
 
 ipcMain.on("updateProject", (event, arg) => {
@@ -35,8 +36,8 @@ ipcMain.on("updateProject", (event, arg) => {
     logAndSendToWebConsole(command, event);
     response = execSync(command);
   }
-  console.log(response.toString());
-  event.reply("output", { value: response.toString() });
+  logAndSendToWebConsole(response.toString(), event);
+  event.reply("updateProjectResponse", { success: true });
 });
 
 ipcMain.on("updateMultiple", (event, arg) => {
@@ -61,4 +62,5 @@ ipcMain.on("updateMultiple", (event, arg) => {
   }
 
   logAndSendToWebConsole(response.toString(), event);
+  event.reply("updateMultipleResponse", { success: true });
 });

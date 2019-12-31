@@ -6,6 +6,7 @@ import * as serviceWorker from "./serviceWorker";
 import { ipcRenderer } from "electron";
 import store from "./state/store";
 import { appendOutput } from "./state/reducers/console";
+import { showNotification } from "./state/reducers/notification";
 import { setOfPackageManagerVersion } from "./state/reducers/meta";
 import { setConfig } from "./state/reducers/config";
 import {
@@ -70,6 +71,24 @@ ipcRenderer.on("getPackagesListedInAddonsMakeResponse", (event, arg) => {
 });
 ipcRenderer.on("output", (event, arg) => {
   store.dispatch(appendOutput(arg.value));
+});
+ipcRenderer.on("createProjectResponse", (event, arg) => {
+  store.dispatch(appendOutput(arg.value));
+});
+ipcRenderer.on("updateProjectResponse", (event, arg) => {
+  store.dispatch(showNotification("successfully updated project"));
+});
+ipcRenderer.on("updateMultipleResponse", (event, arg) => {
+  store.dispatch(showNotification("successfully updated multiple projects"));
+});
+ipcRenderer.on("installPackageByIdResponse", (event, arg) => {
+  store.dispatch(showNotification("successfully installed package"));
+});
+ipcRenderer.on("installPackageByGithubResponse", (event, arg) => {
+  store.dispatch(showNotification("successfully installed package"));
+});
+ipcRenderer.on("installPackageByUrlResponse", (event, arg) => {
+  store.dispatch(showNotification("successfully installed package"));
 });
 
 ipcRenderer.send("readJsonFile", { path: "assets/config.json" });
