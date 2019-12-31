@@ -6,6 +6,8 @@ import Header from "./Header";
 import CorePackageSelector from "./CorePackageSelector";
 import GloballyInstalledPackageSelector from "./GloballyInstalledPackageSelector";
 import LocallyInstalledPackageSelector from "./LocallyInstalledPackageSelector";
+import PlatformSelector from "./PlatformSelector";
+import TemplateSelector from "./TemplateSelector";
 import Generator from "./Generator";
 
 const Headline = styled.h2`
@@ -54,6 +56,10 @@ export default () => {
         local addons <Subline>addons that live inside your project</Subline>
       </Headline>
       <LocallyInstalledPackageSelector></LocallyInstalledPackageSelector>
+      {/* <Headline>platforms</Headline>
+      <PlatformSelector></PlatformSelector>
+      <Headline>templates</Headline>
+      <TemplateSelector></TemplateSelector> */}
       <StyledGenerator></StyledGenerator>
     </>
   );

@@ -26,6 +26,8 @@ const StyledApp = styled.div`
 `;
 const StyledContent = styled.div`
   flex-grow: 1;
+  overflow-y: scroll;
+  padding-bottom: 15px;
 `;
 const StyledModal = styled(Modal)`
   overflow: scroll;
