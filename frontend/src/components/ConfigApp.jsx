@@ -15,6 +15,7 @@ import {
   setOfPath,
   setDefaultProjectPath,
   setOfPackageManagerPath,
+  setOfPackagesPath,
   setProjectGeneratorPath
 } from "../state/reducers/config";
 const { dialog } = require("electron").remote;
@@ -46,6 +47,7 @@ export default () => {
   const ofPackageManagerPath = useSelector(
     state => state.config.ofPackageManagerPath
   );
+  const packagesPath = useSelector(state => state.config.packagesPath);
   const pgPath = useSelector(state => state.config.pgPath);
   const dispatch = useDispatch();
   return (
@@ -161,6 +163,31 @@ export default () => {
                   if (result.filePaths.length) {
                     //   setLocation(result.filePaths[0]);
                     dispatch(setOfPackageManagerPath(result.filePaths[0]));
+                  }
+                })
+                .catch(err => {
+                  console.log(err);
+                });
+            }}
+            fullWidth
+          />
+        </li>
+        <li>
+          <TextField
+            label="packages database path"
+            value={packagesPath}
+            onChange={event => {}}
+            onKeyPress={event => {}}
+            onClick={event => {
+              dialog
+                .showOpenDialog({
+                  // defaultPath: defaultProjectPath,
+                  properties: ["openDirectory"]
+                })
+                .then(result => {
+                  if (result.filePaths.length) {
+                    //   setLocation(result.filePaths[0]);
+                    dispatch(setOfPackagesPath(result.filePaths[0]));
                   }
                 })
                 .catch(err => {

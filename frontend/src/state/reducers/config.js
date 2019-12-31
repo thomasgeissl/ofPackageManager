@@ -2,7 +2,6 @@ const initialState = {
   showAdvancedFeatures: false,
   showConsole: false,
   verboseOutput: false,
-  ofPackageManagerVersion: { major: -1, minor: -1, patch: -1 },
   localAddonsPath: "",
   ofPath: "",
   defaultProjectPath: "",
@@ -20,7 +19,8 @@ const types = {
   SETOFPATH: "SETOFPATH",
   SETDEFAULTPROJECTPATH: "SETDEFAULTPROJECTPATH",
   SETPROJECTGENERATORPATH: "SETPROJECTGENERATORPATH",
-  SETOFPACKAGEMANAGERPATH: "SETOFPACKAGEMANAGERPATH"
+  SETOFPACKAGEMANAGERPATH: "SETOFPACKAGEMANAGERPATH",
+  SETOFPACKAGESPATH: "SETOFPACKAGESPATH"
 };
 
 export default (state = initialState, action) => {
@@ -63,15 +63,15 @@ export default (state = initialState, action) => {
         ...state,
         ofPackageManagerPath: action.payload.value
       };
+    case types.SETOFPACKAGESPATH:
+      return {
+        ...state,
+        packagesPath: action.payload.value
+      };
     case types.SETPROJECTGENERATORPATH:
       return {
         ...state,
         pgPath: action.payload.value
-      };
-    case types.SETPACKAGEMANAGERVERSION:
-      return {
-        ...state,
-        ofPackageManagerVersion: action.payload.value
       };
 
     default:
@@ -139,6 +139,14 @@ export const setDefaultProjectPath = value => {
 export const setOfPackageManagerPath = value => {
   return {
     type: types.SETOFPACKAGEMANAGERPATH,
+    payload: {
+      value
+    }
+  };
+};
+export const setOfPackagesPath = value => {
+  return {
+    type: types.SETOFPACKAGESPATH,
     payload: {
       value
     }
