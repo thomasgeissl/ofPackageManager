@@ -28,7 +28,7 @@ export default (state = initialState, action) => {
       }
       return state;
     case types.CLEARGLOBALPACKAGES:
-      return { ...state, selected: [] };
+      return { ...state, packages: [], selected: [] };
     default:
       return state;
   }
