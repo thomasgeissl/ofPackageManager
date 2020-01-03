@@ -22,6 +22,7 @@ import {
   setPackagesDatabase,
   addLocalPackage
 } from "./state/reducers/localPackages";
+import { addPlatform } from "./state/reducers/platforms";
 
 ReactDOM.render(<App />, document.getElementById("root"));
 serviceWorker.unregister();
@@ -90,5 +91,16 @@ ipcRenderer.on("installPackageByGithubResponse", (event, arg) => {
 ipcRenderer.on("installPackageByUrlResponse", (event, arg) => {
   store.dispatch(showNotification("successfully installed package"));
 });
+ipcRenderer.on("getPlatformResponse", (event, arg) => {
+  console.log("on get platform response ", arg);
+  if (arg.platform === "win32") {
+    store.dispatch(addPlatform("vs"));
+  } else if (arg.platform === "darwin") {
+    store.dispatch(addPlatform("osx"));
+  } else if (arg.platform === "linux") {
+    store.dispatch(addPlatform("linux"));
+  }
+});
 
 ipcRenderer.send("readJsonFile", { path: "assets/config.json" });
+ipcRenderer.send("getPlatform", {});

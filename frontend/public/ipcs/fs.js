@@ -42,3 +42,27 @@ ipcMain.on("readJsonFile", (event, arg) => {
     content: data
   });
 });
+
+ipcMain.on("getPlatform", (event, arg) => {
+  logAndSendToWebConsole("getting platform", event);
+  logAndSendToWebConsole(process.platform, event);
+
+  event.reply("getPlatformResponse", {
+    platform: process.platform
+  });
+});
+
+ipcMain.on("getTemplates", (event, arg) => {
+  logAndSendToWebConsole("getting templates", event);
+  const { config } = arg;
+
+  // TODO: filter only directories
+  fs.readdirSync(path.join(config.ofPath, "scripts/templates")).forEach(
+    file => {
+      console.log(file);
+    }
+  );
+
+  // event.reply("getTemplatesResponse", {
+  // });
+});

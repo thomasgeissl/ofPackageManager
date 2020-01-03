@@ -36,6 +36,7 @@ export default (state = initialState, action) => {
     case types.ADDPLATFORM:
       let newState = { ...state, selected: [...state.selected] };
       newState.selected.push(action.payload.value);
+      console.log("adding platform", newState);
       return newState;
     case types.REMOVEPLATFORM:
       var index = state.selected.indexOf(action.payload.value);
