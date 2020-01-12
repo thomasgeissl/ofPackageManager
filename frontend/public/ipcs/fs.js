@@ -57,12 +57,16 @@ ipcMain.on("getTemplates", (event, arg) => {
   const { config } = arg;
 
   // TODO: filter only directories
-  fs.readdirSync(path.join(config.ofPath, "scripts/templates")).forEach(
-    file => {
-      console.log(file);
-    }
-  );
+  const templates = fs
+    .readdirSync(path.join(config.ofPath, "scripts/templates"), {
+      withFileTypes: true
+    })
+    .filter(dirent => dirent.isDirectory())
+    .map(dirent => dirent.name);
 
-  // event.reply("getTemplatesResponse", {
-  // });
+  logAndSendToWebConsole(JSON.stringify(templates), event);
+
+  event.reply("getTemplatesResponse", {
+    templates
+  });
 });

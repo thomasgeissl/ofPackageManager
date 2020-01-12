@@ -1,6 +1,6 @@
 const initialState = {
   templates: [],
-  selected: []
+  selected: ""
 };
 
 const types = {
@@ -22,18 +22,19 @@ export default (state = initialState, action) => {
         ...state,
         selected: action.payload.value
       };
-    case types.ADDTEMPLATE:
-      let newState = { ...state, selected: [...state.selected] };
-      newState.selected.push(action.payload.value);
-      return newState;
-    case types.REMOVETEMPLATE:
-      var index = state.selected.indexOf(action.payload.value);
-      if (index > -1) {
-        let newState = { ...state, selected: [...state.selected] };
-        newState.selected.splice(index, 1);
-        return newState;
-      }
-      return state;
+    // case types.ADDTEMPLATE:
+    //   let newState = { ...state, selected: [...state.selected] };
+    //   //   newState.selected.push(action.payload.value);
+    //   newState.selected = action.payload.value;
+    //   return newState;
+    // case types.REMOVETEMPLATE:
+    //   var index = state.selected.indexOf(action.payload.value);
+    //   if (index > -1) {
+    //     let newState = { ...state, selected: [...state.selected] };
+    //     newState.selected.splice(index, 1);
+    //     return newState;
+    //   }
+    //   return state;
     default:
       return state;
   }
@@ -47,7 +48,7 @@ export const setAvailableTemplates = value => {
     }
   };
 };
-export const setSelectedTemplates = value => {
+export const setSelectedTemplate = value => {
   return {
     type: types.SETSELECTEDTEMPLATES,
     payload: {

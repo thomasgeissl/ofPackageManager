@@ -32,6 +32,9 @@ const StyledGenerator = styled(Generator)`
 export default () => {
   const cwd = useSelector(state => state.project.cwd);
   const ofPath = useSelector(state => state.config.ofPath);
+  const showAdvancedFeatures = useSelector(
+    state => state.config.showAdvancedFeatures
+  );
   return (
     <>
       <Header></Header>
@@ -56,11 +59,15 @@ export default () => {
         local addons <Subline>addons that live inside your project</Subline>
       </Headline>
       <LocallyInstalledPackageSelector></LocallyInstalledPackageSelector>
-      {/* <Headline>platforms</Headline>
-      <PlatformSelector></PlatformSelector>
-      <Headline>templates</Headline>
-      <TemplateSelector></TemplateSelector> */}
-      <StyledGenerator></StyledGenerator>
+      {showAdvancedFeatures && (
+        <>
+          <Headline>platforms</Headline>
+          <PlatformSelector></PlatformSelector>
+          <Headline>template</Headline>
+          <TemplateSelector></TemplateSelector>
+          <StyledGenerator></StyledGenerator>
+        </>
+      )}
     </>
   );
 };

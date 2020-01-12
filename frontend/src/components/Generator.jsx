@@ -8,6 +8,8 @@ import store from "../state/store";
 export default () => {
   const cwd = useSelector(state => state.project.cwd);
   const config = useSelector(state => state.config);
+  const platforms = useSelector(state => state.platforms.selected);
+  const templates = useSelector(state => state.templates.selected);
 
   return (
     <Grid container alignItems="flex-start" justify="flex-end">
@@ -33,7 +35,9 @@ export default () => {
             ipcRenderer.send("updateProject", {
               config,
               path: cwd,
-              packagesList
+              packagesList,
+              platforms,
+              templates
             });
 
             ipcRenderer.send("removeAddonsMakeFile", {

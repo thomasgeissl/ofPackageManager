@@ -24,7 +24,7 @@ ipcMain.on("updateProject", (event, arg) => {
   let output = "updating project at " + arg.path;
   logAndSendToWebConsole(output, event);
 
-  const { config } = arg;
+  const { config, packagesList, platforms, templates } = arg;
   let response;
 
   if (process.platform == "win32") {
@@ -32,7 +32,7 @@ ipcMain.on("updateProject", (event, arg) => {
     logAndSendToWebConsole(command, event);
     response = execSync(command);
   } else {
-    const command = `${config.pgPath} -o"${config.ofPath}" -a"${arg.packagesList}" ${arg.path}`;
+    const command = `${config.pgPath} -o"${config.ofPath}" -a"${packagesList}" -p"${platforms}" -t"${templates}" ${arg.path}`;
     logAndSendToWebConsole(command, event);
     response = execSync(command);
   }

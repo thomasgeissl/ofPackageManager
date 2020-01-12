@@ -23,6 +23,10 @@ import {
   addLocalPackage
 } from "./state/reducers/localPackages";
 import { addPlatform } from "./state/reducers/platforms";
+import {
+  setAvailableTemplates,
+  setSelectedTemplate
+} from "./state/reducers/templates";
 
 ReactDOM.render(<App />, document.getElementById("root"));
 serviceWorker.unregister();
@@ -30,6 +34,7 @@ serviceWorker.unregister();
 ipcRenderer.on("readJsonFileResponse", (event, arg) => {
   store.dispatch(setConfig(arg.content));
   ipcRenderer.send("getVersion", { config: arg.content });
+  ipcRenderer.send("getTemplates", { config: arg.content });
 });
 ipcRenderer.on("getVersionResponse", (event, arg) => {
   if (arg.success) {
@@ -95,11 +100,18 @@ ipcRenderer.on("getPlatformResponse", (event, arg) => {
   console.log("on get platform response ", arg);
   if (arg.platform === "win32") {
     store.dispatch(addPlatform("vs"));
+    store.dispatch(setSelectedTemplate("vs"));
   } else if (arg.platform === "darwin") {
     store.dispatch(addPlatform("osx"));
+    store.dispatch(setSelectedTemplate("osx"));
   } else if (arg.platform === "linux") {
+    // TODO: linux64?
     store.dispatch(addPlatform("linux"));
+    store.dispatch(setSelectedTemplate("linux"));
   }
+});
+ipcRenderer.on("getTemplatesResponse", (event, arg) => {
+  store.dispatch(setAvailableTemplates(arg.templates));
 });
 
 ipcRenderer.send("readJsonFile", { path: "assets/config.json" });
