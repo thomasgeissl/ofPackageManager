@@ -65,9 +65,9 @@ export default () => {
           <PlatformSelector></PlatformSelector>
           <Headline>template</Headline>
           <TemplateSelector></TemplateSelector>
-          <StyledGenerator></StyledGenerator>
         </>
       )}
+      <StyledGenerator></StyledGenerator>
     </>
   );
 };
