@@ -11,6 +11,6 @@
   "packagesPath": "/Users/thomas.geissl/.ofPackages",
   "pgPath": "/Users/thomas.geissl/libs/of_v0.11.0_osx_release/apps/projectGenerator/commandLine/bin/projectGenerator.app/Contents/MacOS/projectGenerator",
   "showAdvancedFeatures": true,
-  "showConsole": true,
+  "showConsole": false,
   "verboseOutput": false
 }

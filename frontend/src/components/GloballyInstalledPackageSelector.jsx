@@ -9,11 +9,7 @@ import {
   removeGlobalPackage
 } from "../state/reducers/globalPackages";
 
-const PackageList = styled.ul`
-  text-align: left;
-  columns: 5;
-  list-style-type: none;
-`;
+import PackageList from "./PackageList";
 
 // const Info = styled.span`
 //   font-size: 8px;

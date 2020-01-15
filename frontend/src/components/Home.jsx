@@ -7,6 +7,7 @@ import styled from "styled-components";
 import { clearCorePackages } from "../state/reducers/corePackages";
 import { clearGlobalPackages } from "../state/reducers/globalPackages";
 import { clearLocalPackages } from "../state/reducers/localPackages";
+import { clearProject } from "../state/reducers/project";
 
 const Container = styled.div`
   padding: 100px;
@@ -46,6 +47,7 @@ export default () => {
               dispatch(clearCorePackages());
               dispatch(clearGlobalPackages());
               dispatch(clearLocalPackages());
+              dispatch(clearProject());
               history.push("/new");
             }}
             size="large"
@@ -60,6 +62,7 @@ export default () => {
               dispatch(clearCorePackages());
               dispatch(clearGlobalPackages());
               dispatch(clearLocalPackages());
+              dispatch(clearProject());
               history.push("/update");
             }}
             size="large"
@@ -75,6 +78,7 @@ export default () => {
                 dispatch(clearCorePackages());
                 dispatch(clearGlobalPackages());
                 dispatch(clearLocalPackages());
+                dispatch(clearProject());
                 history.push("/updateMultiple");
               }}
               size="large"

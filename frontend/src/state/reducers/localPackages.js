@@ -46,7 +46,6 @@ export default (state = initialState, action) => {
       }
       break;
     case types.CLEARLOCALPACKAGES:
-      console.log("clear local pakcages");
       return { ...state, packages: [], selected: [] };
     default:
       return state;

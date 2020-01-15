@@ -5,7 +5,8 @@ const initialState = {
 
 const types = {
   SETCWD: "SETCWD",
-  SETNAME: "SETNAME"
+  SETNAME: "SETNAME",
+  CLEARPROJECT: "CLEARPROJECT"
 };
 
 export default (state = initialState, action) => {
@@ -20,6 +21,8 @@ export default (state = initialState, action) => {
         ...state,
         name: action.payload.value
       };
+    case types.CLEARPROJECT:
+      return initialState;
     default:
       return state;
   }
@@ -40,5 +43,11 @@ export const setName = value => {
     payload: {
       value
     }
+  };
+};
+
+export const clearProject = () => {
+  return {
+    type: types.CLEARPROJECT
   };
 };

@@ -38,9 +38,10 @@ export default () => {
   const history = useHistory();
 
   doesDirectoryExistResponseCallback = (event, arg) => {
-    setValid(!arg.value);
-    setCwd(arg.path);
-    dispatch(setCwdCreator(arg.path));
+    const { value, path } = arg;
+    setValid(!value);
+    setCwd(path);
+    dispatch(setCwdCreator(path));
   };
 
   return (
