@@ -1,3 +1,4 @@
+import { ipcRenderer } from "electron";
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import Box from "@material-ui/core/Box";
@@ -13,6 +14,7 @@ import PackageInstaller from "./PackageInstaller";
 import PlatformSelector from "./PlatformSelector";
 import TemplateSelector from "./TemplateSelector";
 import Generator from "./Generator";
+import RefreshButton from "./buttons/Refresh";
 
 const Headline = styled.h2`
   margin-top: 10px;
@@ -43,6 +45,7 @@ const StyledBox = styled(Box)`
 export default () => {
   const cwd = useSelector(state => state.project.cwd);
   const name = useSelector(state => state.project.name);
+  const config = useSelector(state => state.config);
   const ofPath = useSelector(state => state.config.ofPath);
   const locallyInstalledPackages = useSelector(
     state => state.localPackages.packages
@@ -54,7 +57,19 @@ export default () => {
     <>
       <Header></Header>
       <StyledBox border={1} borderRadius={8} borderColor="primary.main">
-        <Headline>Select or install addons</Headline>
+        <Headline>
+          Select or install addons{" "}
+          <RefreshButton
+            onClick={event => {
+              ipcRenderer.send("getCoreAddons", { config });
+              ipcRenderer.send("getGloballyInstalledPackages", { config });
+              ipcRenderer.send("getLocallyInstalledPackages", {
+                config,
+                cwd
+              });
+            }}
+          ></RefreshButton>
+        </Headline>
         <Subline>
           global addons{" "}
           <Description>
