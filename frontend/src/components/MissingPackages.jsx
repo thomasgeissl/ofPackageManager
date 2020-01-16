@@ -58,7 +58,17 @@ export default () => {
     <>
       {hasMissingPackages() && (
         <>
-          <h3>missing packages</h3>
+          <h3>
+            missing packages{" "}
+            <InstallButton
+              onClick={event => {
+                ipcRenderer.send("install", {
+                  config,
+                  cwd
+                });
+              }}
+            ></InstallButton>
+          </h3>
           <PackageList>
             {selectedPackages.map(function(value, index) {
               console.log(value);

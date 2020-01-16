@@ -17,6 +17,16 @@ const getAvailablePackages = values => {
     }
   };
 };
+const install = values => {
+  const { config } = values;
+  return {
+    type: "INSTALL",
+    payload: {
+      config,
+      cwd: values.cwd
+    }
+  };
+};
 const installPackageById = values => {
   const { config } = values;
   return {
@@ -141,6 +151,24 @@ ipcMain.on("getAvailablePackages", (event, arg) => {
   const { config } = arg;
   const response = packageManager(config, getAvailablePackages(arg));
   event.reply("getAvailablePackagesResponse", response);
+});
+
+ipcMain.on("install", (event, arg) => {
+  console.log("install");
+  const { config } = arg;
+  const response = packageManager(config, install(arg));
+  event.reply("installResponse", response);
+
+  const globalResponse = packageManager(
+    config,
+    getGloballyInstalledPackages(arg)
+  );
+  event.reply("getGloballyInstalledPackagesResponse", globalResponse);
+  const localResponse = packageManager(
+    config,
+    getLocallyInstalledPackages(arg)
+  );
+  event.reply("getLocallyInstalledPackagesResponse", localResponse);
 });
 
 ipcMain.on("installPackageById", (event, arg) => {

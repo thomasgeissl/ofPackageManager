@@ -16,8 +16,7 @@ const ConfigButton = styled(Button)`
 const Container = styled.footer`
   text-align: left;
   width: 100%;
-  padding-top: 15px;
-  padding-left: 15px;
+  padding: 15px;
 `;
 const Name = styled.span`
   margin-left: 15px;
