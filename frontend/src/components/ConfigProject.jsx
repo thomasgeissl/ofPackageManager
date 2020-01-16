@@ -8,6 +8,7 @@ import Header from "./Header";
 import CorePackageSelector from "./CorePackageSelector";
 import GloballyInstalledPackageSelector from "./GloballyInstalledPackageSelector";
 import LocallyInstalledPackageSelector from "./LocallyInstalledPackageSelector";
+import MissingPackages from "./MissingPackages";
 import PackageInstaller from "./PackageInstaller";
 import PlatformSelector from "./PlatformSelector";
 import TemplateSelector from "./TemplateSelector";
@@ -52,11 +53,6 @@ export default () => {
   return (
     <>
       <Header></Header>
-      <ProjectInfo>
-        {/* <div>project path: {cwd}</div> */}
-        {/* <div>oF path: {ofPath}</div> */}
-        <div>{name}</div>
-      </ProjectInfo>
       <StyledBox border={1} borderRadius={8} borderColor="primary.main">
         <Headline>Select or install addons</Headline>
         <Subline>
@@ -67,13 +63,6 @@ export default () => {
           </Description>
         </Subline>
         <CorePackageSelector></CorePackageSelector>
-        {/* <Headline>
-        global addons{" "}
-        <Subline>
-          addons that have been installed globally to openFrameworks/addons
-          directory and are shared between multiple projects
-        </Subline>
-      </Headline> */}
         <GloballyInstalledPackageSelector></GloballyInstalledPackageSelector>
         {locallyInstalledPackages.length > 0 && (
           <>
@@ -84,6 +73,7 @@ export default () => {
             <LocallyInstalledPackageSelector></LocallyInstalledPackageSelector>
           </>
         )}
+        <MissingPackages></MissingPackages>
         <PackageInstaller></PackageInstaller>
       </StyledBox>
 
