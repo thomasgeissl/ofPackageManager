@@ -1,5 +1,5 @@
 import { ipcRenderer } from "electron";
-import React, { useState } from "react";
+import React, { useState, useReducer } from "react";
 import { useSelector } from "react-redux";
 import { Button, Grid, TextField } from "@material-ui/core";
 import Box from "@material-ui/core/Box";
@@ -41,13 +41,8 @@ const Results = styled.div`
     }
   }
 `;
-const StyledListItemContent = styled.div`
-  width: 90%;
-`;
+const StyledListItemContent = styled.div``;
 
-const StyledSelect = styled(Select)`
-  width: 10%;
-`;
 const StyledButton = styled(Button)`
   width: 10%;
 `;
@@ -74,41 +69,70 @@ const isGitUrl = value => {
   return value.indexOf(suffix, value.length - suffix.length) !== -1;
 };
 
+const initialState = {
+  query: "",
+  result: [],
+  databaseResult: [],
+  urlResult: []
+};
+function reducer(state, action) {
+  switch (action.type) {
+    case "SETQUERY":
+      return { ...state, query: action.payload.value };
+    case "SETRESULT":
+      return { ...state, result: action.payload.value };
+    case "SETDATABASERESULT":
+      return { ...state, databaseResult: action.payload.value };
+    case "SETURLRESULT":
+      return { ...state, urlResult: action.payload.value };
+    case "SETDATABASECHECKOUT":
+      let { databaseResult } = state;
+      databaseResult[action.payload.index].checkout = action.payload.value;
+      return { ...state, databaseResult };
+    case "SETULRCHECKOUT":
+      let { urlResult } = state;
+      urlResult[action.payload.index].checkout = action.payload.value;
+      return { ...state, urlResult };
+    case "SETCHECKOUT":
+      let { result } = state;
+      result[action.payload.index].checkout = action.payload.value;
+      return { ...state, result };
+    default:
+      return state;
+    // throw new Error();
+  }
+  return state;
+}
 export default () => {
+  const [state, dispatch] = useReducer(reducer, initialState);
   const config = useSelector(state => state.config);
   const cwd = useSelector(state => state.project.cwd);
   const database = useSelector(state => state.localPackages.database);
-  const [query, setQuery] = useState("");
-  const [checkout, setCheckout] = useState({ value: "latest" });
-  const [result, setResult] = useState([]);
-  const [databaseResult, setDatabaseResult] = useState([]);
-  const [urlResult, setUrlResult] = useState([]);
+
+  const { query, result, databaseResult, urlResult } = state;
 
   const handleChange = (event, value) => {
     if (value) {
-      console.log(value);
-      setQuery(value);
+      dispatch({
+        type: "SETQUERY",
+        payload: { value }
+      });
     }
-    // setPackageToInstall({
-    //   name: "",
-    //   website: "",
-    //   license: "",
-    //   cloneUrl: "",
-    //   author: ""
-    // });
   };
   const handleSearch = () => {
-    setResult([]);
-    setDatabaseResult([]);
-    setUrlResult([]);
+    dispatch({ type: "SETRESULT", payload: { value: [] } });
+    dispatch({ type: "SETDATABASERESULT", payload: { value: [] } });
+    dispatch({ type: "SETURLRESULT", payload: { value: [] } });
+
     // database
     let databaseR = [];
     database.forEach(value => {
       if (value.name.toLowerCase().search(query.toLowerCase()) > -1) {
+        value.checkout = "latest";
         databaseR.push(value);
       }
     });
-    setDatabaseResult(databaseR);
+    dispatch({ type: "SETDATABASERESULT", payload: { value: databaseR } });
     // github
     if (query.search("user") === 0) {
       fetch(
@@ -118,7 +142,17 @@ export default () => {
       )
         .then(res => res.json())
         .then(data => {
-          setResult(data.filter(item => item.name.startsWith("ofx")));
+          data.forEach(item => {
+            item.tags = [];
+            item.checkout = "latest";
+          });
+          return data;
+        })
+        .then(data => {
+          dispatch({
+            type: "SETRESULT",
+            payload: { value: data.filter(item => item.name.startsWith("ofx")) }
+          });
         })
         .catch(console.log);
     } else {
@@ -126,20 +160,28 @@ export default () => {
         `https://api.github.com/search/repositories?q=${query}&sort=stars&order=desc`
       )
         .then(res => res.json())
+        .then(data => (data ? data.items : []))
         .then(data => {
-          setResult(data.items);
+          data.forEach(item => {
+            item.tags = [];
+            item.checkout = "latest";
+          });
+          return data;
+        })
+        .then(data => {
+          dispatch({ type: "SETRESULT", payload: { value: data } });
         })
         .catch(console.log);
     }
 
-    // not needed anymore, github api supports that already with the normal repo search
-    //github handle
-    // if (query.split("/").length === 2) {
-    //   setUrlResult([`https://github.com/${query}.git`]);
-    // }
-    //git clone url
     if (isGitUrl(query)) {
-      setUrlResult([query]);
+      dispatch({
+        type: "SETURLRESULT",
+        payload: {
+          checkout: "latest",
+          value: [{ value: query, checkout: "latest" }]
+        }
+      });
     }
   };
   return (
@@ -157,7 +199,10 @@ export default () => {
                 margin="normal"
                 variant="outlined"
                 onChange={event => {
-                  setQuery(event.target.value);
+                  dispatch({
+                    type: "SETQUERY",
+                    payload: { value: event.target.value }
+                  });
                 }}
                 onKeyPress={event => {
                   if (event.charCode === 13) {
@@ -182,6 +227,7 @@ export default () => {
       {/* {result.length} */}
       <Results>
         <ul>
+          {/* database results */}
           {databaseResult.map(function(item, index) {
             return (
               <DatabaseResultItem key={index}>
@@ -201,9 +247,14 @@ export default () => {
                       size="small"
                       label="commit hash or tag"
                       variant="outlined"
-                      defaultValue={checkout.value}
+                      value={item.checkout}
                       onChange={event => {
-                        setCheckout({ value: event.target.value });
+                        dispatch({
+                          type: "SETDATABASECHECKOUT",
+                          payload: { index, value: event.target.value }
+                        });
+
+                        // setCheckout({ value: event.target.value });
                       }}
                     />
                   </Grid>
@@ -211,10 +262,11 @@ export default () => {
                     <StyledButton
                       variant="contained"
                       onClick={event => {
+                        console.log("install package by url", item);
                         ipcRenderer.send("installPackageByUrl", {
                           config,
                           url: item.cloneUrl,
-                          checkout,
+                          checkout: item.checkout,
                           cwd
                         });
                       }}
@@ -237,9 +289,13 @@ export default () => {
                         size="small"
                         label="commit hash or tag"
                         variant="outlined"
-                        defaultValue={checkout.value}
+                        value={item.checkout}
                         onChange={event => {
-                          setCheckout({ value: event.target.value });
+                          dispatch({
+                            type: "SETURLCHECKOUT",
+                            payload: { index, value: event.target.value }
+                          });
+                          // setCheckout({ value: event.target.value });
                         }}
                       />
                     </Grid>
@@ -249,8 +305,8 @@ export default () => {
                         onClick={event => {
                           ipcRenderer.send("installPackageByUrl", {
                             config,
-                            url: item,
-                            checkout,
+                            url: item.value,
+                            checkout: item.checkout,
                             cwd
                           });
                         }}
@@ -299,9 +355,13 @@ export default () => {
                         size="small"
                         label="commit hash or tag"
                         variant="outlined"
-                        defaultValue={checkout.value}
+                        value={item.checkout}
                         onChange={event => {
-                          setCheckout({ value: event.target.value });
+                          dispatch({
+                            type: "SETCHECKOUT",
+                            payload: { index, value: event.target.value }
+                          });
+                          // setCheckout({ value: event.target.value });
                         }}
                       />
                     </Grid>
@@ -312,7 +372,7 @@ export default () => {
                           ipcRenderer.send("installPackageByUrl", {
                             config,
                             url: item.clone_url,
-                            checkout,
+                            checkout: item.checkout,
                             cwd
                           });
                         }}

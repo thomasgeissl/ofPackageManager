@@ -33,7 +33,8 @@ const installPackageById = values => {
     type: "INSTALLPACKAGEBYID",
     payload: {
       id: values.id,
-      checkout: typeof checkout == "undefined" ? "latest" : values.checkout,
+      checkout:
+        typeof values.checkout == "undefined" ? "latest" : values.checkout,
       destination: config.localAddonsPath,
       config,
       cwd: values.cwd
@@ -47,7 +48,8 @@ const installPackageByGithub = values => {
     type: "INSTALLPACKAGEBYGITHUB",
     payload: {
       github: values.github,
-      checkout: typeof checkout == "undefined" ? "latest" : values.checkout,
+      checkout:
+        typeof values.checkout == "undefined" ? "latest" : values.checkout,
       destination: config.localAddonsPath,
       config,
       cwd: values.cwd
@@ -62,7 +64,8 @@ const installPackageByUrl = values => {
     payload: {
       config,
       url: values.url,
-      checkout: typeof checkout == "undefined" ? "latest" : values.checkout,
+      checkout:
+        typeof values.checkout == "undefined" ? "latest" : values.checkout,
       destination: config.localAddonsPath,
       cwd: values.cwd
     }
