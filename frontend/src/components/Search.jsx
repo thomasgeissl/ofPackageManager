@@ -159,6 +159,11 @@ export default () => {
                 onChange={event => {
                   setQuery(event.target.value);
                 }}
+                onKeyPress={event => {
+                  if (event.charCode === 13) {
+                    handleSearch();
+                  }
+                }}
                 fullWidth
               />
             )}
