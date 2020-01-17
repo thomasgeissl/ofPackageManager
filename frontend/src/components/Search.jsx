@@ -3,9 +3,6 @@ import React, { useState, useReducer } from "react";
 import { useSelector } from "react-redux";
 import { Button, Grid, TextField } from "@material-ui/core";
 import Box from "@material-ui/core/Box";
-import Select from "@material-ui/core/Select";
-import MenuItem from "@material-ui/core/MenuItem";
-import InputAdornment from "@material-ui/core/InputAdornment";
 import styled from "styled-components";
 
 import GitHubIcon from "@material-ui/icons/GitHub";
@@ -128,6 +125,7 @@ export default () => {
     let databaseR = [];
     database.forEach(value => {
       if (value.name.toLowerCase().search(query.toLowerCase()) > -1) {
+        value.tags = ["latest"];
         value.checkout = "latest";
         databaseR.push(value);
       }
@@ -143,7 +141,7 @@ export default () => {
         .then(res => res.json())
         .then(data => {
           data.forEach(item => {
-            item.tags = [];
+            item.tags = ["latest"];
             item.checkout = "latest";
           });
           return data;
@@ -163,7 +161,7 @@ export default () => {
         .then(data => (data ? data.items : []))
         .then(data => {
           data.forEach(item => {
-            item.tags = [];
+            item.tags = ["latest"];
             item.checkout = "latest";
           });
           return data;
@@ -242,20 +240,32 @@ export default () => {
                   <div>{item.license}</div>
                 </StyledListItemContent>
                 <Download container spacing={3}>
-                  <Grid item>
-                    <TextField
-                      size="small"
-                      label="commit hash or tag"
-                      variant="outlined"
+                  <Grid item xs={4}>
+                    <Autocomplete
+                      freeSolo
+                      options={item.tags}
                       value={item.checkout}
-                      onChange={event => {
+                      onChange={(event, value) => {
                         dispatch({
                           type: "SETDATABASECHECKOUT",
-                          payload: { index, value: event.target.value }
+                          payload: { index, value }
                         });
-
-                        // setCheckout({ value: event.target.value });
                       }}
+                      renderInput={params => (
+                        <TextField
+                          {...params}
+                          label="tag or commit hash"
+                          margin="none"
+                          variant="outlined"
+                          onChange={event => {
+                            dispatch({
+                              type: "SETDATABASECHECKOUT",
+                              payload: { index, value: event.target.value }
+                            });
+                          }}
+                          fullWidth
+                        />
+                      )}
                     />
                   </Grid>
                   <Grid item>
@@ -284,19 +294,32 @@ export default () => {
                 <li key={index}>
                   <StyledListItemContent>{item}</StyledListItemContent>
                   <Download container spacing={3}>
-                    <Grid item>
-                      <TextField
-                        size="small"
-                        label="commit hash or tag"
-                        variant="outlined"
+                    <Grid item xs={4}>
+                      <Autocomplete
+                        freeSolo
+                        options={item.tags}
                         value={item.checkout}
-                        onChange={event => {
+                        onChange={(event, value) => {
                           dispatch({
                             type: "SETURLCHECKOUT",
-                            payload: { index, value: event.target.value }
+                            payload: { index, value }
                           });
-                          // setCheckout({ value: event.target.value });
                         }}
+                        renderInput={params => (
+                          <TextField
+                            {...params}
+                            label="tag or commit hash"
+                            margin="none"
+                            variant="outlined"
+                            onChange={event => {
+                              dispatch({
+                                type: "SETURLCHECKOUT",
+                                payload: { index, value: event.target.value }
+                              });
+                            }}
+                            fullWidth
+                          />
+                        )}
                       />
                     </Grid>
                     <Grid item>
@@ -350,19 +373,32 @@ export default () => {
                     </Grid>
                   </StyledListItemContent>
                   <Download container spacing={3}>
-                    <Grid item>
-                      <TextField
-                        size="small"
-                        label="commit hash or tag"
-                        variant="outlined"
+                    <Grid item xs={4}>
+                      <Autocomplete
+                        freeSolo
+                        options={item.tags}
                         value={item.checkout}
-                        onChange={event => {
+                        onChange={(event, value) => {
                           dispatch({
                             type: "SETCHECKOUT",
-                            payload: { index, value: event.target.value }
+                            payload: { index, value }
                           });
-                          // setCheckout({ value: event.target.value });
                         }}
+                        renderInput={params => (
+                          <TextField
+                            {...params}
+                            label="tag or commit hash"
+                            margin="none"
+                            variant="outlined"
+                            onChange={event => {
+                              dispatch({
+                                type: "SETCHECKOUT",
+                                payload: { index, value: event.target.value }
+                              });
+                            }}
+                            fullWidth
+                          />
+                        )}
                       />
                     </Grid>
                     <Grid item>
