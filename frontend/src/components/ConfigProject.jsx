@@ -3,6 +3,7 @@ import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import Box from "@material-ui/core/Box";
 import Grid from "@material-ui/core/Grid";
+import Tooltip from "@material-ui/core/Tooltip";
 import styled from "styled-components";
 
 import Header from "./Header";
@@ -70,21 +71,24 @@ export default () => {
             }}
           ></RefreshButton>
         </Headline>
-        <Subline>
-          global addons{" "}
-          <Description>
-            addons that come bundled with openFrameworks or have been installed
-            globally
-          </Description>
-        </Subline>
+        <Tooltip
+          title={
+            "addons that come bundled with openFrameworks or have been installed globally"
+          }
+          placement={"bottom-start"}
+        >
+          <Subline>global addons</Subline>
+        </Tooltip>
         <CorePackageSelector></CorePackageSelector>
         <GloballyInstalledPackageSelector></GloballyInstalledPackageSelector>
         {locallyInstalledPackages.length > 0 && (
           <>
-            <Subline>
-              local addons{" "}
-              <Description>addons that live inside your project</Description>
-            </Subline>
+            <Tooltip
+              title={"addons that live inside your project"}
+              placement={"bottom-start"}
+            >
+              <Subline>local addons </Subline>
+            </Tooltip>
             <LocallyInstalledPackageSelector></LocallyInstalledPackageSelector>
           </>
         )}
