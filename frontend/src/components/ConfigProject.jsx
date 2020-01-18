@@ -41,6 +41,8 @@ const StyledGenerator = styled(Generator)`
 const StyledBox = styled(Box)`
   margin-bottom: 15px;
   padding: 15px;
+  max-height: 65%;
+  overflow-y: scroll;
 `;
 
 export default () => {
