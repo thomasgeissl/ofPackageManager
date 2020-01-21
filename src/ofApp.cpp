@@ -754,7 +754,7 @@ ofPackage ofPackageManager::installPackageById(std::string id, std::string check
 	}
 	if (destinationPath.empty())
 	{
-		destinationPath = _configJson["localAddonsPath"];
+		destinationPath = _configJson["localAddonsPath"].get<std::string>();
 	}
 	destinationPath = getAbsolutePath(destinationPath);
 	std::string packagesPath = _configJson["packagesPath"];
@@ -777,7 +777,7 @@ ofPackage ofPackageManager::installPackageById(std::string id, std::string check
 			std::string url;
 			if (!packageJson["cloneUrl"].empty())
 			{
-				url = packageJson["cloneUrl"];
+				url = packageJson["cloneUrl"].get<std::string>();
 			}
 			else if (!packageJson["github"].empty())
 			{
