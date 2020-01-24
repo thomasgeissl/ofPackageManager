@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256px" height="256px" viewBox="0 0 256 256" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 57.1 (83088) - https://sketch.com -->
+    <title>logo</title>
+    <desc>Created with Sketch.</desc>
+    <g id="logo" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" transform="translate(6.000000, 63.000000)" fill="#000000">
+            <rect id="Rectangle" stroke="#979797" x="189" y="58" width="34" height="34"></rect>
+            <rect id="Rectangle" stroke="#979797" x="132" y="1" width="54" height="128"></rect>
+            <polygon id="Triangle" stroke="#979797" points="189 1 242 1 189 54"></polygon>
+            <circle id="Oval" cx="65" cy="65" r="65"></circle>
+        </g>
+    </g>
+</svg>
