@@ -1,6 +1,7 @@
 #include "ofApp.h"
 
 #define TYPE_INSTALLPACKAGESFROMADDONSMAKEFILE "INSTALL"
+#define TYPE_INSTALLPACKAGE "INSTALLPACKAGE"
 #define TYPE_INSTALLPACKAGEBYID "INSTALLPACKAGEBYID"
 #define TYPE_INSTALLPACKAGEBYGITHUB "INSTALLPACKAGEBYGITHUB"
 #define TYPE_INSTALLPACKAGEBYURL "INSTALLPACKAGEBYURL"
@@ -48,6 +49,7 @@ public:
             // response object
             ofJson result;
             result["success"] = false;
+            result["errors"] = ofJson::array();
             result["payload"] = ofJson::object();
 
             // request object
@@ -61,11 +63,15 @@ public:
             }
             else
             {
-                // ofLogWarning("ofPackageManager") << "missing config property";
+                result["errors"].push_back("missing config property");
             }
             if (doesKeyExist(payload, "cwd"))
             {
                 _app.setCwdPath(payload["cwd"].get<std::string>());
+            }
+            else
+            {
+                result["errors"].push_back("missing cwd property");
             }
 
             if (type == TYPE_INSTALLPACKAGESFROMADDONSMAKEFILE)
@@ -75,7 +81,7 @@ public:
                     result["success"] = true;
                 }
             }
-            else if (type == "INSTALLPACKAGE")
+            else if (type == TYPE_INSTALLPACKAGE)
             {
                 std::string destinationPath = "";
 
@@ -84,13 +90,13 @@ public:
                     destinationPath = payload["destinationPath"].get<std::string>();
                 }
                 auto p = _app.installPackage(payload["key"].get<std::string>(), destinationPath);
-                if (!p.isEmpty())
+                if (!p.empty())
                 {
                     result["success"] = true;
                     result["payload"]["package"] = ofJson::object();
-                    result["payload"]["package"]["url"] = p._url;
-                    result["payload"]["package"]["checkout"] = p._checkout;
-                    result["payload"]["package"]["path"] = p._path;
+                    result["payload"]["package"]["url"] = p.getUrl();
+                    result["payload"]["package"]["checkout"] = p.getCheckout();
+                    result["payload"]["package"]["path"] = p.getPath();
                 }
             }
             else if (type == TYPE_INSTALLPACKAGEBYID)
@@ -106,13 +112,13 @@ public:
                     checkout = payload["checkout"].get<std::string>();
                 }
                 auto p = _app.installPackageById(payload["id"].get<std::string>(), checkout, destinationPath);
-                if (!p.isEmpty())
+                if (!p.empty())
                 {
                     result["success"] = true;
                     result["payload"]["package"] = ofJson::object();
-                    result["payload"]["package"]["url"] = p._url;
-                    result["payload"]["package"]["checkout"] = p._checkout;
-                    result["payload"]["package"]["path"] = p._path;
+                    result["payload"]["package"]["url"] = p.getUrl();
+                    result["payload"]["package"]["checkout"] = p.getCheckout();
+                    result["payload"]["package"]["path"] = p.getPath();
                 }
             }
             else if (type == TYPE_INSTALLPACKAGEBYGITHUB)
@@ -128,13 +134,13 @@ public:
                     checkout = payload["checkout"].get<std::string>();
                 }
                 auto p = _app.installPackageByGithub(payload["github"].get<std::string>(), checkout, destinationPath);
-                if (!p.isEmpty())
+                if (!p.empty())
                 {
                     result["success"] = true;
                     result["payload"]["package"] = ofJson::object();
-                    result["payload"]["package"]["url"] = p._url;
-                    result["payload"]["package"]["checkout"] = p._checkout;
-                    result["payload"]["package"]["path"] = p._path;
+                    result["payload"]["package"]["url"] = p.getUrl();
+                    result["payload"]["package"]["checkout"] = p.getCheckout();
+                    result["payload"]["package"]["path"] = p.getPath();
                 }
             }
             else if (type == TYPE_INSTALLPACKAGEBYURL)
@@ -150,13 +156,13 @@ public:
                     checkout = payload["checkout"].get<std::string>();
                 }
                 auto p = _app.installPackageByUrl(payload["url"].get<std::string>(), checkout, destinationPath);
-                if (!p.isEmpty())
+                if (!p.empty())
                 {
                     result["success"] = true;
                     result["payload"]["package"] = ofJson::object();
-                    result["payload"]["package"]["url"] = p._url;
-                    result["payload"]["package"]["checkout"] = p._checkout;
-                    result["payload"]["package"]["path"] = p._path;
+                    result["payload"]["package"]["url"] = p.getUrl();
+                    result["payload"]["package"]["checkout"] = p.getCheckout();
+                    result["payload"]["package"]["path"] = p.getPath();
                 }
             }
             else if (type == TYPE_GETPACKAGESLISTEDINADDONSMAKE)
@@ -167,9 +173,9 @@ public:
                 for (auto &p : packages)
                 {
                     auto o = ofJson::object();
-                    o["url"] = p._url;
-                    o["checkout"] = p._checkout;
-                    o["path"] = p._path;
+                    o["url"] = p.getUrl();
+                    o["checkout"] = p.getCheckout();
+                    o["path"] = p.getPath();
                     result["payload"]["data"].push_back(o);
                 }
 
@@ -222,9 +228,9 @@ public:
             {
                 auto v = _app.getVersion();
                 result["success"] = true;
-                result["payload"]["major"] = v._major;
-                result["payload"]["minor"] = v._minor;
-                result["payload"]["patch"] = v._patch;
+                result["payload"]["major"] = v.getMajor();
+                result["payload"]["minor"] = v.getMinor();
+                result["payload"]["patch"] = v.getPatch();
             }
             else if (type == TYPE_GETAVAILABLEPACKAGES)
             {
@@ -250,9 +256,9 @@ public:
                 for (auto &package : v)
                 {
                     auto p = ofJson::object();
-                    p["path"] = package._path;
-                    p["checkout"] = package._checkout;
-                    p["url"] = package._url;
+                    p["path"] = package.getPath();
+                    p["checkout"] = package.getCheckout();
+                    p["url"] = package.getUrl();
                     result["payload"]["data"].push_back(p);
                 }
             }
@@ -264,9 +270,9 @@ public:
                 for (auto &package : v)
                 {
                     auto p = ofJson::object();
-                    p["path"] = package._path;
-                    p["checkout"] = package._checkout;
-                    p["url"] = package._url;
+                    p["path"] = package.getPath();
+                    p["checkout"] = package.getCheckout();
+                    p["url"] = package.getUrl();
                     result["payload"]["data"].push_back(p);
                 }
             }
@@ -274,7 +280,11 @@ public:
         }
         ofJson result;
         result["success"] = false;
+        result["errors"] = ofJson::array();
+        result["errors"].push_back("could not parse json");
         return result;
     }
+
+private:
     ofPackageManager _app;
 };

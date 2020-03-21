@@ -21,13 +21,20 @@ int main(int argc, char **argv)
 	if (jsonI.accept(argc, argv))
 	{
 		auto result = jsonI.exec(argc, argv);
-		std::cout << result.dump() << endl;
+		std::cout << result.dump() << std::endl;
+		if (result["success"].get<bool>())
+		{
+			return 0;
+		}
 	}
 	else
 	{
 		cli c(app);
-		c.exec(argc, argv);
+		if (c.exec(argc, argv))
+		{
+			return 0;
+		}
 	}
 
-	return 0;
+	return -1;
 }

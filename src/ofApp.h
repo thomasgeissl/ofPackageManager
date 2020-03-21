@@ -2,10 +2,11 @@
 
 #include "ofMain.h"
 #include "ofxGit2.h"
+#include "ofxCommandLineUtils.h"
 
-#include "ofPackage.h"
 #include "defines.h"
-#include "version.h"
+#include "ofPackage.h"
+#include "ofVersion.h"
 
 class ofPackageManager
 {
@@ -16,12 +17,13 @@ public:
 	bool addPackageToAddonsMakeFile(std::string path);
 	bool addPackagesToAddonsMakeFile(std::string path);
 	bool addPackagesToAddonsMakeFile(std::vector<std::string> paths);
-	void configure(bool global = false);
+	bool configure(bool global = false);
 	bool isNewerVersionAvailable();
+	ofVersion getNewestAvailableVersion();
 	void generateDatabaseEntryFile();
 
 	bool installPackagesFromAddonsMakeFile();
-	void installDependenciesFromAddonConfig(std::string path, std::string destination);
+	bool installDependenciesFromAddonConfig(std::string path, std::string destination);
 
 	bool installPackage(ofPackage package);
 	ofPackage installPackage(std::string key, std::string destinationPath = "");
@@ -35,17 +37,17 @@ public:
 	std::vector<ofPackage> getLocallyInstalledPackages();
 	std::vector<ofPackage> getPackagesListedInAddonsMakeFile();
 
-	void generateProject();
+	bool generateProject();
 
 	ofJson searchPackageInDatabaseById(std::string id);
 	ofJson searchPackageOnGithubByName(std::string name);
 	ofJson searchPackageOnGithubByUser(std::string user);
-	void updatePackagesDatabase();
+	bool updatePackagesDatabase();
 	bool isCorePackage(std::string id);
 
 	std::string getOfPath();
 	ofJson getConfig();
-	version getVersion();
+	ofVersion getVersion();
 	void setConfig(ofJson config);
 	void setCwdPath(std::string path);
 	void setSilent(bool value = true);
@@ -64,4 +66,5 @@ public:
 	std::string _cwdPath;
 	ofJson _configJson;
 	bool _silent;
+	ofxCommandLineUtils _clu;
 };

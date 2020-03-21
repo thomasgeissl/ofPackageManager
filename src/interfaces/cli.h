@@ -1,4 +1,5 @@
 #include "ofApp.h"
+#include "ofxCommandLineUtils.h"
 
 class cli
 {
@@ -52,11 +53,14 @@ public:
 
     void printGoodBye()
     {
-        ofLogNotice() << "Thanks for using ofPackageManager. If you find a bug then please report it on the github issue tracker (https://github.com/thomasgeissl/ofPackageManager/issues). See you soon.";
+        _clu.printNewLines();
+        ofLogNotice() << "Thanks for using ofPackageManager.\nIf you find a bug then please report it on the github issue tracker (https://github.com/thomasgeissl/ofPackageManager/issues).\n\nSee you soon.";
+        _clu.printNewLines();
     }
 
     bool exec(int argc, char **argv)
     {
+        _clu.printNewLines();
         std::string task;
         if (argc > 1)
         {
@@ -99,16 +103,15 @@ public:
         }
         else if (task == "doctor")
         {
-            auto v = _app.getVersion();
-            ofLogNotice("version") << v._major << "." << v._minor << "." << v._patch;
+            ofLogNotice("doctor") << "You are using version " << _app.getVersion().toString();
             if (_app.isNewerVersionAvailable())
             {
-                ofLogNotice("doctor") << "There is a new version of ofPackageManager available!";
-                //   << "\nThe most recent version is " << mostRecentVersion._major << "." << mostRecentVersion._minor << "." << mostRecentVersion._patch;
+                auto newestAvailableVersion = _app.getNewestAvailableVersion();
+                ofLogNotice("doctor") << "There is a new version of ofPackageManager available! \nThe most recent version is " << newestAvailableVersion.toString();
             }
             else
             {
-                ofLogNotice("doctor") << "You are up to date. Currently there is no newer version of ofPackageManager available";
+                ofLogNotice("doctor") << "You are up to date. Currently there is no newer version of ofPackageManager available.";
             }
             // TODO: check version of ofPackages
         }
@@ -144,19 +147,20 @@ public:
         }
         else if (task == "version")
         {
-            auto v = _app.getVersion();
-            ofLogNotice("version") << v._major << "." << v._minor << "." << v._patch;
+            ofLogNotice("version") << "You are using version " << _app.getVersion().toString();
         }
         else if (task == "install")
         {
             if (!_app.isConfigured())
             {
-                ofLogError() << "please run config task, before installing packages.";
+                ofLogError("install") << "Please run the config task (either locally or globally), before installing packages.";
                 return false;
             }
             if (argc == 2)
             {
-                _app.installPackagesFromAddonsMakeFile();
+
+                ofLogNotice("install") << "Installing packages listed in addons.make.";
+                auto result = _app.installPackagesFromAddonsMakeFile();
             }
             else if (argc >= 3)
             {
@@ -184,11 +188,22 @@ public:
                     return -1;
                 }
 
+                ofLogNotice("install") << "Installing package: " << package << (global ? " globally" : " locally");
                 auto installedPackage = _app.installPackage(package, destinationPath);
-                // TODO: move to _app
-                if (!global && !installedPackage._path.empty())
+                if (installedPackage.empty())
                 {
-                    _app.addPackageToAddonsMakeFile(installedPackage);
+                    ofLogError("install") << "Could not install package " << package << ":\n"
+                                          << installedPackage.toString();
+                }
+                else
+                {
+                    ofLogNotice("install") << "Successfully installed package:\n"
+                                           << installedPackage.toString();
+                }
+                // TODO: move to _app
+                if (!global && !installedPackage.getPath().empty())
+                {
+                    auto result = _app.addPackageToAddonsMakeFile(installedPackage);
                 }
             }
         }
@@ -201,14 +216,14 @@ public:
             }
             if (argc == 3)
             {
-                _app.searchPackageInDatabaseById(argv[2]);
+                auto result = _app.searchPackageInDatabaseById(argv[2]);
             }
             else if (argc == 4)
             {
                 std::string subtask = argv[2];
                 if (subtask == "github")
                 {
-                    _app.searchPackageOnGithubByName(argv[3]);
+                    auto result = _app.searchPackageOnGithubByName(argv[3]);
                 }
             }
             else if (argc == 5)
@@ -219,7 +234,7 @@ public:
                     string option = argv[3];
                     if (option == "-u" || option == "--user")
                     {
-                        _app.searchPackageOnGithubByUser(argv[4]);
+                        auto result = _app.searchPackageOnGithubByUser(argv[4]);
                     }
                 }
             }
@@ -237,15 +252,18 @@ public:
                 ofLogError() << "please run config task, before installing packages.";
                 return false;
             }
-            ofLogNotice() << "generate project";
+            _app.generateProject();
         }
         else
         {
-            ofLogError("ofPackageManager") << "unknown task" << task;
-            printManual();
+            ofLogError() << task << " is not a valid task.";
+            ofLogNotice() << "Please, have a look at the man page: ofPackageManager help";
         }
         printGoodBye();
         return false;
     }
+
+private:
+    ofxCommandLineUtils _clu;
     ofPackageManager _app;
 };
