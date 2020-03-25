@@ -7,7 +7,9 @@ curl -O https://openframeworks.cc/versions/v${OFVERSION}/of_v${OFVERSION}_linux6
 tar -zxf of_v${OFVERSION}_linux64gcc6_release.tar.gz
 rm of_v${OFVERSION}_linux64gcc6_release.tar.gz
 sudo of_v${OFVERSION}_linux64gcc6_release/scripts/linux/ubuntu/install_dependencies.sh -y
-of_v${OFVERSION}_linux64gcc6_release/addons
+cd of_v${OFVERSION}_linux64gcc6_release/apps
+mkdir packageManager
+cd packageManager
 
 git clone https://github.com/${GHUSER}/${GHREPO}.git
 cd $GHREPO

@@ -8,6 +8,7 @@ unzip -a -qq of_v${OFVERSION}_osx_release.zip
 rm of_v${OFVERSION}_osx_release.zip
 cd of_v${OFVERSION}_osx_release/app
 mkdir packageManager
+cd packageManager
 
 git clone https://github.com/${GHUSER}/${GHREPO}.git
 cd $GHREPO
