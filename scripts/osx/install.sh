@@ -1,12 +1,18 @@
 #!/bin/sh
+OFVERSION=0.11.0
+GHUSER=thomasgeissl
+GHREPO=ofPackageManager
 
-curl -O https://openframeworks.cc/versions/v0.10.1/of_v0.10.1_osx_release.zip
-unzip -a -qq of_v0.10.1_osx_release.zip
-rm of_v0.10.1_osx_release.zip
-cd of_v0.10.1_osx_release/apps
-mkdir ofPackageManager && cd ofPackageManager
-git clone https://github.com/thomasgeissl/ofPackageManager.git
-cd ofPackageManager/scripts
+curl -O https://openframeworks.cc/versions/v${OFVERSION}/of_v${OFVERSION}_osx_release.zip
+unzip -a -qq of_v${OFVERSION}_osx_release.zip
+rm of_v${OFVERSION}_osx_release.zip
+cd of_v${OFVERSION}_osx_release/app
+mkdir packageManager
+
+git clone https://github.com/${GHUSER}/${GHREPO}.git
+cd $GHREPO
+cd scripts
+
 ./install_dependencies.sh
 cd ..
 make
