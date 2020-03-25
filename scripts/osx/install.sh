@@ -6,7 +6,7 @@ GHREPO=ofPackageManager
 curl -O https://openframeworks.cc/versions/v${OFVERSION}/of_v${OFVERSION}_osx_release.zip
 unzip -a -qq of_v${OFVERSION}_osx_release.zip
 rm of_v${OFVERSION}_osx_release.zip
-cd of_v${OFVERSION}_osx_release/app
+cd of_v${OFVERSION}_osx_release/apps
 mkdir packageManager
 cd packageManager
 
