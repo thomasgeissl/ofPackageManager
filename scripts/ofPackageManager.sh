@@ -22,3 +22,4 @@ if [ $TASK="install" ]; then
         fi
     done
 fi
+cd $pwd
