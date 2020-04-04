@@ -39,6 +39,7 @@ done < $FILE
 echo $MAJOR.$MINOR.$PATCH
 
 
-pwd
-# renew and move to travis root
-mv ofPackageManager_osx_version.zip ../../../ofPackageManager_osx_$MAJOR.$MINOR.$PATCH.zip
+pwd && ls
+
+# rename and move to home
+mv ofPackageManager_osx_version.zip $HOME/ofPackageManager_osx_$MAJOR.$MINOR.$PATCH.zip
