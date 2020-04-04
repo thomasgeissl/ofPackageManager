@@ -8,6 +8,7 @@ script:
   - ./scripts/$TRAVIS_OS_NAME/install.sh
   - ./scripts/$TRAVIS_OS_NAME/package.sh
   - pwd && ls
+  - ls $HOME
 # deploy:
 #   provider: releases
 #   api_key: $GH_TOKEN
