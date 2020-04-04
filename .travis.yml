@@ -1,8 +1,17 @@
 os:
-  - linux
   - osx
 
 language: cpp
 sudo: required
 
-script: . scripts/$TRAVIS_OS_NAME/install.sh
+script:
+  - ./scripts/$TRAVIS_OS_NAME/install.sh
+  - ./scripts/$TRAVIS_OS_NAME/package.sh
+  - pwd && ls
+# deploy:
+#   provider: releases
+#   api_key: $GH_TOKEN
+#   file: "FILE TO UPLOAD"
+#   skip_cleanup: true
+#   on:
+#     tags: true

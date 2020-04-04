@@ -19,3 +19,4 @@ cd ..
 make
 cd scripts
 ./fix_dylib.sh
+cd ../..
