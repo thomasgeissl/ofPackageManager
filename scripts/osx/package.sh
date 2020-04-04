@@ -43,3 +43,5 @@ pwd && ls
 
 # rename and move to home
 mv ofPackageManager_osx_version.zip $HOME/ofPackageManager_osx_$MAJOR.$MINOR.$PATCH.zip
+
+ls $HOME
