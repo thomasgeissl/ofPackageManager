@@ -10,7 +10,6 @@ rm -rf *
 cp -R ../ofPackageManager ofPackageManager
 rm -rf ofPackageManager/frontend
 zip -r ofPackageManager_osx_version.zip ofPackageManager
-openssl dgst -sha256 ofPackageManager_osx_version.zip
 
 MAJOR=0
 MINOR=0
@@ -36,12 +35,9 @@ while read line || [ -n "$line" ]; do
         fi
     fi
 done < $FILE
-echo $MAJOR.$MINOR.$PATCH
-
-
-pwd && ls
 
 # rename and move to home
 mv ofPackageManager_osx_version.zip $HOME/ofPackageManager_osx_$MAJOR.$MINOR.$PATCH.zip
 
-ls $HOME
+echo successfully packaged version $MAJOR.$MINOR.$PATCH
+openssl dgst -sha256 $HOME/ofPackageManager_osx_$MAJOR.$MINOR.$PATCH.zip
