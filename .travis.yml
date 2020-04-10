@@ -1,18 +1,28 @@
 os:
+  - linux
   - osx
 
 language: cpp
 sudo: required
 
 script:
-  - ./scripts/$TRAVIS_OS_NAME/install.sh
-  - ./scripts/$TRAVIS_OS_NAME/package.sh
+  - git clone https://github.com/thomasgeissl/ofTravis.git
+  - source ./ofTravis/common/export.sh
+  - source ./ofTravis/${TRAVIS_OS_NAME}/install_oF.sh
+  - source ./ofTravis/common/compile_app.sh
+  # TODO: on osx fix rpath
+  - source ./ofTravis/common/package_app.sh
+#   - source ./ofTravis/common/compile_addon_examples.sh
+#   - source ./ofTravis/common/package_addon.sh
+
+before_deploy:
+  - if [ "$TRAVIS_OS_NAME" = osx ]; then source ./ofTravis/osx/add_certificate.sh; fi
 
 deploy:
   provider: releases
   api_key: $GH_TOKEN
-  ile_glob: true
-  file: $HOME/ofPackageManager_*
+  file_glob: true
+  file: ${HOME}/packaged/*
   draft: true
   skip_cleanup: true
   on:
