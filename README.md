@@ -6,8 +6,7 @@ ofPackageManager is an experimental package manager for openFrameworks. It is co
 The current command line interface is very similar to npm, but I am open for suggestions.
 
 ## Build status
-
-[![Build Status](https://travis-ci.org/thomasgeissl/ofPackageManager.svg?branch=master)](https://travis-ci.org/thomasgeissl/ofPackageManager)
+[![Build Status](https://travis-ci.com/thomasgeissl/ofPackageManager.svg?branch=master)](https://travis-ci.com/thomasgeissl/ofPackageManager)
 
 ## Installation
 
