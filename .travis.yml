@@ -9,6 +9,7 @@ script:
   - git clone https://github.com/thomasgeissl/ofTravis.git
   - source ./ofTravis/common/export.sh
   - source ./ofTravis/${TRAVIS_OS_NAME}/install_oF.sh
+  - if [ "$TRAVIS_OS_NAME" = osx ]; then sudo apt install libgit-dev -y; fi
   - source ./ofTravis/common/compile_app.sh
   # TODO: on osx fix rpath
   - source ./ofTravis/common/package_app.sh
