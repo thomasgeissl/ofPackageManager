@@ -1,13 +1,9 @@
-matrix:
-  include:
-    - os: osx
-      language: node_js
-      node_js: "12"
+os:
+  - osx
+  - linux
 
-    - os: linux
-      dist: xenial
-      sudo: required
-      language: node_js
+language: cpp
+sudo: required
 
 script:
   - git clone https://github.com/thomasgeissl/ofTravis.git
