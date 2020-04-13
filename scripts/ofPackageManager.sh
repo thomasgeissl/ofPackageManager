@@ -9,6 +9,10 @@ fi
 
 if [ $TASK="install" ]; then
     # readarray addons < addons.make
+    if [ ! -f "addons.make" ]; then
+        cd $pwd
+        exit 0
+    fi
     IFS=$'\n' ADDONS=($(cat addons.make))
     for i in "${ADDONS[@]}"
     do
