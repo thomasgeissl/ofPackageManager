@@ -11,11 +11,9 @@ script:
   - source ./ofTravis/${TRAVIS_OS_NAME}/install_oF.sh
   - if [ "$TRAVIS_OS_NAME" = linux ]; then sudo apt install libgit2-dev -y; fi
   - source ./ofTravis/common/compile_app.sh
-  - cd frontend && yarn install && yarn electron-dist
+  - if [ "$TRAVIS_OS_NAME" = osx ]; then source ./scripts/fix_dylib.sh; fi
   # TODO: on osx fix rpath
   - source ./ofTravis/common/package_app.sh
-#   - source ./ofTravis/common/compile_addon_examples.sh
-#   - source ./ofTravis/common/package_addon.sh
 
 before_deploy:
   - if [ "$TRAVIS_OS_NAME" = osx ]; then source ./ofTravis/osx/add_certificate.sh; fi
