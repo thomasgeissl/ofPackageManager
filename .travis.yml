@@ -1,9 +1,13 @@
-os:
-  - linux
-  - osx
+matrix:
+  include:
+    - os: osx
+      language: node_js
+      node_js: "12"
 
-language: cpp
-sudo: required
+    - os: linux
+      dist: xenial
+      sudo: required
+      language: node_js
 
 script:
   - git clone https://github.com/thomasgeissl/ofTravis.git
@@ -11,8 +15,7 @@ script:
   - source ./ofTravis/${TRAVIS_OS_NAME}/install_oF.sh
   - if [ "$TRAVIS_OS_NAME" = linux ]; then sudo apt install libgit2-dev -y; fi
   - source ./ofTravis/common/compile_app.sh
-  - if [ "$TRAVIS_OS_NAME" = osx ]; then source ./scripts/fix_dylib.sh; fi
-  # TODO: on osx fix rpath
+  - if [ "$TRAVIS_OS_NAME" = osx ]; then ./scripts/fix_dylib.sh; fi
   - source ./ofTravis/common/package_app.sh
 
 before_deploy:
