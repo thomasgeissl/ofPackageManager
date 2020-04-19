@@ -88,6 +88,9 @@ $APP install ofxPoco
 
 echo "congratulations. successfully run the test."
 
+
+$APP config 
+
 # TODO: search tasks, global install
 
 cd ..
