@@ -46,6 +46,8 @@ public:
 	bool isCorePackage(std::string id);
 
 	std::string getOfPath();
+	std::string getLocalAddonsPath();
+	std::string getOfPackagesPath();
 	ofJson getConfig();
 	ofVersion getVersion();
 	void setConfig(ofJson config);
@@ -60,10 +62,70 @@ public:
 	bool hasAddonsMakeFile(std::string path);
 	bool hasAddonConfigFile(std::string path);
 	bool hasPackageManagerConfig(std::string path);
-
 	bool isConfigured();
 
+	std::string findOf(std::string path, int depth)
+	{
+		ofDirectory dir(path);
+		if (!dir.canRead() || !dir.canExecute() || depth < 0)
+		{
+			return "";
+		}
+		try
+		{
+			dir.listDir();
+		}
+		catch (...)
+		{
+			return "";
+		}
+		auto foundAddons = false;
+		auto foundLibs = false;
+		auto foundApps = false;
+		for (auto child : dir.getFiles())
+		{
+			if (child.isDirectory())
+			{
+				if (child.getFileName() == "addons")
+				{
+					foundAddons = true;
+				}
+				if (child.getFileName() == "libs")
+				{
+					foundLibs = true;
+				}
+				if (child.getFileName() == "apps")
+				{
+					foundApps = true;
+				}
+			}
+		}
+		if (foundAddons && foundLibs && foundApps)
+		{
+			return path;
+		}
+		else
+		{
+			for (auto child : dir.getFiles())
+			{
+				if (child.isDirectory())
+				{
+					auto p = findOf(child.getAbsolutePath(), depth - 1);
+					if (!p.empty())
+					{
+						return p;
+					}
+				}
+			}
+			return "";
+		}
+	}
+
+private:
 	std::string _cwdPath;
+	std::string _configDirPath;
+	std::string _globalConfigPath;
+	std::string _localAddonsPath;
 	ofJson _configJson;
 	bool _silent;
 	ofxCommandLineUtils _clu;

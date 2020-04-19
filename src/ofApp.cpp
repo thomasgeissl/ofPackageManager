@@ -1,20 +1,23 @@
 #include "ofApp.h"
 
 #define IFNOTSILENT(...) \
-    if(!_silent) \
-    { \
-        __VA_ARGS__ \
-    }
+	if (!_silent)        \
+	{                    \
+		__VA_ARGS__      \
+	}
 #define IFSILENT(...) \
-    if(_silent) \
-    { \
-        __VA_ARGS__ \
-    }
+	if (_silent)      \
+	{                 \
+		__VA_ARGS__   \
+	}
 namespace fs = std::filesystem;
 
 ofPackageManager::ofPackageManager(std::string cwdPath) : _cwdPath(cwdPath),
+														  _configDirPath(ofFilePath::join(ofFilePath::getUserHomeDir(), ".ofPackageManager")),
+														  _globalConfigPath(ofFilePath::join(_configDirPath, "cli.config.json")),
 														  _configJson(getConfig()),
-														  _silent(false)
+														  _silent(false),
+														  _localAddonsPath("local_addons")
 {
 	// ofSetLogLevel(OF_LOG_VERBOSE);
 }
@@ -138,11 +141,11 @@ bool ofPackageManager::addPackagesToAddonsMakeFile(std::vector<std::string> path
 }
 bool ofPackageManager::configure(bool global)
 {
-	auto configPath = ofFilePath::join(_cwdPath, "ofPackageManager.json");
+	auto configPath = ofFilePath::join(_cwdPath, "ofPackageManager.cli.configjson");
 	std::string relativeOrAbsolute = "relative";
 	if (global)
 	{
-		configPath = ofFilePath::join(ofFilePath::getUserHomeDir(), ".ofPackageManager.json");
+		configPath = _globalConfigPath;
 		relativeOrAbsolute = "absolute";
 	}
 	ofFile configFile(configPath);
@@ -158,25 +161,36 @@ bool ofPackageManager::configure(bool global)
 		}
 	}
 
+	if (!_silent)
+	{
+		ofLogNotice() << "Trying to automatically detect openFrameworks location, this might take a while.";
+	}
+	auto ofPath = findOf(ofFilePath::getUserHomeDir(), 3);
+	if (ofPath.empty())
+	{
+		ofPath = ofFilePath::getAbsolutePath(getAbsolutePath("../../.."), false);
+	}
+
 	ofJson configJson;
-	configJson["ofPath"] = _clu.getStringAnswer("Absolute path to openFrameworks?", ofFilePath::getAbsolutePath(getAbsolutePath("../../.."), false));
-	auto packagesPath = _clu.getStringAnswer("Absolute path to packages directory?", ofFilePath::join(ofFilePath::getUserHomeDir(), ".ofPackages"));
-	configJson["packagesPath"] = packagesPath;
-	configJson["localAddonsPath"] = _clu.getStringAnswer("local addons directory?", "local_addons");
-	configJson["pgPath"] = _clu.getStringAnswer("Absolute path to the projet generator?", ofFilePath::join(configJson["ofPath"].get<std::string>(), "projectGenerator-osx"));
+	configJson["ofPath"] = _clu.getStringAnswer("Absolute path to openFrameworks?", ofPath);
+	auto ofPackagesPath = _clu.getStringAnswer("Absolute path to packages directory?", ofFilePath::join(_configDirPath, "ofPackages"));
+	configJson["ofPackagesPath"] = ofPackagesPath;
+	// configJson["localAddonsPath"] = _clu.getStringAnswer("local addons directory?", "local_addons");
+	// configJson["pgPath"] = _clu.getStringAnswer("Absolute path to the projet generator?", ofFilePath::join(configJson["ofPath"].get<std::string>(), "projectGenerator-osx"));
 
 	configFile.create();
 	configFile.open(configPath, ofFile::WriteOnly);
 	configFile << configJson.dump(4);
 	configFile.close();
 
-	if (ofDirectory::doesDirectoryExist(packagesPath, false))
+	if (ofDirectory::doesDirectoryExist(ofPackagesPath, false))
 	{
-		IFNOTSILENT(ofLogError("config") << "The packages database exits already. Please update manually (cd " + packagesPath + " && git pull).";);
+		IFNOTSILENT(ofLogError("config") << "The packages database exits already. Please update manually (cd " + ofPackagesPath + " && git pull).";);
+		return false;
 	}
 	else
 	{
-		ofxGit::repository repo(packagesPath);
+		ofxGit::repository repo(ofPackagesPath);
 		if (repo.clone("https://github.com/thomasgeissl/ofPackages.git"))
 		{
 			IFNOTSILENT(ofLogNotice("config") << "Successfully cloned packages database";);
@@ -184,6 +198,7 @@ bool ofPackageManager::configure(bool global)
 		else
 		{
 			IFNOTSILENT(ofLogError("config") << "Could not clone packages database";);
+			return false;
 		}
 	}
 	return true;
@@ -320,7 +335,7 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 	IFNOTSILENT(ofLogNotice("ofPackageManager") << "install package by url (" << url << "@" << checkout << " to " << destinationPath;);
 	if (destinationPath.empty())
 	{
-		destinationPath = _configJson["localAddonsPath"].get<std::string>();
+		destinationPath = getLocalAddonsPath();
 	}
 	destinationPath = getAbsolutePath(destinationPath);
 	auto name = ofSplitString(url, "/").back();
@@ -412,8 +427,7 @@ ofPackage ofPackageManager::maybeInstallOneOfThePackages(ofJson packages, std::s
 
 ofJson ofPackageManager::getAvailablePackages()
 {
-	std::string databasePath = _configJson["packagesPath"];
-	ofDirectory ofPackagesDirectory(databasePath);
+	ofDirectory ofPackagesDirectory(getOfPackagesPath());
 	ofPackagesDirectory.listDir();
 
 	auto counter = 0;
@@ -479,7 +493,7 @@ std::vector<ofPackage> ofPackageManager::getGloballyInstalledPackages()
 std::vector<ofPackage> ofPackageManager::getLocallyInstalledPackages()
 {
 	std::vector<ofPackage> packages;
-	auto packagesPath = getAbsolutePath(_configJson["localAddonsPath"].get<std::string>());
+	auto packagesPath = getAbsolutePath(getLocalAddonsPath());
 	auto packagesDir = ofDirectory(packagesPath);
 	if (packagesDir.exists())
 	{
@@ -493,7 +507,7 @@ std::vector<ofPackage> ofPackageManager::getLocallyInstalledPackages()
 				ofxGit::repository repo(path);
 				if (repo.isRepository())
 				{
-					packages.push_back(ofPackage(ofFilePath::join(_configJson["localAddonsPath"].get<std::string>(), name), repo.getRemoteUrl(), repo.getCommitHash()));
+					packages.push_back(ofPackage(ofFilePath::join(getLocalAddonsPath(), name), repo.getRemoteUrl(), repo.getCommitHash()));
 				}
 			}
 		}
@@ -585,8 +599,7 @@ bool ofPackageManager::generateProject()
 }
 ofJson ofPackageManager::searchPackageInDatabaseById(std::string name)
 {
-	std::string databasePath = _configJson["packagesPath"];
-	ofDirectory ofPackagesDirectory(databasePath);
+	ofDirectory ofPackagesDirectory(getOfPackagesPath());
 	ofPackagesDirectory.listDir();
 
 	auto counter = 0;
@@ -785,10 +798,11 @@ ofPackage ofPackageManager::installPackageById(std::string id, std::string check
 	}
 	if (destinationPath.empty())
 	{
-		destinationPath = _configJson["localAddonsPath"].get<std::string>();
+		destinationPath = getLocalAddonsPath();
 	}
 	destinationPath = getAbsolutePath(destinationPath);
-	std::string packagesPath = _configJson["packagesPath"];
+	std::string packagesPath = getOfPackagesPath();
+	ofLogNotice("checking db") << packagesPath;
 	ofDirectory packagesDirectory(packagesPath);
 	packagesDirectory.listDir();
 	bool foundPackage = false;
@@ -862,15 +876,22 @@ std::string ofPackageManager::getOfPath()
 {
 	return _configJson["ofPath"];
 }
+std::string ofPackageManager::getLocalAddonsPath()
+{
+	return _localAddonsPath;
+}
+std::string ofPackageManager::getOfPackagesPath()
+{
+	return _configJson["ofPackagesPath"];
+}
 
 ofJson ofPackageManager::getConfig()
 {
 	ofJson packageManagerJson;
-	ofFile packageFile(getAbsolutePath("ofPackageManager.json"));
+	ofFile configFile;
 	std::string path = _cwdPath;
 	while (!hasPackageManagerConfig(getAbsolutePath(path)))
 	{
-		ofFile file(path);
 		fs::path p(path);
 		path = p.parent_path().string();
 		// TODO: does that work on windows
@@ -879,22 +900,17 @@ ofJson ofPackageManager::getConfig()
 			break;
 		}
 	}
-	packageFile.open(ofFilePath::join(path, "ofPackageManager.json"));
-	ofFile hiddenPackageFile(ofFilePath::join(path, ".ofPackageManager.json"));
-	if (packageFile.exists())
+	configFile.open(ofFilePath::join(path, "ofPackageManager.cli.config.json"));
+	if (configFile.exists())
 	{
-		packageFile >> packageManagerJson;
-	}
-	else if (hiddenPackageFile.exists())
-	{
-		hiddenPackageFile >> packageManagerJson;
+		configFile >> packageManagerJson;
 	}
 	else
 	{
-		packageFile.open(ofFilePath::join(ofFilePath::getUserHomeDir(), ".ofPackageManager.json"));
-		if (packageFile.exists())
+		configFile.open(_globalConfigPath);
+		if (configFile.exists())
 		{
-			packageFile >> packageManagerJson;
+			configFile >> packageManagerJson;
 		}
 	}
 	return packageManagerJson;
@@ -985,9 +1001,9 @@ bool ofPackageManager::hasPackageManagerConfig(std::string path)
 			ofLogWarning() << "dir does not exist " << path;);
 		return false;
 	}
-	ofFile packageManagerConfigFile(ofFilePath::join(path, "ofPackageManager.json"));
-	ofFile hiddenPackageManagerConfigFile(ofFilePath::join(path, ".ofPackageManager.json"));
-	return packageManagerConfigFile.exists() || hiddenPackageManagerConfigFile.exists();
+	ofFile packageManagerConfigFile(ofFilePath::join(path, "ofPackageManager.cli.config.json"));
+	ofFile cliConfigFile(ofFilePath::join(path, "cli.config.json"));
+	return cliConfigFile.exists() || packageManagerConfigFile.exists();
 }
 bool ofPackageManager::isConfigured()
 {
@@ -1000,7 +1016,7 @@ bool ofPackageManager::isConfigured()
 		// TODO: does that work on windows
 		if (path.size() < 4)
 		{
-			return hasPackageManagerConfig(ofFilePath::join(ofFilePath::getUserHomeDir(), ".ofPackageManager.json"));
+			return hasPackageManagerConfig(_configDirPath);
 		}
 	}
 	return true;
