@@ -141,7 +141,7 @@ bool ofPackageManager::addPackagesToAddonsMakeFile(std::vector<std::string> path
 }
 bool ofPackageManager::configure(bool global)
 {
-	auto configPath = ofFilePath::join(_cwdPath, "ofPackageManager.cli.configjson");
+	auto configPath = ofFilePath::join(_cwdPath, "ofPackageManager.cli.config.json");
 	std::string relativeOrAbsolute = "relative";
 	if (global)
 	{
