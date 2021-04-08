@@ -12,12 +12,13 @@
 	}
 namespace fs = std::filesystem;
 
-ofPackageManager::ofPackageManager(std::string cwdPath) : _cwdPath(cwdPath),
+ofPackageManager::ofPackageManager(std::string cwdPath) : _silent(false),
+														  _cwdPath(cwdPath),
 														  _configDirPath(ofFilePath::join(ofFilePath::getUserHomeDir(), ".ofPackageManager")),
+														  _packagesPath(ofFilePath::join(_configDirPath, "ofPackages")),
 														  _globalConfigPath(ofFilePath::join(_configDirPath, "cli.config.json")),
-														  _configJson(getConfig()),
-														  _silent(false),
-														  _localAddonsPath("local_addons")
+														  _localAddonsPath("local_addons"),
+														  _configJson(getConfig())
 {
 	// ofSetLogLevel(OF_LOG_VERBOSE);
 }
@@ -163,9 +164,10 @@ bool ofPackageManager::configure(bool global)
 
 	if (!_silent)
 	{
+		// _clu.getBoolAnswer("Do you want to automatically detect ")
 		ofLogNotice() << "Trying to automatically detect openFrameworks location, this might take a while.";
 	}
-	auto ofPath = findOf(ofFilePath::getUserHomeDir(), 3);
+	auto ofPath = findOfPathInwardly(ofFilePath::getUserHomeDir(), 3);
 	if (ofPath.empty())
 	{
 		ofPath = ofFilePath::getAbsolutePath(getAbsolutePath("../../.."), false);
@@ -183,24 +185,13 @@ bool ofPackageManager::configure(bool global)
 	configFile << configJson.dump(4);
 	configFile.close();
 
-	if (ofDirectory::doesDirectoryExist(ofPackagesPath, false))
-	{
-		IFNOTSILENT(ofLogError("config") << "The packages database exits already. Please update manually (cd " + ofPackagesPath + " && git pull).";);
-		return false;
+	_configJson = configJson;
+
+
+	if(!hasPackagesDatabase()){
+		installPackagesDatabase();
 	}
-	else
-	{
-		ofxGit::repository repo(ofPackagesPath);
-		if (repo.clone("https://github.com/thomasgeissl/ofPackages.git"))
-		{
-			IFNOTSILENT(ofLogNotice("config") << "Successfully cloned packages database";);
-		}
-		else
-		{
-			IFNOTSILENT(ofLogError("config") << "Could not clone packages database";);
-			return false;
-		}
-	}
+
 	return true;
 }
 
@@ -427,6 +418,9 @@ ofPackage ofPackageManager::maybeInstallOneOfThePackages(ofJson packages, std::s
 
 ofJson ofPackageManager::getAvailablePackages()
 {
+	if(!hasPackagesDatabase()){
+		installPackagesDatabase();
+	}
 	ofDirectory ofPackagesDirectory(getOfPackagesPath());
 	ofPackagesDirectory.listDir();
 
@@ -599,6 +593,9 @@ bool ofPackageManager::generateProject()
 }
 ofJson ofPackageManager::searchPackageInDatabaseById(std::string name)
 {
+	if(!hasPackagesDatabase()){
+		installPackagesDatabase();
+	}
 	ofDirectory ofPackagesDirectory(getOfPackagesPath());
 	ofPackagesDirectory.listDir();
 
@@ -791,6 +788,9 @@ ofPackage ofPackageManager::installPackage(std::string addon, std::string destin
 }
 ofPackage ofPackageManager::installPackageById(std::string id, std::string checkout, std::string destinationPath)
 {
+	if(!hasPackagesDatabase()){
+		installPackagesDatabase();
+	}
 	if (isCorePackage(id))
 	{
 		IFNOTSILENT(ofLogNotice("install") << id << " seems to be a core addon.";);
@@ -842,11 +842,42 @@ ofPackage ofPackageManager::installPackageById(std::string id, std::string check
 	return ofPackage();
 }
 
+bool ofPackageManager::installPackagesDatabase()
+{
+	std::string path = _configJson["ofPackagesPath"].get<std::string>();
+	if (ofDirectory::doesDirectoryExist(path, false))
+	{
+		IFNOTSILENT(ofLogError("config") << "The packages database exits already. Please update manually (cd " + path + " && git pull).";);
+		return false;
+	}
+	else
+	{
+		ofxGit::repository repo(path);
+		// repo.setSilent(false);
+		if (repo.clone("https://github.com/thomasgeissl/ofPackages.git"))
+		{
+			IFNOTSILENT(ofLogNotice("config") << "Successfully cloned packages database to " << path;);
+			return true;
+		}
+		else
+		{
+			IFNOTSILENT(ofLogError("config") << "Could not clone packages database to " << path;);
+			return false;
+		}
+	}
+}
 bool ofPackageManager::updatePackagesDatabase()
 {
 	IFNOTSILENT(
 		ofLogWarning("update") << "This is currently not yet implemented. Please pull the packages database manually.";);
 	return false;
+}
+
+bool ofPackageManager::hasPackagesDatabase()
+{
+	std::string path = _configJson["ofPackagesPath"].get<std::string>();
+	ofxGit::repository repo(path);
+	return repo.isRepository();
 }
 
 bool ofPackageManager::isCorePackage(std::string id)
@@ -887,15 +918,28 @@ std::string ofPackageManager::getOfPackagesPath()
 
 ofJson ofPackageManager::getConfig()
 {
-	ofJson packageManagerJson;
+	auto isInsideOf = isLocatedInsideOfDirectory(_cwdPath);
+	auto hasLocalConfig = false;
+	auto hasGlobalConfig = false;
+
+
+
+	ofJson configJson;
 	ofFile configFile;
+	ofFile globalConfigFile;
+	configFile.open(_globalConfigPath);
+	hasGlobalConfig = globalConfigFile.exists();
+
+
 	std::string path = _cwdPath;
+	auto level = 0;
 	while (!hasPackageManagerConfig(getAbsolutePath(path)))
 	{
 		fs::path p(path);
 		path = p.parent_path().string();
+		level++;
 		// TODO: does that work on windows
-		if (path.size() < 4)
+		if (path.size() < 4 || level > 3)
 		{
 			break;
 		}
@@ -903,17 +947,38 @@ ofJson ofPackageManager::getConfig()
 	configFile.open(ofFilePath::join(path, "ofPackageManager.cli.config.json"));
 	if (configFile.exists())
 	{
-		configFile >> packageManagerJson;
+		hasLocalConfig = true;
+		configFile >> configJson;
 	}
-	else
+	else if(isInsideOf)
 	{
-		configFile.open(_globalConfigPath);
-		if (configFile.exists())
-		{
-			configFile >> packageManagerJson;
-		}
+		configJson["ofPackagesPath"] = ofFilePath::join(_configDirPath, "ofPackages");
+		configJson["ofPath"] = findOfPathOutwardly(_cwdPath);
+	}else if(hasGlobalConfig){
+		globalConfigFile >> configJson;
+	}else{
+
 	}
-	return packageManagerJson;
+
+
+
+	IFNOTSILENT(
+		if(hasLocalConfig){
+			ofLogNotice() << "found a local config file";
+		}else if(isInsideOf){
+			ofLogNotice() << "inside an openFrameworks directory";
+		}else if(hasGlobalConfig){
+			ofLogNotice() << "using global config file, since no local config file is present and you are not inside an openFrameworks directory.";
+		}else{
+			ofLogError() << "could not get the config. You are probably not inside an openFrameworks directory or did not configure the package manager.";
+		}
+		// ofLogNotice() << "getting the config";
+		// ofLogNotice() << "localConfig " << hasLocalConfig;
+		// ofLogNotice() << "isInsideOf " << isInsideOf;
+		// ofLogNotice() << "globalConfig " << hasGlobalConfig;
+		ofLogNotice() << configJson.dump(4);
+	);
+	return configJson;
 }
 ofVersion ofPackageManager::getVersion()
 {
@@ -1020,4 +1085,94 @@ bool ofPackageManager::isConfigured()
 		}
 	}
 	return true;
+}
+
+	
+bool ofPackageManager::isLocatedInsideOfDirectory(std::string path){
+	auto level = 0;
+	std::string ofPath = "";
+	while(ofPath.empty() && level < 4){
+		fs::path p(path);
+		if(!findOfPathInwardly(path, 0).empty()){
+			return true;
+		}
+		path = p.parent_path().string();
+		level++;
+	}
+	return false;
+}
+
+std::string ofPackageManager::findOfPathInwardly(std::string path, int depth)
+{
+	ofDirectory dir(path);
+	if (!dir.canRead() || !dir.canExecute() || depth < 0)
+	{
+		return "";
+	}
+	try
+	{
+		dir.listDir();
+	}
+	catch (...)
+	{
+		return "";
+	}
+	auto foundAddons = false;
+	auto foundLibs = false;
+	auto foundApps = false;
+	for (auto child : dir.getFiles())
+	{
+		if (child.isDirectory())
+		{
+			if (child.getFileName() == "addons")
+			{
+				foundAddons = true;
+			}
+			if (child.getFileName() == "libs")
+			{
+				foundLibs = true;
+			}
+			if (child.getFileName() == "apps")
+			{
+				foundApps = true;
+			}
+		}
+	}
+	if (foundAddons && foundLibs && foundApps)
+	{
+		return path;
+	}
+	else
+	{
+		for (auto child : dir.getFiles())
+		{
+			if (child.isDirectory())
+			{
+				auto p = findOfPathInwardly(child.getAbsolutePath(), depth - 1);
+				if (!p.empty())
+				{
+					return p;
+				}
+			}
+		}
+		return "";
+	}
+}
+
+std::string ofPackageManager::findOfPathOutwardly(std::string path)
+{
+	auto level = 0;
+	auto maxLevel = 4;
+	std::string ofPath = "";
+	while(ofPath.empty() && level < maxLevel){
+		fs::path p(path);
+		ofPath = findOfPathInwardly(path, 0);
+		if(!ofPath.empty()){
+			return ofPath;
+		}
+		path = p.parent_path().string();
+		level++;
+	}
+	return ofPath;
+
 }

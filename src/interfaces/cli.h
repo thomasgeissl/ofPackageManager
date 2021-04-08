@@ -151,11 +151,11 @@ public:
         }
         else if (task == "install")
         {
-            if (!_app.isConfigured())
-            {
-                ofLogError("install") << "Please run the config task (either locally or globally), before installing packages.";
-                return false;
-            }
+            // if (!_app.isConfigured())
+            // {
+            //     ofLogError("install") << "Please run the config task (either locally or globally), before installing packages.";
+            //     return false;
+            // }
             if (argc == 2)
             {
 
@@ -253,6 +253,13 @@ public:
                 return false;
             }
             _app.generateProject();
+        }
+        else if (task.empty())
+        {
+            ofLogError() << "no command specified, don't know what to do. Usage: ofPackageManager <command>";
+            // TODO: does it make sense to open the frontend
+            printGoodBye();
+            return false;
         }
         else
         {

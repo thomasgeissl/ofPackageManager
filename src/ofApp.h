@@ -42,7 +42,9 @@ public:
 	ofJson searchPackageInDatabaseById(std::string id);
 	ofJson searchPackageOnGithubByName(std::string name);
 	ofJson searchPackageOnGithubByUser(std::string user);
+	bool installPackagesDatabase();
 	bool updatePackagesDatabase();
+	bool hasPackagesDatabase();
 	bool isCorePackage(std::string id);
 
 	std::string getOfPath();
@@ -63,70 +65,17 @@ public:
 	bool hasAddonConfigFile(std::string path);
 	bool hasPackageManagerConfig(std::string path);
 	bool isConfigured();
-
-	std::string findOf(std::string path, int depth)
-	{
-		ofDirectory dir(path);
-		if (!dir.canRead() || !dir.canExecute() || depth < 0)
-		{
-			return "";
-		}
-		try
-		{
-			dir.listDir();
-		}
-		catch (...)
-		{
-			return "";
-		}
-		auto foundAddons = false;
-		auto foundLibs = false;
-		auto foundApps = false;
-		for (auto child : dir.getFiles())
-		{
-			if (child.isDirectory())
-			{
-				if (child.getFileName() == "addons")
-				{
-					foundAddons = true;
-				}
-				if (child.getFileName() == "libs")
-				{
-					foundLibs = true;
-				}
-				if (child.getFileName() == "apps")
-				{
-					foundApps = true;
-				}
-			}
-		}
-		if (foundAddons && foundLibs && foundApps)
-		{
-			return path;
-		}
-		else
-		{
-			for (auto child : dir.getFiles())
-			{
-				if (child.isDirectory())
-				{
-					auto p = findOf(child.getAbsolutePath(), depth - 1);
-					if (!p.empty())
-					{
-						return p;
-					}
-				}
-			}
-			return "";
-		}
-	}
+	bool isLocatedInsideOfDirectory(std::string path);
+	std::string findOfPathInwardly(std::string path, int depth);
+	std::string findOfPathOutwardly(std::string path);
 
 private:
+	bool _silent;
 	std::string _cwdPath;
 	std::string _configDirPath;
+	std::string _packagesPath;
 	std::string _globalConfigPath;
 	std::string _localAddonsPath;
 	ofJson _configJson;
-	bool _silent;
 	ofxCommandLineUtils _clu;
 };
