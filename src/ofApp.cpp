@@ -162,15 +162,19 @@ bool ofPackageManager::configure(bool global)
 		}
 	}
 
+	auto ofPath = ofFilePath::getAbsolutePath(getAbsolutePath("../../.."), false);
+	
+
 	if (!_silent)
 	{
-		// _clu.getBoolAnswer("Do you want to automatically detect ")
-		ofLogNotice() << "Trying to automatically detect openFrameworks location, this might take a while.";
-	}
-	auto ofPath = findOfPathInwardly(ofFilePath::getUserHomeDir(), 3);
-	if (ofPath.empty())
-	{
-		ofPath = ofFilePath::getAbsolutePath(getAbsolutePath("../../.."), false);
+		auto findOfAutomatically = _clu.getBoolAnswer("Do you want to automatically detect the openFrameworks directory? This will iterate through your home directory and its children, three levels deep. It might be annoying because your OS might ask for permission to access those directories.");
+		if(findOfAutomatically){
+			auto foundPath = findOfPathInwardly(ofFilePath::getUserHomeDir(), 3);
+			if (!foundPath.empty())
+			{
+				ofPath = foundPath;
+			}
+		} 
 	}
 
 	ofJson configJson;
