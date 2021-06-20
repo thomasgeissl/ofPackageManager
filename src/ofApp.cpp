@@ -966,22 +966,22 @@ ofJson ofPackageManager::getConfig()
 
 
 
-	IFNOTSILENT(
-		if(hasLocalConfig){
-			ofLogNotice() << "found a local config file";
-		}else if(isInsideOf){
-			ofLogNotice() << "inside an openFrameworks directory";
-		}else if(hasGlobalConfig){
-			ofLogNotice() << "using global config file, since no local config file is present and you are not inside an openFrameworks directory.";
-		}else{
-			ofLogError() << "could not get the config. You are probably not inside an openFrameworks directory or did not configure the package manager.";
-		}
-		// ofLogNotice() << "getting the config";
-		// ofLogNotice() << "localConfig " << hasLocalConfig;
-		// ofLogNotice() << "isInsideOf " << isInsideOf;
-		// ofLogNotice() << "globalConfig " << hasGlobalConfig;
-		ofLogNotice() << configJson.dump(4);
-	);
+	// IFNOTSILENT(
+	// 	if(hasLocalConfig){
+	// 		ofLogNotice() << "found a local config file";
+	// 	}else if(isInsideOf){
+	// 		ofLogNotice() << "inside an openFrameworks directory";
+	// 	}else if(hasGlobalConfig){
+	// 		ofLogNotice() << "using global config file, since no local config file is present and you are not inside an openFrameworks directory.";
+	// 	}else{
+	// 		ofLogError() << "could not get the config. You are probably not inside an openFrameworks directory or did not configure the package manager.";
+	// 	}
+	// 	// ofLogNotice() << "getting the config";
+	// 	// ofLogNotice() << "localConfig " << hasLocalConfig;
+	// 	// ofLogNotice() << "isInsideOf " << isInsideOf;
+	// 	// ofLogNotice() << "globalConfig " << hasGlobalConfig;
+	// 	ofLogNotice() << configJson.dump(4);
+	// );
 	return configJson;
 }
 ofVersion ofPackageManager::getVersion()
