@@ -2,13 +2,18 @@
 
 #include "ofMain.h"
 #include "ofxImGui.h"
+#include "ofxStateMachine.h"
+#include "ofApp.h"
 
 class gui : public ofBaseApp
 {
 public:
+    gui(ofPackageManager app);
     void setup();
     void update();
     void draw();
+    ImVec2 drawMenuGui();
+    void drawRecentProjects();
     void exit();
 
     void keyPressed(int key);
@@ -24,5 +29,11 @@ public:
     void gotMessage(ofMessage msg);
 
 private:
+    ofPackageManager _app;
     ofxImGui::Gui _gui;
+    ofxStateMachine _stateMachine;
+    ofxState::pointer _welcomeState;
+    ofxState::pointer _newState;
+    ofxState::pointer _updateState;
+    ofxState::pointer _updateMultipleState;
 };

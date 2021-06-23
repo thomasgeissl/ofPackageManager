@@ -907,6 +907,10 @@ bool ofPackageManager::isCorePackage(std::string id)
 	return false;
 }
 
+std::string ofPackageManager::getCwdPath()
+{
+	return _cwdPath;
+}
 std::string ofPackageManager::getOfPath()
 {
 	return _configJson["ofPath"];
@@ -926,6 +930,8 @@ ofJson ofPackageManager::getConfig()
 	auto hasLocalConfig = false;
 	auto hasGlobalConfig = false;
 
+	ofLogNotice() << "getting config";
+	ofLogNotice() << isInsideOf;
 
 
 	ofJson configJson;
@@ -964,24 +970,6 @@ ofJson ofPackageManager::getConfig()
 
 	}
 
-
-
-	// IFNOTSILENT(
-	// 	if(hasLocalConfig){
-	// 		ofLogNotice() << "found a local config file";
-	// 	}else if(isInsideOf){
-	// 		ofLogNotice() << "inside an openFrameworks directory";
-	// 	}else if(hasGlobalConfig){
-	// 		ofLogNotice() << "using global config file, since no local config file is present and you are not inside an openFrameworks directory.";
-	// 	}else{
-	// 		ofLogError() << "could not get the config. You are probably not inside an openFrameworks directory or did not configure the package manager.";
-	// 	}
-	// 	// ofLogNotice() << "getting the config";
-	// 	// ofLogNotice() << "localConfig " << hasLocalConfig;
-	// 	// ofLogNotice() << "isInsideOf " << isInsideOf;
-	// 	// ofLogNotice() << "globalConfig " << hasGlobalConfig;
-	// 	ofLogNotice() << configJson.dump(4);
-	// );
 	return configJson;
 }
 ofVersion ofPackageManager::getVersion()
@@ -1093,6 +1081,7 @@ bool ofPackageManager::isConfigured()
 
 	
 bool ofPackageManager::isLocatedInsideOfDirectory(std::string path){
+	return !findOfPathOutwardly(path).empty();
 	auto level = 0;
 	std::string ofPath = "";
 	while(ofPath.empty() && level < 4){
@@ -1163,10 +1152,9 @@ std::string ofPackageManager::findOfPathInwardly(std::string path, int depth)
 	}
 }
 
-std::string ofPackageManager::findOfPathOutwardly(std::string path)
+std::string ofPackageManager::findOfPathOutwardly(std::string path, int maxLevel)
 {
 	auto level = 0;
-	auto maxLevel = 4;
 	std::string ofPath = "";
 	while(ofPath.empty() && level < maxLevel){
 		fs::path p(path);

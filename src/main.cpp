@@ -22,7 +22,7 @@ int main(int argc, char **argv)
 	if (argc == 1)
 	{
 		ofSetupOpenGL(1024, 768, OF_WINDOW);
-		return ofRunApp(new gui());
+		return ofRunApp(new gui(app));
 	}
 	else if (jsonI.accept(argc, argv))
 	{

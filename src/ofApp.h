@@ -47,11 +47,13 @@ public:
 	bool hasPackagesDatabase();
 	bool isCorePackage(std::string id);
 
+	std::string getCwdPath();
 	std::string getOfPath();
 	std::string getLocalAddonsPath();
 	std::string getOfPackagesPath();
 	ofJson getConfig();
 	ofVersion getVersion();
+
 	void setConfig(ofJson config);
 	void setCwdPath(std::string path);
 	void setSilent(bool value = true);
@@ -67,7 +69,7 @@ public:
 	bool isConfigured();
 	bool isLocatedInsideOfDirectory(std::string path);
 	std::string findOfPathInwardly(std::string path, int depth);
-	std::string findOfPathOutwardly(std::string path);
+	std::string findOfPathOutwardly(std::string path, int maxLevel = 8);
 
 private:
 	bool _silent;
