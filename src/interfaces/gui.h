@@ -4,7 +4,44 @@
 #include "ofxImGui.h"
 #include "ofxStateMachine.h"
 #include "ofApp.h"
+#include "generators/projectGenerator/ofProjectGenerator.h"
 
+class selectablePackage
+{
+public:
+    selectablePackage() {}
+    selectablePackage(ofPackage package, bool selected)
+    {
+        _package = package;
+        _selected = selected;
+    }
+    ofPackage _package;
+    bool _selected;
+};
+class selectableTarget
+{
+public:
+    selectableTarget() {}
+    selectableTarget(ofTargetPlatform target, bool selected)
+    {
+        _target = target;
+        _selected = selected;
+    }
+    ofTargetPlatform _target;
+    bool _selected;
+};
+class selectableTemplate
+{
+public:
+    selectableTemplate() {}
+    selectableTemplate(baseProject::Template template_, bool selected)
+    {
+        _template = template_;
+        _selected = selected;
+    }
+    baseProject::Template _template;
+    bool _selected;
+};
 class gui : public ofBaseApp
 {
 public:
@@ -36,4 +73,15 @@ private:
     ofxState::pointer _newState;
     ofxState::pointer _updateState;
     ofxState::pointer _updateMultipleState;
+    ofxState::pointer _configureProjectState;
+
+    std::string _projectDirectoryPath;
+    std::string _projectName;
+    std::string _projectPath;
+
+    std::map<string, selectablePackage> _corePackages;
+    std::map<string, selectablePackage> _globalPackages;
+    std::map<string, selectablePackage> _localPackages;
+
+    std::vector<selectableTarget> _targets;
 };

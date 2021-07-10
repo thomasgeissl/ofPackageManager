@@ -7,6 +7,7 @@
 #include "defines.h"
 #include "ofPackage.h"
 #include "ofVersion.h"
+#include "./generators/projectGenerator/ofProjectGenerator.h"
 
 class ofPackageManager
 {
@@ -32,12 +33,11 @@ public:
 	ofPackage installPackageByUrl(std::string url, std::string checkout = "", std::string destinationPath = "");
 	ofPackage maybeInstallOneOfThePackages(ofJson packages, std::string destinationPath);
 	ofJson getAvailablePackages();
-	std::vector<std::string> getCorePackages();
+	std::vector<ofPackage> getCorePackages();
 	std::vector<ofPackage> getGloballyInstalledPackages();
 	std::vector<ofPackage> getLocallyInstalledPackages();
 	std::vector<ofPackage> getPackagesListedInAddonsMakeFile();
 
-	bool generateProject();
 
 	ofJson searchPackageInDatabaseById(std::string id);
 	ofJson searchPackageOnGithubByName(std::string name);
@@ -49,6 +49,7 @@ public:
 
 	std::string getCwdPath();
 	std::string getOfPath();
+	std::string getMyAppsPath();
 	std::string getLocalAddonsPath();
 	std::string getOfPackagesPath();
 	ofJson getConfig();
@@ -70,6 +71,31 @@ public:
 	bool isLocatedInsideOfDirectory(std::string path);
 	std::string findOfPathInwardly(std::string path, int depth);
 	std::string findOfPathOutwardly(std::string path, int maxLevel = 8);
+
+	bool generateProject(){
+
+	}
+	bool generateProject(std::string path)
+	{
+		setCwdPath(path);
+		setOFRoot(getOfPath());
+		if(ofFile::doesFileExist(ofFilePath::join(path, "addons.make"))){
+			ofLogNotice() << "TODO: backup addons.make";
+		}
+
+		auto target = ofGetTargetPlatform();
+		auto project = getTargetProject(target);
+		auto targetS = getTargetString(target);
+		auto templateName = "";
+		project->create(path, templateName);
+
+		for(auto package : getPackagesListedInAddonsMakeFile()){
+			ofLogNotice() << package.toString();
+			project->addAddon(package.getPath());
+		}
+		// project->parseAddons();
+		project->save();
+	}
 
 private:
 	bool _silent;

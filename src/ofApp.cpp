@@ -21,6 +21,7 @@ ofPackageManager::ofPackageManager(std::string cwdPath) : _silent(false),
 														  _configJson(getConfig())
 {
 	// ofSetLogLevel(OF_LOG_VERBOSE);
+	ofSetFrameRate(60);
 }
 
 bool ofPackageManager::addPackageToAddonsMakeFile(ofPackage package)
@@ -446,9 +447,9 @@ ofJson ofPackageManager::getAvailablePackages()
 	}
 	return result;
 }
-std::vector<std::string> ofPackageManager::getCorePackages()
+std::vector<ofPackage> ofPackageManager::getCorePackages()
 {
-	std::vector<std::string> coreAddons;
+	std::vector<ofPackage> corePackages;
 
 	auto globalAddonsDir = ofDirectory(ofFilePath::join(getOfPath(), "addons"));
 	globalAddonsDir.listDir();
@@ -460,12 +461,12 @@ std::vector<std::string> ofPackageManager::getCorePackages()
 			ofxGit::repository addon(path);
 			if (!addon.isRepository())
 			{
-				coreAddons.push_back(file.getFileName());
+				corePackages.push_back(ofPackage(file.getFileName()));
 			}
 		}
 	}
 
-	return coreAddons;
+	return corePackages;
 }
 std::vector<ofPackage> ofPackageManager::getGloballyInstalledPackages()
 {
@@ -566,35 +567,35 @@ std::vector<ofPackage> ofPackageManager::getPackagesListedInAddonsMakeFile()
 	return packages;
 }
 
-bool ofPackageManager::generateProject()
-{
-	auto isWindows = true;
-#if defined(TARGET_OSX) || defined(TARGET_LINUX)
-	isWindows = false;
-#endif
-	std::string pgPath = _configJson["pgPath"].get<std::string>();
-	std::string ofPath = isWindows ? "/ofPath=" : "-o";
-	ofPath += "\"";
-	ofPath += getConfig()["ofPath"].get<std::string>();
-	ofPath += "\"";
-	std::string packages = isWindows ? "/addons=" : "-a";
-	packages += "\"";
-	auto requiredPackages = getPackagesListedInAddonsMakeFile();
-	for (auto package : requiredPackages)
-	{
-		packages += package.getPath();
-		packages += ", ";
-	}
-	packages += "\"";
-	auto addons = getConfig()["ofPath"].get<std::string>();
-	// TODO: platforms and templates
+// bool ofPackageManager::generateProject()
+// {
+// 	auto isWindows = true;
+// #if defined(TARGET_OSX) || defined(TARGET_LINUX)
+// 	isWindows = false;
+// #endif
+// 	std::string pgPath = _configJson["pgPath"].get<std::string>();
+// 	std::string ofPath = isWindows ? "/ofPath=" : "-o";
+// 	ofPath += "\"";
+// 	ofPath += getConfig()["ofPath"].get<std::string>();
+// 	ofPath += "\"";
+// 	std::string packages = isWindows ? "/addons=" : "-a";
+// 	packages += "\"";
+// 	auto requiredPackages = getPackagesListedInAddonsMakeFile();
+// 	for (auto package : requiredPackages)
+// 	{
+// 		packages += package.getPath();
+// 		packages += ", ";
+// 	}
+// 	packages += "\"";
+// 	auto addons = getConfig()["ofPath"].get<std::string>();
+// 	// TODO: platforms and templates
 
-	std::string verbose = isWindows ? "/verbose" : "-v";
-	std::string command = pgPath + " " + verbose + " " + ofPath + " " + packages;
-	auto result = ofSystem(command);
-	// TODO: parse result and return success or error
-	return false;
-}
+// 	std::string verbose = isWindows ? "/verbose" : "-v";
+// 	std::string command = pgPath + " " + verbose + " " + ofPath + " " + packages;
+// 	auto result = ofSystem(command);
+// 	// TODO: parse result and return success or error
+// 	return false;
+// }
 ofJson ofPackageManager::searchPackageInDatabaseById(std::string name)
 {
 	if(!hasPackagesDatabase()){
@@ -887,22 +888,11 @@ bool ofPackageManager::hasPackagesDatabase()
 bool ofPackageManager::isCorePackage(std::string id)
 {
 	id = ofSplitString(id, "@").front();
-	auto coreAddons = getCorePackages();
-	return std::find(coreAddons.begin(), coreAddons.end(), id) != coreAddons.end();
-
-	auto globalAddonsDir = ofDirectory(ofFilePath::join(getOfPath(), "addons"));
-	globalAddonsDir.listDir();
-	for (auto file : globalAddonsDir.getFiles())
-	{
-		auto path = file.getAbsolutePath();
-		if (file.getFileName() == id && file.isDirectory())
-		{ //starts with ofx
-			ofxGit::repository addon(path);
-			if (!addon.isRepository())
-			{
-				return true;
-			}
+	for(auto corePackage : getCorePackages()){
+		if(corePackage.getPath() == id){
+			return true;
 		}
+
 	}
 	return false;
 }
@@ -914,6 +904,9 @@ std::string ofPackageManager::getCwdPath()
 std::string ofPackageManager::getOfPath()
 {
 	return _configJson["ofPath"];
+}
+std::string ofPackageManager::getMyAppsPath(){
+	return ofFilePath::join(getOfPath(), ofFilePath::join("apps", "myApps"));
 }
 std::string ofPackageManager::getLocalAddonsPath()
 {
@@ -984,6 +977,7 @@ void ofPackageManager::setConfig(ofJson config)
 void ofPackageManager::setCwdPath(std::string path)
 {
 	_cwdPath = path;
+	_configJson = getConfig();
 }
 void ofPackageManager::setSilent(bool value)
 {
