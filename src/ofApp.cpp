@@ -164,18 +164,18 @@ bool ofPackageManager::configure(bool global)
 	}
 
 	auto ofPath = ofFilePath::getAbsolutePath(getAbsolutePath("../../.."), false);
-	
 
 	if (!_silent)
 	{
 		auto findOfAutomatically = _clu.getBoolAnswer("Do you want to automatically detect the openFrameworks directory? This will iterate through your home directory and its children, three levels deep. It might be annoying because your OS might ask for permission to access those directories.");
-		if(findOfAutomatically){
+		if (findOfAutomatically)
+		{
 			auto foundPath = findOfPathInwardly(ofFilePath::getUserHomeDir(), 3);
 			if (!foundPath.empty())
 			{
 				ofPath = foundPath;
 			}
-		} 
+		}
 	}
 
 	ofJson configJson;
@@ -192,8 +192,8 @@ bool ofPackageManager::configure(bool global)
 
 	_configJson = configJson;
 
-
-	if(!hasPackagesDatabase()){
+	if (!hasPackagesDatabase())
+	{
 		installPackagesDatabase();
 	}
 
@@ -320,6 +320,21 @@ ofJson ofPackageManager::searchPackageOnGithubByUser(std::string user)
 		ofLogNotice("search") << outputString;);
 	return resultJson;
 }
+std::vector<ghRepo> ofPackageManager::searchPackageOnGithubByName2(std::string name)
+{
+	std::string url = "https://api.github.com/search/repositories?q=" + name;
+	ofHttpRequest request(url, "ofPackageManager");
+	request.headers["User-Agent"] = "ofPackageManager";
+	ofURLFileLoader loader;
+	auto response = loader.handleRequest(request);
+	auto resultJson = ofJson::parse(response.data.getText());
+	std::vector<ghRepo> repos;
+	for (auto repo : resultJson["items"])
+	{
+		repos.push_back(ghRepo(repo));
+	}
+	return repos;
+}
 
 ofPackage ofPackageManager::installPackageByGithub(std::string github, std::string checkout, std::string destinationPath)
 {
@@ -354,7 +369,8 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 		if (repoDirectory.exists())
 		{
 			IFNOTSILENT(
-				if (_clu.getBoolAnswer(destinationPath + "/" + name + " already exists. Do you want to pull and checkout the specified commit?", true)) {
+				if (_clu.getBoolAnswer(destinationPath + "/" + name + " already exists. Do you want to pull and checkout the specified commit?", true))
+				{
 					ofLogNotice("TODO") << "Unfortunately it is not yet implemented due to missing ofxGit::repo::pull";
 					// TODO: pull and checkout, pull still does not work in ofxGit2
 				});
@@ -423,7 +439,8 @@ ofPackage ofPackageManager::maybeInstallOneOfThePackages(ofJson packages, std::s
 
 ofJson ofPackageManager::getAvailablePackages()
 {
-	if(!hasPackagesDatabase()){
+	if (!hasPackagesDatabase())
+	{
 		installPackagesDatabase();
 	}
 	ofDirectory ofPackagesDirectory(getOfPackagesPath());
@@ -598,7 +615,8 @@ std::vector<ofPackage> ofPackageManager::getPackagesListedInAddonsMakeFile()
 // }
 ofJson ofPackageManager::searchPackageInDatabaseById(std::string name)
 {
-	if(!hasPackagesDatabase()){
+	if (!hasPackagesDatabase())
+	{
 		installPackagesDatabase();
 	}
 	ofDirectory ofPackagesDirectory(getOfPackagesPath());
@@ -642,7 +660,8 @@ ofJson ofPackageManager::searchPackageInDatabaseById(std::string name)
 	}
 
 	IFNOTSILENT(
-		if (counter > 0) {
+		if (counter > 0)
+		{
 			std::cout << outputString << endl;
 
 			if (!addPackageToAddonsMakeFile(maybeInstallOneOfThePackages(result)))
@@ -656,7 +675,8 @@ ofJson ofPackageManager::searchPackageInDatabaseById(std::string name)
 					}
 				}
 			}
-		} else {
+		} else
+		{
 			std::cout << "Unfortunately this package was not found in the database." << endl;
 			if (_clu.getBoolAnswer("But it is probably available on github. Wanna give it a try?"))
 			{
@@ -793,7 +813,8 @@ ofPackage ofPackageManager::installPackage(std::string addon, std::string destin
 }
 ofPackage ofPackageManager::installPackageById(std::string id, std::string checkout, std::string destinationPath)
 {
-	if(!hasPackagesDatabase()){
+	if (!hasPackagesDatabase())
+	{
 		installPackagesDatabase();
 	}
 	if (isCorePackage(id))
@@ -888,11 +909,12 @@ bool ofPackageManager::hasPackagesDatabase()
 bool ofPackageManager::isCorePackage(std::string id)
 {
 	id = ofSplitString(id, "@").front();
-	for(auto corePackage : getCorePackages()){
-		if(corePackage.getPath() == id){
+	for (auto corePackage : getCorePackages())
+	{
+		if (corePackage.getPath() == id)
+		{
 			return true;
 		}
-
 	}
 	return false;
 }
@@ -905,7 +927,8 @@ std::string ofPackageManager::getOfPath()
 {
 	return _configJson["ofPath"];
 }
-std::string ofPackageManager::getMyAppsPath(){
+std::string ofPackageManager::getMyAppsPath()
+{
 	return ofFilePath::join(getOfPath(), ofFilePath::join("apps", "myApps"));
 }
 std::string ofPackageManager::getLocalAddonsPath()
@@ -926,13 +949,11 @@ ofJson ofPackageManager::getConfig()
 	ofLogNotice() << "getting config";
 	ofLogNotice() << isInsideOf;
 
-
 	ofJson configJson;
 	ofFile configFile;
 	ofFile globalConfigFile;
 	configFile.open(_globalConfigPath);
 	hasGlobalConfig = globalConfigFile.exists();
-
 
 	std::string path = _cwdPath;
 	auto level = 0;
@@ -953,14 +974,17 @@ ofJson ofPackageManager::getConfig()
 		hasLocalConfig = true;
 		configFile >> configJson;
 	}
-	else if(isInsideOf)
+	else if (isInsideOf)
 	{
 		configJson["ofPackagesPath"] = ofFilePath::join(_configDirPath, "ofPackages");
 		configJson["ofPath"] = findOfPathOutwardly(_cwdPath);
-	}else if(hasGlobalConfig){
+	}
+	else if (hasGlobalConfig)
+	{
 		globalConfigFile >> configJson;
-	}else{
-
+	}
+	else
+	{
 	}
 
 	return configJson;
@@ -1073,14 +1097,16 @@ bool ofPackageManager::isConfigured()
 	return true;
 }
 
-	
-bool ofPackageManager::isLocatedInsideOfDirectory(std::string path){
+bool ofPackageManager::isLocatedInsideOfDirectory(std::string path)
+{
 	return !findOfPathOutwardly(path).empty();
 	auto level = 0;
 	std::string ofPath = "";
-	while(ofPath.empty() && level < 4){
+	while (ofPath.empty() && level < 4)
+	{
 		fs::path p(path);
-		if(!findOfPathInwardly(path, 0).empty()){
+		if (!findOfPathInwardly(path, 0).empty())
+		{
 			return true;
 		}
 		path = p.parent_path().string();
@@ -1150,15 +1176,16 @@ std::string ofPackageManager::findOfPathOutwardly(std::string path, int maxLevel
 {
 	auto level = 0;
 	std::string ofPath = "";
-	while(ofPath.empty() && level < maxLevel){
+	while (ofPath.empty() && level < maxLevel)
+	{
 		fs::path p(path);
 		ofPath = findOfPathInwardly(path, 0);
-		if(!ofPath.empty()){
+		if (!ofPath.empty())
+		{
 			return ofPath;
 		}
 		path = p.parent_path().string();
 		level++;
 	}
 	return ofPath;
-
 }

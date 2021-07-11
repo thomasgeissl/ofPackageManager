@@ -3,8 +3,9 @@
 #include "ofMain.h"
 #include "ofxImGui.h"
 #include "ofxStateMachine.h"
-#include "ofApp.h"
+#include "../ofApp.h"
 #include "generators/projectGenerator/ofProjectGenerator.h"
+#include "../ghRepo.h"
 
 class selectablePackage
 {
@@ -41,6 +42,9 @@ public:
     }
     baseProject::Template _template;
     bool _selected;
+    friend bool operator== ( const selectableTemplate &left, const selectableTemplate &right){
+        return left._template.dir.path() == right._template.dir.path();
+    }
 };
 class gui : public ofBaseApp
 {
@@ -65,11 +69,15 @@ public:
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);
 
+    bool Button(std::string text);
+    bool PrimaryButton(std::string text);
+    void Path(std::string & path);
+
 private:
     ofPackageManager _app;
     ofxImGui::Gui _gui;
     ofxStateMachine _stateMachine;
-    ofxState::pointer _welcomeState;
+    ofxState::pointer _homeState;
     ofxState::pointer _newState;
     ofxState::pointer _updateState;
     ofxState::pointer _updateMultipleState;
@@ -79,9 +87,17 @@ private:
     std::string _projectName;
     std::string _projectPath;
 
+    std::string _queryText;
+
     std::map<string, selectablePackage> _corePackages;
     std::map<string, selectablePackage> _globalPackages;
     std::map<string, selectablePackage> _localPackages;
 
+    std::vector<ghRepo> _searchResults;
+
     std::vector<selectableTarget> _targets;
+    std::map<ofTargetPlatform, std::vector<selectableTemplate>> _templates;
+
+
+    bool _showStyleEditor;
 };

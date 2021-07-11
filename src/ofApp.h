@@ -7,6 +7,7 @@
 #include "defines.h"
 #include "ofPackage.h"
 #include "ofVersion.h"
+#include "ghRepo.h"
 #include "./generators/projectGenerator/ofProjectGenerator.h"
 
 class ofPackageManager
@@ -42,6 +43,8 @@ public:
 	ofJson searchPackageInDatabaseById(std::string id);
 	ofJson searchPackageOnGithubByName(std::string name);
 	ofJson searchPackageOnGithubByUser(std::string user);
+
+	std::vector<ghRepo> searchPackageOnGithubByName2(std::string name);
 	bool installPackagesDatabase();
 	bool updatePackagesDatabase();
 	bool hasPackagesDatabase();
@@ -73,7 +76,7 @@ public:
 	std::string findOfPathOutwardly(std::string path, int maxLevel = 8);
 
 	bool generateProject(){
-
+		return false;
 	}
 	bool generateProject(std::string path)
 	{
@@ -94,7 +97,11 @@ public:
 			project->addAddon(package.getPath());
 		}
 		// project->parseAddons();
-		project->save();
+		return project->save();
+	}
+
+	void updateMultipleProjects(std::string path){
+
 	}
 
 private:

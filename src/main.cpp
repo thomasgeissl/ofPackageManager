@@ -21,7 +21,7 @@ int main(int argc, char **argv)
 	jsonInterface jsonI(app);
 	if (argc == 1)
 	{
-		ofSetupOpenGL(1024, 768, OF_WINDOW);
+		ofSetupOpenGL(600, 768, OF_WINDOW);
 		return ofRunApp(new gui(app));
 	}
 	else if (jsonI.accept(argc, argv))
