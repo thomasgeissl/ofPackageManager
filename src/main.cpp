@@ -1,7 +1,7 @@
 #include "ofMain.h"
 #include "ofxUnitTests.h"
 #include "ofApp.h"
-#include "./interfaces/gui.h"
+#include "./interfaces/gui/gui.h"
 #include "./interfaces/cli.h"
 #include "./interfaces/jsonInterface.h"
 

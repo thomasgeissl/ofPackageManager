@@ -12,6 +12,7 @@ public:
 	}
 	std::string toString()
 	{
+		if(_checkout.empty()) return _path;
 		return _path + "#" + _url + "@" + _checkout;
 	}
 	std::string getPath()

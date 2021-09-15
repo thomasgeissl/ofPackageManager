@@ -4,6 +4,9 @@
 class ghRepo
 {
 public:
+    ghRepo() : _name(""){
+
+    }
     ghRepo(ofJson data) : _data(data)
     {
         _name = data["full_name"];
@@ -13,10 +16,10 @@ public:
         _stars = data["stargazers_count"];
         _forks = data["forks_count"];
         _isFork = data["fork"].get<bool>();
-        fetchTags();
     }
     std::string toString()
     {
+        return "";
     }
     void fetchTags()
     {
@@ -25,8 +28,9 @@ public:
         ofURLFileLoader loader;
         auto response = loader.handleRequest(request);
         auto resultJson = ofJson::parse(response.data.getText());
+        ofLogNotice() << resultJson.dump(2);
         for(auto & tag : resultJson){
-            _tags.push_back(tag["name"]);
+            // _tags.push_back(tag["name"]);
         }
     }
     ofJson _data;
