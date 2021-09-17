@@ -13,8 +13,6 @@ gui::gui(ofPackageManager app) : ofBaseApp(), _app(app),
                                  _projectDirectoryPath(app.getMyAppsPath())
 {
     _stateMachine.setInitialState(_homeState);
-    // _projectPath = "/Users/thomasgeissl/libs/of_v0.11.2_osx_release/apps/myApps/project4";
-    // _stateMachine.setInitialState(_configureProjectState);
     _stateMachine.addTransition(_homeState, "new", _newState);
     _stateMachine.addTransition(_homeState, "install", _installState);
     _stateMachine.addTransition(_homeState, "update", _updateState);
@@ -22,16 +20,19 @@ gui::gui(ofPackageManager app) : ofBaseApp(), _app(app),
 
     _stateMachine.addTransition(_installState, "back", _homeState);
 
-    _stateMachine.addTransition(_newState, "next", _configureProjectState);
+    _stateMachine.addTransition(_newState, "configure", _configureProjectState);
     _stateMachine.addTransition(_newState, "back", _homeState);
 
-    _stateMachine.addTransition(_updateState, "next", _configureProjectState);
+    _stateMachine.addTransition(_updateState, "configure", _configureProjectState);
     _stateMachine.addTransition(_updateState, "back", _homeState);
 
     _stateMachine.addTransition(_configureProjectState, "back", _homeState);
 
     _stateMachine.addTransition(_updateMultipleState, "back", _homeState);
 
+    // TODO: add support for lambda functions to ofxStateMachine
+    // _homeState->addEnteredListener([&]{ofLogNotice() << "home entered";});
+    _homeState->addEnteredListener(this, &gui::onHomeStateEntered);
     _stateMachine.start();
 
     _targets.push_back(selectableTarget(OF_TARGET_LINUX, ofGetTargetPlatform() == OF_TARGET_LINUX));
@@ -46,7 +47,7 @@ gui::gui(ofPackageManager app) : ofBaseApp(), _app(app),
 
     for (auto &target : _targets)
     {
-        _templates[target._target] = std::vector<selectableTemplate>();
+        _templates[target._target] = getTargetProject(target._target)->listAvailableTemplates(getTargetString(target._target));
     }
 }
 void gui::setup()
@@ -63,6 +64,7 @@ void gui::exit()
 void gui::update()
 {
     auto frameNum = ofGetFrameNum();
+    // update packages list every 60 frames
     if (frameNum % 60 == 0)
     {
         for (auto package : _app.getCorePackages())
@@ -87,29 +89,6 @@ void gui::update()
             {
                 // TODO: check value
                 _localPackages[package.getPath()] = selectablePackage(package, false);
-            }
-        }
-    }
-
-    if (frameNum % 300 == 0 && !_projectPath.empty() && ofDirectory::doesDirectoryExist(_projectPath))
-    {
-        for (auto &target : _targets)
-        {
-            auto templates = getTargetProject(target._target)->listAvailableTemplates(getTargetString(target._target));
-            for (auto &template_ : templates)
-            {
-                bool found = false;
-                for (auto &selectableTemplate_ : _templates.at(target._target))
-                {
-                    if (selectableTemplate_._template.dir.path() == template_.dir.path())
-                    {
-                        found = true;
-                    }
-                }
-                if (!found)
-                {
-                    _templates[target._target].push_back(selectableTemplate(template_, false));
-                }
             }
         }
     }
@@ -223,9 +202,148 @@ void gui::drawHeader()
         {
             _stateMachine.trigger("back");
         }
-        ImGui::SameLine();
     }
-    ImGui::Text(ofToUpper(_stateMachine.getCurrentState()->getName()).c_str());
+    // ImGui::SameLine();
+    // ImGui::Text(ofToUpper(_stateMachine.getCurrentState()->getName()).c_str());
+
+    if (_stateMachine.isCurrentState(_newState))
+    {
+        ofDirectory projectDirectory = ofDirectory(_projectDirectoryPath);
+        ofDirectory projectDir = ofDirectory(_projectPath);
+        if (projectDirectory.exists())
+        {
+            if (!projectDir.exists())
+            {
+                ImGui::SameLine();
+                if (Button("create and configure", OFPACKAGEMANAGER_GUI_SIZE::SMALL, true))
+                {
+                    auto dataPath = ofFilePath::getAbsolutePath(".");
+                    _app.generateProject(_projectPath);
+                    _stateMachine.trigger("configure");
+                }
+            }
+        }
+    }
+    else if (_stateMachine.isCurrentState(_configureProjectState))
+    {
+        ImGui::SameLine();
+        if (Button("install additional addons"))
+        {
+            ImGui::OpenPopup("search");
+        }
+        ImGui::SameLine();
+        if (Button("generate project", OFPACKAGEMANAGER_GUI_SIZE::SMALL, true))
+        {
+            ofLogNotice() << "generating project";
+            // TODO: move to package manager, so it can be called from the cli as well
+            // set of root, required by project manager
+            setOFRoot(_app.getOfPath());
+            for (auto &target : _targets)
+            {
+                if (target.isSelected())
+                {
+                    auto project = getTargetProject(target._target);
+                    auto template_ = "";
+                    std::string addonsMakeText = "";
+                    // TODO: get selected template
+                    project->create(_app.getCwdPath(), template_);
+
+                    // add selected core packages
+                    for (auto &corePackage : _corePackages)
+                    {
+                        auto package = corePackage.second;
+                        if (package.isSelected())
+                        {
+                            project->addAddon(package._package.getPath());
+                            addonsMakeText += package._package.toString();
+                            addonsMakeText += "\n";
+                        }
+                    }
+                    // add selected global packages
+                    for (auto &globalPackage : _globalPackages)
+                    {
+                        auto package = globalPackage.second;
+                        if (package.isSelected())
+                        {
+                            project->addAddon(package._package.getPath());
+                            addonsMakeText += package._package.toString();
+                            addonsMakeText += "\n";
+                        }
+                    }
+                    // add selected local packages
+                    for (auto &localPackage : _localPackages)
+                    {
+                        auto package = localPackage.second;
+                        if (package.isSelected())
+                        {
+                            project->addAddon(package._package.getPath());
+                            addonsMakeText += package._package.toString();
+                            addonsMakeText += "\n";
+                        }
+                    }
+                    // finally generate the project
+                    project->save();
+                    ofLogNotice() << addonsMakeText;
+
+                    // TODO: override addons.make with commit hash comments
+
+                    // ofLogNotice() << "Templates for target " << getTargetString(target._target);
+                    // auto templates = getTargetProject(target._target)->listAvailableTemplates(getTargetString(target._target));
+                    // for (auto &templateConfig : templates)
+                    // {
+                    //     ofLogNotice() << templateConfig.dir.path() << "\t\t" << templateConfig.description;
+                    // }
+                }
+            }
+        }
+    }
+    else if (_stateMachine.isCurrentState(_updateState))
+    {
+        ofDirectory projectDir = ofDirectory(_projectPath);
+        if (!_projectPath.empty() && projectDir.exists())
+        {
+            ImGui::SameLine();
+            if (Button("configure", OFPACKAGEMANAGER_GUI_SIZE::SMALL, true))
+            {
+                auto dataPath = ofFilePath::getAbsolutePath(".");
+                ofLogNotice() << _app.findOfPathOutwardly(dataPath, 6);
+                ofLogNotice() << _app.getOfPath();
+                ofLogNotice() << ofFilePath::getAbsolutePath(".");
+                ofLogNotice() << _app.getCwdPath();
+                ofLogNotice() << _projectPath;
+                _app.generateProject(_projectPath);
+                _stateMachine.trigger("configure");
+            }
+        }
+    }
+    else if (_stateMachine.isCurrentState(_installState))
+    {
+        ImGui::SameLine();
+        bool anyPackageSelected = false;
+        for (auto &package : _globalPackages)
+        {
+            if (package.second._selected)
+            {
+                anyPackageSelected = true;
+            }
+        }
+
+        // TODO: only if at least one is selected
+        if (anyPackageSelected)
+        {
+            ImGui::SameLine();
+
+            if (Button("delete selected addons"))
+            {
+                ofLogNotice() << "delete selected packages";
+            }
+        }
+        ImGui::SameLine();
+        if (Button("add"))
+        {
+            ImGui::OpenPopup("search");
+        }
+    }
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
 }
 void gui::drawModals()
@@ -332,7 +450,7 @@ void gui::drawHomeState()
         _stateMachine.trigger("install");
     }
     ImGui::SameLine();
-    if (Button("new project", OFPACKAGEMANAGER_GUI_SIZE::BIG))
+    if (Button("create project", OFPACKAGEMANAGER_GUI_SIZE::BIG))
     {
         _stateMachine.trigger("new");
     }
@@ -349,79 +467,30 @@ void gui::drawHomeState()
 }
 void gui::drawInstallState()
 {
-    ImGui::Text("list core addons");
-    ImGui::Text("list globally installed addons, delete");
-
     for (auto corePackage : _corePackages)
     {
         ImGui::Text(corePackage.second._package.getPath().c_str());
     }
     for (auto &package : _globalPackages)
     {
-        ImGui::Checkbox(package.second._package.toString().c_str(), &package.second._selected);
-    }
-
-// TODO: only if at least one is selected
-    if (Button("delete"))
-    {
-        ofLogNotice() << "delete selected packages";
-    }
-    ImGui::SameLine();
-    if (Button("add"))
-    {
-        ImGui::OpenPopup("search");
+        ImGui::Checkbox(package.second._package.getPath().c_str(), &package.second._selected);
+        Tooltip(package.second._package.getUrl() + "@" + package.second._package.getCheckout());
     }
 }
 void gui::drawNewState()
 {
-    Path(_projectDirectoryPath);
+    PathChooser(_projectDirectoryPath);
     char name[128] = "myProject";
     if (ImGui::InputText("project name", name, IM_ARRAYSIZE(name)))
     {
         _projectName = std::string(name);
         _projectPath = ofFilePath::join(_projectDirectoryPath, _projectName);
     }
-    ofDirectory projectDirectory = ofDirectory(_projectDirectoryPath);
-    ofDirectory projectDir = ofDirectory(_projectPath);
-    if (projectDirectory.exists())
-    {
-        if (!projectDir.exists())
-        {
-            if (Button("generate and configure", OFPACKAGEMANAGER_GUI_SIZE::MEDIUM, true))
-            {
-                auto dataPath = ofFilePath::getAbsolutePath(".");
-                _app.generateProject(_projectPath);
-                _stateMachine.trigger("next");
-            }
-        }
-    }
 }
 void gui::drawUpdateState()
 {
-    ImGui::Text("TODO: update");
-    if (ImGui::Button("path"))
-    {
-        auto result = ofSystemLoadDialog("where should your project live", true, _app.getMyAppsPath());
-        if (result.bSuccess)
-        {
-            _projectPath = result.getPath();
-        }
-    }
-    ofDirectory projectDir = ofDirectory(_projectPath);
-    if (projectDir.exists())
-    {
-        if (ImGui::Button("next"))
-        {
-            auto dataPath = ofFilePath::getAbsolutePath(".");
-            ofLogNotice() << _app.findOfPathOutwardly(dataPath, 6);
-            ofLogNotice() << _app.getOfPath();
-            ofLogNotice() << ofFilePath::getAbsolutePath(".");
-            ofLogNotice() << _app.getCwdPath();
-            ofLogNotice() << _projectPath;
-            _app.generateProject(_projectPath);
-            _stateMachine.trigger("next");
-        }
-    }
+
+    PathChooser(_projectPath);
 }
 void gui::drawUpdateMultipleState()
 {
@@ -442,7 +511,7 @@ void gui::drawConfigureState()
 {
     if (ImGui::CollapsingHeader("core addons"))
     {
-        ImGui::Indent();
+        ImGui::Indent(12);
         for (auto &package : _corePackages)
         {
             ImGui::Checkbox((package.second._package.getPath() + "##corepackage").c_str(), &package.second._selected);
@@ -451,10 +520,11 @@ void gui::drawConfigureState()
     }
     if (ImGui::CollapsingHeader("global addons"))
     {
-        ImGui::Indent();
+        ImGui::Indent(12);
         for (auto &package : _globalPackages)
         {
-            ImGui::Checkbox(package.second._package.toString().c_str(), &package.second._selected);
+            ImGui::Checkbox(package.second._package.getPath().c_str(), &package.second._selected);
+            Tooltip(package.second._package.getUrl() + "@" + package.second._package.getCheckout());
         }
         ImGui::Unindent();
     }
@@ -462,10 +532,11 @@ void gui::drawConfigureState()
     {
         if (ImGui::CollapsingHeader("local addons"))
         {
-            ImGui::Indent();
+            ImGui::Indent(12);
             for (auto &package : _localPackages)
             {
-                ImGui::Checkbox(package.second._package.toString().c_str(), &package.second._selected);
+                ImGui::Checkbox(package.second._package.getPath().c_str(), &package.second._selected);
+                Tooltip(package.second._package.getUrl() + "@" + package.second._package.getCheckout());
             }
             ImGui::Unindent();
         }
@@ -473,94 +544,40 @@ void gui::drawConfigureState()
 
     if (ImGui::CollapsingHeader("platforms, templates"))
     {
-        ImGui::Indent();
-        ImGui::BeginChild("platforms");
+        ImGui::Indent(12);
+        auto size = ImVec2(ImGui::GetContentRegionAvail().x / 2, 0);
+        ImGui::BeginChild("platforms", size);
         ImGui::Text("platforms");
+
+        auto selectedTargets = std::vector<ofTargetPlatform>();
         for (auto &target : _targets)
         {
             ImGui::Checkbox(getTargetString(target._target).c_str(), &target._selected);
+            if (target.isSelected())
+            {
+                selectedTargets.push_back(target._target);
+            }
         }
         ImGui::EndChild();
         ImGui::SameLine();
-        ImGui::BeginChild("templates");
+        ImGui::BeginChild("templates", size);
         ImGui::Text("templates");
-        for (auto &template_ : _templates)
+        // TODO: update common selectable template list
+        for (auto &selectedTarget : selectedTargets)
         {
-            // TODO: filter only available templates for selected platforms
+            ImGui::Text(getTargetString(selectedTarget).c_str());
+            // _templates[selectedTarget]
+        }
+        for (auto &selectableTemplate : _commonTemplates)
+        {
+            ImGui::Checkbox(selectableTemplate._template.name.c_str(), &selectableTemplate._selected);
+            Tooltip(selectableTemplate._template.description);
         }
         ImGui::EndChild();
         ImGui::Unindent();
     }
 
     ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 200);
-    if (Button("install"))
-    {
-        ImGui::OpenPopup("search");
-    }
-    ImGui::SameLine();
-    if (Button("generate", OFPACKAGEMANAGER_GUI_SIZE::SMALL, true))
-    {
-        ofLogNotice() << "generating project";
-        // set of root, required by project manager
-        setOFRoot(_app.getOfPath());
-        for (auto &target : _targets)
-        {
-            if (target._selected)
-            {
-                auto project = getTargetProject(target._target);
-                auto template_ = "";
-                std::string addonsMakeText = "";
-                // TODO: get selected template
-                project->create(_app.getCwdPath(), template_);
-
-                // add selected core packages
-                for (auto &corePackage : _corePackages)
-                {
-                    auto package = corePackage.second;
-                    if (package._selected)
-                    {
-                        project->addAddon(package._package.getPath());
-                        addonsMakeText += package._package.toString();
-                        addonsMakeText += "\n";
-                    }
-                }
-                // add selected global packages
-                for (auto &globalPackage : _globalPackages)
-                {
-                    auto package = globalPackage.second;
-                    if (package._selected)
-                    {
-                        project->addAddon(package._package.getPath());
-                        addonsMakeText += package._package.toString();
-                        addonsMakeText += "\n";
-                    }
-                }
-                // add selected local packages
-                for (auto &localPackage : _localPackages)
-                {
-                    auto package = localPackage.second;
-                    if (package._selected)
-                    {
-                        project->addAddon(package._package.getPath());
-                        addonsMakeText += package._package.toString();
-                        addonsMakeText += "\n";
-                    }
-                }
-                // finally generate the project
-                project->save();
-                ofLogNotice() << addonsMakeText;
-
-                // TODO: override addons.make with commit hash comments
-
-                // ofLogNotice() << "Templates for target " << getTargetString(target._target);
-                // auto templates = getTargetProject(target._target)->listAvailableTemplates(getTargetString(target._target));
-                // for (auto &templateConfig : templates)
-                // {
-                //     ofLogNotice() << templateConfig.dir.path() << "\t\t" << templateConfig.description;
-                // }
-            }
-        }
-    }
 }
 
 void gui::keyPressed(int key)
@@ -590,7 +607,7 @@ bool gui::Button(std::string text, OFPACKAGEMANAGER_GUI_SIZE size, bool primary)
         framePaddingHeight = 50;
     }
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(20, framePaddingHeight));
-    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 16);
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8);
     if (primary)
     {
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(213.0 / 255, 54.0 / 255, 116.0 / 255, 1.0f));
@@ -610,11 +627,11 @@ bool gui::Button(std::string text, OFPACKAGEMANAGER_GUI_SIZE size, bool primary)
     return pressed;
 }
 
-void gui::Path(std::string &path)
+void gui::PathChooser(std::string &path)
 {
-    ImGui::Text(path.c_str());
+    ImGui::Text(path.empty() ? "please choose" : path.c_str());
     ImGui::SameLine();
-    if (ImGui::Button("choose"))
+    if (Button("choose"))
     {
         auto result = ofSystemLoadDialog("path", true, _app.getMyAppsPath());
         if (result.bSuccess)
@@ -625,4 +642,32 @@ void gui::Path(std::string &path)
             // }
         }
     }
+}
+void gui::Tooltip(std::string text)
+{
+    if (ImGui::IsItemHovered())
+    {
+        ImGui::BeginTooltip();
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+        ImGui::TextUnformatted(text.c_str());
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
+    }
+}
+
+void gui::onHomeStateEntered(ofxStateEnteredEventArgs &args)
+{
+    for (auto &package : _corePackages)
+    {
+        package.second._selected = false;
+    }
+    for (auto &package : _globalPackages)
+    {
+        package.second._selected = false;
+    }
+    for (auto &package : _localPackages)
+    {
+        package.second._selected = false;
+    }
+    // TODO: reset templates and targets
 }

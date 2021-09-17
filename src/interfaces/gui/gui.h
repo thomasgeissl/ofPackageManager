@@ -7,7 +7,8 @@
 #include "generators/projectGenerator/ofProjectGenerator.h"
 #include "../../ghRepo.h"
 
-enum OFPACKAGEMANAGER_GUI_SIZE {
+enum OFPACKAGEMANAGER_GUI_SIZE
+{
     SMALL,
     MEDIUM,
     BIG
@@ -22,6 +23,9 @@ public:
         _package = package;
         _selected = selected;
     }
+    bool isSelected(){
+        return _selected;
+    }
     ofPackage _package;
     bool _selected;
 };
@@ -33,6 +37,9 @@ public:
     {
         _target = target;
         _selected = selected;
+    }
+    bool isSelected(){
+        return _selected;
     }
     ofTargetPlatform _target;
     bool _selected;
@@ -46,11 +53,15 @@ public:
         _template = template_;
         _selected = selected;
     }
-    baseProject::Template _template;
-    bool _selected;
-    friend bool operator== ( const selectableTemplate &left, const selectableTemplate &right){
+    bool isSelected(){
+        return _selected;
+    }
+    friend bool operator==(const selectableTemplate &left, const selectableTemplate &right)
+    {
         return left._template.dir.path() == right._template.dir.path();
     }
+    baseProject::Template _template;
+    bool _selected;
 };
 class gui : public ofBaseApp
 {
@@ -59,19 +70,6 @@ public:
     void setup();
     void update();
     void draw();
-    ImVec2 drawMenuGui();
-    void drawHeader();
-    void drawFooter();
-    void drawModals();
-    void drawRecentProjects();
-    void drawHomeState();
-    void drawInstallState();
-    void drawNewState();
-    void drawUpdateState();
-    void drawUpdateMultipleState();
-    void drawConfigureState();
-
-
     void exit();
 
     void keyPressed(int key);
@@ -85,9 +83,6 @@ public:
     void windowResized(int w, int h);
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);
-
-    bool Button(std::string text, OFPACKAGEMANAGER_GUI_SIZE size = OFPACKAGEMANAGER_GUI_SIZE::SMALL, bool primary = false);
-    void Path(std::string & path);
 
 private:
     ofPackageManager _app;
@@ -112,11 +107,28 @@ private:
     std::map<string, selectablePackage> _globalPackages;
     std::map<string, selectablePackage> _localPackages;
 
-
     std::vector<selectableTarget> _targets;
-    std::map<ofTargetPlatform, std::vector<selectableTemplate>> _templates;
-
+    std::vector<selectableTemplate> _commonTemplates;
+    std::map<ofTargetPlatform, std::vector<baseProject::Template> > _templates;
 
     bool _showStyleEditor;
     bool _showDemoWindow;
+
+    ImVec2 drawMenuGui();
+    void drawHeader();
+    void drawFooter();
+    void drawModals();
+    void drawRecentProjects();
+    void drawHomeState();
+    void drawInstallState();
+    void drawNewState();
+    void drawUpdateState();
+    void drawUpdateMultipleState();
+    void drawConfigureState();
+
+    bool Button(std::string text, OFPACKAGEMANAGER_GUI_SIZE size = OFPACKAGEMANAGER_GUI_SIZE::SMALL, bool primary = false);
+    void PathChooser(std::string &path);
+    void Tooltip(std::string text);
+
+    void onHomeStateEntered(ofxStateEnteredEventArgs &args);
 };

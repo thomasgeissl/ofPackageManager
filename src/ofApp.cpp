@@ -20,8 +20,6 @@ ofPackageManager::ofPackageManager(std::string cwdPath) : _silent(false),
 														  _localAddonsPath("local_addons"),
 														  _configJson(getConfig())
 {
-	// ofSetLogLevel(OF_LOG_VERBOSE);
-	ofSetFrameRate(60);
 }
 
 bool ofPackageManager::addPackageToAddonsMakeFile(ofPackage package)
