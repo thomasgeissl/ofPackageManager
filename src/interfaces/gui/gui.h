@@ -90,7 +90,7 @@ private:
     ofxStateMachine _stateMachine;
     ofxState::pointer _homeState;
     ofxState::pointer _installState;
-    ofxState::pointer _newState;
+    ofxState::pointer _createState;
     ofxState::pointer _updateState;
     ofxState::pointer _updateMultipleState;
     ofxState::pointer _configureProjectState;
@@ -111,24 +111,30 @@ private:
     std::vector<selectableTemplate> _commonTemplates;
     std::map<ofTargetPlatform, std::vector<baseProject::Template> > _templates;
 
+    bool _fullscreen;
+    bool _showAdvancedOptions;
     bool _showStyleEditor;
     bool _showDemoWindow;
+    bool _showMetricsWindow;
+    bool _showConsole;
 
-    ImVec2 drawMenuGui();
-    void drawHeader();
-    void drawFooter();
+
+    bool _searchModalOpened;
+
+    std::stringstream _consoleBuffer;
+    std::streambuf * _originalBuffer;
+
+    ImVec2 drawMenu();
+    void drawSideBar();
+    void drawConsole();
     void drawModals();
     void drawRecentProjects();
-    void drawHomeState();
-    void drawInstallState();
-    void drawNewState();
-    void drawUpdateState();
-    void drawUpdateMultipleState();
-    void drawConfigureState();
-
-    bool Button(std::string text, OFPACKAGEMANAGER_GUI_SIZE size = OFPACKAGEMANAGER_GUI_SIZE::SMALL, bool primary = false);
-    void PathChooser(std::string &path);
-    void Tooltip(std::string text);
+    void drawHome();
+    void drawInstall();
+    void drawCreate();
+    void drawUpdate();
+    void drawUpdateMultiple();
+    void drawConfigure();
 
     void onHomeStateEntered(ofxStateEnteredEventArgs &args);
 };

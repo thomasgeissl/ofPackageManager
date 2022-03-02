@@ -5,7 +5,6 @@ void Theme::setup()
 	ImGuiStyle *style = &ImGui::GetStyle();
 	ImVec4 *colors = style->Colors;
 
-
 	const ImVec4 bgColor = ColorFromBytes(37, 37, 38);
 	const ImVec4 lightBgColor = ColorFromBytes(82, 82, 85);
 	const ImVec4 veryLightBgColor = ColorFromBytes(90, 90, 95);
@@ -37,7 +36,7 @@ void Theme::setup()
 	colors[ImGuiCol_ScrollbarGrab] = lightBgColor;
 	colors[ImGuiCol_ScrollbarGrabHovered] = veryLightBgColor;
 	colors[ImGuiCol_ScrollbarGrabActive] = veryLightBgColor;
-	colors[ImGuiCol_CheckMark] = panelActiveColor;
+	colors[ImGuiCol_CheckMark] = textColor;
 	colors[ImGuiCol_SliderGrab] = panelHoverColor;
 	colors[ImGuiCol_SliderGrabActive] = panelActiveColor;
 	colors[ImGuiCol_Button] = panelColor;
@@ -65,14 +64,15 @@ void Theme::setup()
 	colors[ImGuiCol_TabUnfocused] = bgColor;
 	colors[ImGuiCol_TabUnfocusedActive] = panelActiveColor;
 	colors[ImGuiCol_TabHovered] = panelHoverColor;
-	colors[ImGuiCol_TableRowBg]              = ImVec4(0.098f, 0.098f, 0.098f, 1.000f);
-	colors[ImGuiCol_TableRowBgAlt]              = ImVec4(0.078f, 0.078f, 0.078f, 1.000f);
+	colors[ImGuiCol_TableRowBg] = ImVec4(0.098f, 0.098f, 0.098f, 1.000f);
+	colors[ImGuiCol_TableRowBgAlt] = ImVec4(0.078f, 0.078f, 0.078f, 1.000f);
+	colors[ImGuiCol_TableHeaderBg] = panelHoverColor;
 
 	style->WindowRounding = 0.0f;
 	style->ChildRounding = 0.0f;
 	style->FrameRounding = 0.0f;
 	style->GrabRounding = 0.0f;
-	style->PopupRounding = 0.0f;
 	style->ScrollbarRounding = 0.0f;
 	style->TabRounding = 0.0f;
+	style->PopupRounding = 8.0f;
 }

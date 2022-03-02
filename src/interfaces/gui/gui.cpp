@@ -1,34 +1,60 @@
 #include "gui.h"
 #include "./Theme.h"
+#include "./helpers.h"
+static int footerHeight = 64;
+static int consoleHeight = 200;
+static int buttonWidth = 200;
 
 gui::gui(ofPackageManager app) : ofBaseApp(), _app(app),
                                  _homeState(ofxState::create("home")),
                                  _installState(ofxState::create("manage addons")),
-                                 _newState(ofxState::create("new")),
+                                 _createState(ofxState::create("create")),
                                  _updateState(ofxState::create("update")),
                                  _updateMultipleState(ofxState::create("updateMultiple")),
                                  _configureProjectState(ofxState::create("configureProject")),
+                                 _fullscreen(false),
+                                 _showAdvancedOptions(false),
+                                 _showConsole(false),
+                                 _showMetricsWindow(false),
                                  _showStyleEditor(false),
                                  _showDemoWindow(false),
+                                 _searchModalOpened(false),
                                  _projectDirectoryPath(app.getMyAppsPath())
 {
     _stateMachine.setInitialState(_homeState);
-    _stateMachine.addTransition(_homeState, "new", _newState);
+    _stateMachine.addTransition(_homeState, "create", _createState);
     _stateMachine.addTransition(_homeState, "install", _installState);
     _stateMachine.addTransition(_homeState, "update", _updateState);
     _stateMachine.addTransition(_homeState, "updateMultiple", _updateMultipleState);
 
     _stateMachine.addTransition(_installState, "back", _homeState);
+    _stateMachine.addTransition(_installState, "create", _createState);
+    _stateMachine.addTransition(_installState, "update", _updateState);
+    _stateMachine.addTransition(_installState, "updateMultiple", _updateMultipleState);
 
-    _stateMachine.addTransition(_newState, "configure", _configureProjectState);
-    _stateMachine.addTransition(_newState, "back", _homeState);
+    _stateMachine.addTransition(_createState, "configure", _configureProjectState);
+    _stateMachine.addTransition(_createState, "back", _homeState);
+    _stateMachine.addTransition(_createState, "install", _installState);
+    _stateMachine.addTransition(_createState, "update", _updateState);
+    _stateMachine.addTransition(_createState, "updateMultiple", _updateMultipleState);
 
     _stateMachine.addTransition(_updateState, "configure", _configureProjectState);
     _stateMachine.addTransition(_updateState, "back", _homeState);
+    _stateMachine.addTransition(_updateState, "install", _installState);
+    _stateMachine.addTransition(_updateState, "create", _createState);
+    _stateMachine.addTransition(_updateState, "updateMultiple", _updateMultipleState);
 
     _stateMachine.addTransition(_configureProjectState, "back", _homeState);
+    _stateMachine.addTransition(_configureProjectState, "install", _installState);
+    _stateMachine.addTransition(_configureProjectState, "create", _createState);
+    _stateMachine.addTransition(_configureProjectState, "update", _updateState);
+    _stateMachine.addTransition(_configureProjectState, "updateMultiple", _updateMultipleState);
 
     _stateMachine.addTransition(_updateMultipleState, "back", _homeState);
+    _stateMachine.addTransition(_updateMultipleState, "install", _installState);
+    _stateMachine.addTransition(_updateMultipleState, "create", _createState);
+    _stateMachine.addTransition(_updateMultipleState, "update", _updateState);
+    _stateMachine.addTransition(_updateMultipleState, "updateMultiple", _updateMultipleState);
 
     // TODO: add support for lambda functions to ofxStateMachine
     // _homeState->addEnteredListener([&]{ofLogNotice() << "home entered";});
@@ -52,13 +78,17 @@ gui::gui(ofPackageManager app) : ofBaseApp(), _app(app),
 }
 void gui::setup()
 {
+    ofSetWindowTitle("ofPackageManager");
+    ofSetFrameRate(60);
     ofSetBackgroundColor(16, 16, 16);
     _gui.setup(nullptr, false);
     _gui.setTheme(new Theme());
+    _originalBuffer = std::cout.rdbuf(_consoleBuffer.rdbuf());
 }
 
 void gui::exit()
 {
+    std::cout.rdbuf(_originalBuffer);
 }
 
 void gui::update()
@@ -97,48 +127,73 @@ void gui::update()
 void gui::draw()
 {
     _gui.begin();
-    auto menuBarSize = drawMenuGui();
-    ImGui::SetNextWindowPos(ImVec2(0, menuBarSize.y), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(ofGetWidth(), ofGetHeight() - menuBarSize.y));
+    auto menuHeight = drawMenu().y;
     bool open = true;
-    if (ImGui::Begin("Main Window", &open, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration))
+    ImGui::SetNextWindowPos(ImVec2(0, menuHeight));
+    ImGui::SetNextWindowSize(ImVec2(ofGetWidth(), ofGetHeight() - menuHeight));
+    if (ImGui::Begin("window", &open, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration))
     {
-        drawHeader();
+        drawSideBar();
+        ImGui::SameLine();
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 8);
+        if (ImGui::BeginChild("content", ImVec2(0, 0)))
+        {
+            if (ImGui::BeginChild("main", ImVec2(0, _showConsole ? -consoleHeight : 0)))
+            {
+                if (_stateMachine.isCurrentState(_homeState))
+                {
+                    drawHome();
+                }
+                if (_stateMachine.isCurrentState(_installState))
+                {
+                    drawInstall();
+                }
+                else if (_stateMachine.isCurrentState(_createState))
+                {
+                    drawCreate();
+                }
+                else if (_stateMachine.isCurrentState(_updateState))
+                {
+                    drawUpdate();
+                }
+                else if (_stateMachine.isCurrentState(_configureProjectState))
+                {
+                    drawConfigure();
+                }
+                else if (_stateMachine.isCurrentState(_updateMultipleState))
+                {
+                    drawUpdateMultiple();
+                }
 
-        if (_stateMachine.isCurrentState(_homeState))
-        {
-            drawHomeState();
-        }
-        if (_stateMachine.isCurrentState(_installState))
-        {
-            drawInstallState();
-        }
-        else if (_stateMachine.isCurrentState(_newState))
-        {
-            drawNewState();
-        }
-        else if (_stateMachine.isCurrentState(_updateState))
-        {
-            drawUpdateState();
-        }
-        else if (_stateMachine.isCurrentState(_configureProjectState))
-        {
-            drawConfigureState();
-        }
-        else if (_stateMachine.isCurrentState(_updateMultipleState))
-        {
-            drawUpdateMultipleState();
+                if (_showStyleEditor)
+                {
+                    ImGui::ShowStyleEditor();
+                }
+                if (_showDemoWindow)
+                {
+                    ImGui::SetNextWindowPos(ImVec2(0, 100));
+                    ImGui::ShowDemoWindow();
+                }
+                if (_showMetricsWindow)
+                {
+                    ImGui::ShowMetricsWindow();
+                }
+
+                ImGui::EndChild();
+
+                if (_showConsole)
+                {
+                    drawConsole();
+                }
+            }
+            ImGui::EndChild();
         }
 
-        if (_showStyleEditor)
+        if (_searchModalOpened)
         {
-            ImGui::ShowStyleEditor();
+            _searchModalOpened = false;
+            ImGui::OpenPopup("search");
         }
-        if (_showDemoWindow)
-        {
-            ImGui::ShowDemoWindow();
-        }
-
         drawModals();
         ImGui::End();
     }
@@ -147,7 +202,7 @@ void gui::draw()
     _gui.draw();
 }
 
-ImVec2 gui::drawMenuGui()
+ImVec2 gui::drawMenu()
 {
     auto size = ImVec2(-1, -1);
     if (ImGui::BeginMainMenuBar())
@@ -172,20 +227,26 @@ ImVec2 gui::drawMenuGui()
         {
             if (ImGui::MenuItem("New"))
             {
-                _stateMachine.trigger("new");
+                _stateMachine.trigger("create");
             }
             if (ImGui::MenuItem("Open"))
             {
-                _stateMachine.trigger("open");
+                _stateMachine.trigger("update");
             }
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("View"))
         {
-            if (ImGui::MenuItem("style editor", NULL, &_showStyleEditor))
+            if (ImGui::MenuItem("fullscreen", NULL, &_fullscreen))
             {
+                ofToggleFullscreen();
             }
-            ImGui::MenuItem("demo window", NULL, &_showDemoWindow);
+            ImGui::MenuItem("advanced options", NULL, &_showAdvancedOptions);
+            ImGui::MenuItem("console", NULL, &_showConsole);
+            ImGui::Separator();
+            ImGui::MenuItem("metrics", NULL, &_showMetricsWindow);
+            ImGui::MenuItem("style editor", NULL, &_showStyleEditor);
+            ImGui::MenuItem("demo", NULL, &_showDemoWindow);
             ImGui::EndMenu();
         }
         size = ImGui::GetWindowSize();
@@ -193,20 +254,234 @@ ImVec2 gui::drawMenuGui()
     }
     return size;
 }
-void gui::drawHeader()
+void gui::drawSideBar()
 {
-    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
-    if (!_stateMachine.isCurrentState(_homeState))
+    ImGui::BeginChild("sideBar", ImVec2(200, -1));
+    auto style = ImGui::GetStyle();
+    auto numberOfButtons = _showAdvancedOptions ? 5 : 4;
+    auto availableHeight = ImGui::GetWindowHeight() - ImGui::GetCursorPosY() - style.ItemSpacing.y;
+    auto buttonSize = ImVec2(ImGui::GetContentRegionAvailWidth(), availableHeight / numberOfButtons - style.ItemSpacing.y);
+    if (Button("home", buttonSize, _stateMachine.isCurrentState(_homeState)))
     {
-        if (Button("back"))
+        _stateMachine.trigger("back");
+    }
+    if (Button("manage addons", buttonSize, _stateMachine.isCurrentState(_installState)))
+    {
+        _stateMachine.trigger("install");
+    }
+    if (Button("create project", buttonSize, _stateMachine.isCurrentState(_createState)))
+    {
+        _stateMachine.trigger("create");
+    }
+    if (Button("update project", buttonSize, _stateMachine.isCurrentState(_updateState) || _stateMachine.isCurrentState(_configureProjectState)))
+    {
+        _stateMachine.trigger("update");
+    }
+    if (_showAdvancedOptions)
+    {
+        if (Button("update multiple projects", buttonSize, _stateMachine.isCurrentState(_updateMultipleState)))
         {
-            _stateMachine.trigger("back");
+            _stateMachine.trigger("updateMultiple");
         }
     }
-    // ImGui::SameLine();
-    // ImGui::Text(ofToUpper(_stateMachine.getCurrentState()->getName()).c_str());
+    ImGui::EndChild();
+}
+void gui::drawConsole()
+{
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0, 0, 0, 1.0f));
+    ImGui::BeginChild("console", ImVec2(0, 0));
+    ImGui::TextWrapped(_consoleBuffer.str().c_str());
+    ImGui::EndChild();
+    ImGui::PopStyleColor();
+}
+void gui::drawModals()
+{
+    if (ImGui::BeginPopupModal("about", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::EndPopup();
+    }
+    ImGui::SetNextWindowSize(ImVec2(ofGetWidth() * 0.8, ofGetHeight() * 0.8));
+    ImGui::SetNextWindowPos(ImVec2(ofGetWidth() * .1, ofGetHeight() * .1));
+    if (ImGui::BeginPopupModal("search", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
+        if (ImGui::BeginChild("globalPackages", ImVec2(-1, -footerHeight - padding)))
+        {
+            char name[128] = "";
+            ImGui::PushItemWidth(ImGui::GetContentRegionAvailWidth());
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(8, 16));
+            if (ImGui::InputText("##querytext", name, IM_ARRAYSIZE(name), ImGuiInputTextFlags_EnterReturnsTrue))
+            {
+                _searchResults = _app.searchPackageOnGithubByName2(name);
+                _selectedSearchResult = ghRepo();
+            }
+            ImGui::PopStyleVar();
+            ImGui::PopItemWidth();
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
 
-    if (_stateMachine.isCurrentState(_newState))
+            if (_searchResults.size() > 0)
+            {
+
+                static ImGuiTableFlags flags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable;
+                if (ImGui::BeginTable("table1", 4, flags))
+                {
+                    ImGui::TableSetupColumn("name", ImGuiTableColumnFlags_WidthStretch);
+                    ImGui::TableSetupColumn("stars", ImGuiTableColumnFlags_WidthFixed);
+                    ImGui::TableSetupColumn("forks", ImGuiTableColumnFlags_WidthFixed);
+                    ImGui::TableSetupColumn("actions", ImGuiTableColumnFlags_WidthFixed);
+                    ImGui::TableHeadersRow();
+
+                    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(16, 8));
+                    auto i = 0;
+                    for (auto &repo : _searchResults)
+                    {
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        // if (ImGui::Selectable(repo._name.c_str(), _selectedSearchResult._name == repo._name, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_DontClosePopups))
+                        // {
+                        //     _selectedSearchResult = repo;
+                        // }
+                        ImGui::Text(repo._name.c_str());
+                        ImGui::TableSetColumnIndex(1);
+                        ImGui::Text(ofToString(repo._stars).c_str());
+                        ImGui::TableSetColumnIndex(2);
+                        ImGui::Text(ofToString(repo._forks).c_str());
+                        ImGui::TableSetColumnIndex(3);
+     
+                        std::string id = "open##";
+                        id += repo._url;
+                        if (Button(id.c_str()))
+                        {
+                            ofLaunchBrowser(repo._url);
+                        }
+                        ImGui::SameLine();
+                        id = "install##";
+                        id += repo._url;
+                        if (Button(id.c_str()))
+                        {
+                            _app.installPackageByUrl(repo._cloneUrl, "latest");
+                        }
+                        i++;
+                    }
+                    ImGui::EndTable();
+                    ImGui::PopStyleVar();
+                }
+            }
+            if (!_selectedSearchResult._name.empty())
+            {
+                ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
+
+                ImGui::Text(_selectedSearchResult._name.c_str());
+                ImGui::Text(_selectedSearchResult._url.c_str());
+                ImGui::Text(_selectedSearchResult._cloneUrl.c_str());
+                ImGui::Text(ofToString(_selectedSearchResult._stars).c_str());
+                ImGui::Text(ofToString(_selectedSearchResult._forks).c_str());
+
+                ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
+            }
+            ImGui::EndChild();
+        }
+        if (BeginActions(1))
+        {
+            if (Button("close", ImVec2(buttonWidth, -1)))
+            {
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndChild();
+        }
+
+        // {
+        //     for (auto &tag : repo._tags)
+        //     {
+        //         const bool is_selected = true;
+        //         if (ImGui::Selectable(tag.c_str(), is_selected))
+        //         {
+        //             // TODO: setselected
+        //         }
+
+        //         if (is_selected)
+        //         {
+        //             ImGui::SetItemDefaultFocus();
+        //         }
+        //     }
+
+        //     ImGui::EndCombo();
+        // }
+
+        // std::string buttonText = "install##";
+        // buttonText += repo._url;
+        // // repo.toString()
+        ImGui::EndPopup();
+    }
+}
+void gui::drawRecentProjects()
+{
+    // if (ImGui::Begin("recent projects"))
+    // {
+    //     ImGui::Text("recent projects");
+    //     ImGui::End();
+    // }
+}
+
+void gui::drawHome()
+{
+    ImGui::TextWrapped("Welcome to ofPackageManager - a package manager for openFrameworks.\n");
+}
+void gui::drawInstall()
+{
+    auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
+    if (ImGui::BeginChild("globalPackages", ImVec2(-1, -footerHeight - padding)))
+    {
+        for (auto corePackage : _corePackages)
+        {
+            ImGui::Text(corePackage.second._package.getPath().c_str());
+        }
+        for (auto &package : _globalPackages)
+        {
+            ImGui::Checkbox(package.second._package.getPath().c_str(), &package.second._selected);
+            Tooltip(package.second._package.toString());
+            ImGui::SameLine();
+            ImGui::Button("delete");
+            ImGui::SameLine();
+            ImGui::Button("upgrade");
+        }
+        ImGui::EndChild();
+    }
+    if (BeginActions(1))
+    {
+        if (Button("install additional addons", ImVec2(buttonWidth, -1)))
+        {
+            _searchModalOpened = true;
+        }
+        ImGui::EndChild();
+    }
+}
+void gui::drawCreate()
+{
+    auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
+    if (ImGui::BeginChild("create", ImVec2(-1, -footerHeight - padding)))
+    {
+        PathChooser(_projectDirectoryPath, _app.getMyAppsPath());
+        char name[128];
+        strcpy(name, _projectName.c_str());
+        if (ImGui::InputText("project name", name, IM_ARRAYSIZE(name)))
+        {
+            _projectName = std::string(name);
+            _projectPath = ofFilePath::join(_projectDirectoryPath, _projectName);
+        }
+        ofDirectory projectDirectory = ofDirectory(_projectDirectoryPath);
+        ofDirectory projectDir = ofDirectory(_projectPath);
+        if (projectDirectory.exists())
+        {
+            if (projectDir.exists())
+            {
+                ImGui::TextColored(ImVec4(1.0, 0, 0, 1.0), "seems like your project exits already");
+            }
+        }
+        ImGui::EndChild();
+    }
+
+    if (BeginActions(1))
     {
         ofDirectory projectDirectory = ofDirectory(_projectDirectoryPath);
         ofDirectory projectDir = ofDirectory(_projectPath);
@@ -214,8 +489,7 @@ void gui::drawHeader()
         {
             if (!projectDir.exists())
             {
-                ImGui::SameLine();
-                if (Button("create and configure", OFPACKAGEMANAGER_GUI_SIZE::SMALL, true))
+                if (Button("create and configure", ImVec2(buttonWidth, -1), true))
                 {
                     auto dataPath = ofFilePath::getAbsolutePath(".");
                     _app.generateProject(_projectPath);
@@ -223,16 +497,155 @@ void gui::drawHeader()
                 }
             }
         }
+        ImGui::EndChild();
     }
-    else if (_stateMachine.isCurrentState(_configureProjectState))
+}
+void gui::drawUpdate()
+{
+    auto style = ImGui::GetStyle();
+    auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
+    if (ImGui::BeginChild("update", ImVec2(-1, -footerHeight - padding)))
     {
-        ImGui::SameLine();
-        if (Button("install additional addons"))
+        PathChooser(_projectPath, _app.getMyAppsPath());
+        ImGui::EndChild();
+    }
+    if (BeginActions(1))
+    {
+        ofDirectory projectDir = ofDirectory(_projectPath);
+        if (!_projectPath.empty() && projectDir.exists())
         {
-            ImGui::OpenPopup("search");
+            if (Button("configure", ImVec2(buttonWidth, -1), true))
+            {
+                auto dataPath = ofFilePath::getAbsolutePath(".");
+                ofLogNotice() << _app.findOfPathOutwardly(dataPath, 6);
+                ofLogNotice() << _app.getOfPath();
+                ofLogNotice() << ofFilePath::getAbsolutePath(".");
+                ofLogNotice() << _app.getCwdPath();
+                ofLogNotice() << _projectPath;
+                _app.generateProject(_projectPath);
+                _projectName = ofFilePath::getBaseName(_projectPath);
+                _stateMachine.trigger("configure");
+            }
+        }
+        ImGui::EndChild();
+    }
+}
+void gui::drawUpdateMultiple()
+{
+    if (ImGui::Button("path"))
+    {
+        auto result = ofSystemLoadDialog("path to projects", true, _app.getMyAppsPath());
+        if (result.bSuccess)
+        {
+            auto path = result.getPath();
+            if (ofDirectory::doesDirectoryExist(path))
+            {
+                _app.updateMultipleProjects(path);
+            }
+        }
+    }
+}
+void gui::drawConfigure()
+{
+    // auto availableHeight = ImGui::GetWindowHeight() - ImGui::GetCursorPosY();
+    auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
+    if (ImGui::BeginChild("configure", ImVec2(-1, -footerHeight - padding)))
+    {
+        ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::GetStyle().Colors[ImGuiCol_ButtonActive]);
+        if (ImGui::BeginChild("configureHeader", ImVec2(0, 32)))
+        {
+            ImGui::Text(_projectName.c_str());
+            ImGui::Text(_projectPath.c_str());
+            ImGui::EndChild();
+        }
+        ImGui::PopStyleColor();
+
+        if (ImGui::BeginChild("configureContent", ImVec2(0, 0)))
+        {
+            auto indentation = 24;
+            if (ImGui::CollapsingHeader("core addons"))
+            {
+                ImGui::Indent(indentation);
+                for (auto &package : _corePackages)
+                {
+                    ImGui::Checkbox((package.second._package.getPath() + "##corepackage").c_str(), &package.second._selected);
+                }
+                ImGui::Unindent(indentation);
+            }
+            if (ImGui::CollapsingHeader("global addons"))
+            {
+                ImGui::Indent(indentation);
+                for (auto &package : _globalPackages)
+                {
+                    ImGui::Checkbox(package.second._package.getPath().c_str(), &package.second._selected);
+                    Tooltip(package.second._package.getUrl() + "@" + package.second._package.getCheckout());
+                }
+                ImGui::Unindent(indentation);
+            }
+            if (_localPackages.size() > 0)
+            {
+                if (ImGui::CollapsingHeader("local addons"))
+                {
+                    ImGui::Indent(indentation);
+                    for (auto &package : _localPackages)
+                    {
+                        ImGui::Checkbox(package.second._package.getPath().c_str(), &package.second._selected);
+                        Tooltip(package.second._package.getUrl() + "@" + package.second._package.getCheckout());
+                    }
+                    ImGui::Unindent(indentation);
+                }
+            }
+
+            if (_showAdvancedOptions)
+            {
+
+                if (ImGui::CollapsingHeader("platforms, templates"))
+                {
+                    ImGui::Indent(indentation);
+                    auto size = ImVec2(ImGui::GetContentRegionAvail().x / 2, 0);
+                    ImGui::BeginChild("platforms", size);
+                    ImGui::Text("platforms");
+
+                    auto selectedTargets = std::vector<ofTargetPlatform>();
+                    for (auto &target : _targets)
+                    {
+                        ImGui::Checkbox(getTargetString(target._target).c_str(), &target._selected);
+                        if (target.isSelected())
+                        {
+                            selectedTargets.push_back(target._target);
+                        }
+                    }
+                    ImGui::EndChild();
+                    ImGui::SameLine();
+                    ImGui::BeginChild("templates", size);
+                    ImGui::Text("templates");
+                    // TODO: update common selectable template list
+                    for (auto &selectedTarget : selectedTargets)
+                    {
+                        ImGui::Text(getTargetString(selectedTarget).c_str());
+                        // _templates[selectedTarget]
+                    }
+                    for (auto &selectableTemplate : _commonTemplates)
+                    {
+                        ImGui::Checkbox(selectableTemplate._template.name.c_str(), &selectableTemplate._selected);
+                        Tooltip(selectableTemplate._template.description);
+                    }
+                    ImGui::EndChild();
+                    ImGui::Unindent(indentation);
+                }
+            }
+            ImGui::EndChild();
+        }
+        ImGui::EndChild();
+    }
+    if (BeginActions(2))
+    {
+        if (Button("install additional addons", ImVec2(buttonWidth, -1)))
+        {
+            _searchModalOpened = true;
         }
         ImGui::SameLine();
-        if (Button("generate project", OFPACKAGEMANAGER_GUI_SIZE::SMALL, true))
+        if (Button("generate project", ImVec2(buttonWidth, -1), true))
         {
             ofLogNotice() << "generating project";
             // TODO: move to package manager, so it can be called from the cli as well
@@ -296,288 +709,8 @@ void gui::drawHeader()
                 }
             }
         }
-    }
-    else if (_stateMachine.isCurrentState(_updateState))
-    {
-        ofDirectory projectDir = ofDirectory(_projectPath);
-        if (!_projectPath.empty() && projectDir.exists())
-        {
-            ImGui::SameLine();
-            if (Button("configure", OFPACKAGEMANAGER_GUI_SIZE::SMALL, true))
-            {
-                auto dataPath = ofFilePath::getAbsolutePath(".");
-                ofLogNotice() << _app.findOfPathOutwardly(dataPath, 6);
-                ofLogNotice() << _app.getOfPath();
-                ofLogNotice() << ofFilePath::getAbsolutePath(".");
-                ofLogNotice() << _app.getCwdPath();
-                ofLogNotice() << _projectPath;
-                _app.generateProject(_projectPath);
-                _stateMachine.trigger("configure");
-            }
-        }
-    }
-    else if (_stateMachine.isCurrentState(_installState))
-    {
-        ImGui::SameLine();
-        bool anyPackageSelected = false;
-        for (auto &package : _globalPackages)
-        {
-            if (package.second._selected)
-            {
-                anyPackageSelected = true;
-            }
-        }
-
-        // TODO: only if at least one is selected
-        if (anyPackageSelected)
-        {
-            ImGui::SameLine();
-
-            if (Button("delete selected addons"))
-            {
-                ofLogNotice() << "delete selected packages";
-            }
-        }
-        ImGui::SameLine();
-        if (Button("add"))
-        {
-            ImGui::OpenPopup("search");
-        }
-    }
-    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
-}
-void gui::drawModals()
-{
-    if (ImGui::BeginPopupModal("about", NULL, ImGuiWindowFlags_AlwaysAutoResize))
-    {
-        ImGui::EndPopup();
-    }
-    ImGui::SetNextWindowSize(ImVec2(ofGetWidth() - 100, ofGetHeight() - 100));
-    ImGui::SetNextWindowPos(ImVec2(50, 50));
-    if (ImGui::BeginPopupModal("search", NULL, ImGuiWindowFlags_AlwaysAutoResize))
-    {
-        char name[128] = "";
-        if (ImGui::InputText("querytext", name, IM_ARRAYSIZE(name), ImGuiInputTextFlags_EnterReturnsTrue))
-        {
-            _searchResults = _app.searchPackageOnGithubByName2(name);
-            _selectedSearchResult = ghRepo();
-        }
-        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
-
-        static ImGuiTableFlags flags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable;
-
-        if (ImGui::BeginTable("table1", 3, flags))
-        {
-            ImGui::TableSetupColumn("name", ImGuiTableColumnFlags_WidthStretch);
-            ImGui::TableSetupColumn("stars", ImGuiTableColumnFlags_WidthFixed);
-            ImGui::TableSetupColumn("forks", ImGuiTableColumnFlags_WidthFixed);
-            ImGui::TableHeadersRow();
-
-            auto i = 0;
-            for (auto &repo : _searchResults)
-            {
-                ImGui::TableNextRow();
-                ImGui::TableSetColumnIndex(0);
-                if (ImGui::Selectable(repo._name.c_str(), _selectedSearchResult._name == repo._name, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_DontClosePopups))
-                {
-                    _selectedSearchResult = repo;
-                }
-                ImGui::TableSetColumnIndex(1);
-                ImGui::Text(ofToString(repo._stars).c_str());
-                ImGui::TableSetColumnIndex(2);
-                ImGui::Text(ofToString(repo._forks).c_str());
-                i++;
-            }
-            ImGui::EndTable();
-        }
-        if (!_selectedSearchResult._name.empty())
-        {
-            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
-
-            ImGui::Text(_selectedSearchResult._name.c_str());
-            ImGui::Text(_selectedSearchResult._url.c_str());
-            ImGui::Text(_selectedSearchResult._cloneUrl.c_str());
-            ImGui::Text(ofToString(_selectedSearchResult._stars).c_str());
-            ImGui::Text(ofToString(_selectedSearchResult._forks).c_str());
-
-            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
-
-            if (ImGui::Button("install"))
-            {
-            }
-        }
-        if (ImGui::Button("Cancel", ImVec2(120, 0)))
-        {
-            ImGui::CloseCurrentPopup();
-        }
-        // {
-        //     for (auto &tag : repo._tags)
-        //     {
-        //         const bool is_selected = true;
-        //         if (ImGui::Selectable(tag.c_str(), is_selected))
-        //         {
-        //             // TODO: setselected
-        //         }
-
-        //         if (is_selected)
-        //         {
-        //             ImGui::SetItemDefaultFocus();
-        //         }
-        //     }
-
-        //     ImGui::EndCombo();
-        // }
-
-        // std::string buttonText = "install##";
-        // buttonText += repo._url;
-        // // repo.toString()
-        ImGui::EndPopup();
-    }
-}
-void gui::drawRecentProjects()
-{
-    if (ImGui::Begin("recent projects"))
-    {
-        ImGui::Text("recent projects");
-        ImGui::End();
-    }
-}
-
-void gui::drawHomeState()
-{
-    if (Button("manage addons", OFPACKAGEMANAGER_GUI_SIZE::BIG))
-    {
-        _stateMachine.trigger("install");
-    }
-    ImGui::SameLine();
-    if (Button("create project", OFPACKAGEMANAGER_GUI_SIZE::BIG))
-    {
-        _stateMachine.trigger("new");
-    }
-
-    if (Button("update project", OFPACKAGEMANAGER_GUI_SIZE::BIG))
-    {
-        _stateMachine.trigger("update");
-    }
-    ImGui::SameLine();
-    if (Button("update multiple projects", OFPACKAGEMANAGER_GUI_SIZE::BIG))
-    {
-        _stateMachine.trigger("updateMultiple");
-    }
-}
-void gui::drawInstallState()
-{
-    for (auto corePackage : _corePackages)
-    {
-        ImGui::Text(corePackage.second._package.getPath().c_str());
-    }
-    for (auto &package : _globalPackages)
-    {
-        ImGui::Checkbox(package.second._package.getPath().c_str(), &package.second._selected);
-        Tooltip(package.second._package.getUrl() + "@" + package.second._package.getCheckout());
-    }
-}
-void gui::drawNewState()
-{
-    PathChooser(_projectDirectoryPath);
-    char name[128] = "myProject";
-    if (ImGui::InputText("project name", name, IM_ARRAYSIZE(name)))
-    {
-        _projectName = std::string(name);
-        _projectPath = ofFilePath::join(_projectDirectoryPath, _projectName);
-    }
-}
-void gui::drawUpdateState()
-{
-
-    PathChooser(_projectPath);
-}
-void gui::drawUpdateMultipleState()
-{
-    if (ImGui::Button("path"))
-    {
-        auto result = ofSystemLoadDialog("path to projects", true, _app.getMyAppsPath());
-        if (result.bSuccess)
-        {
-            auto path = result.getPath();
-            if (ofDirectory::doesDirectoryExist(path))
-            {
-                _app.updateMultipleProjects(path);
-            }
-        }
-    }
-}
-void gui::drawConfigureState()
-{
-    if (ImGui::CollapsingHeader("core addons"))
-    {
-        ImGui::Indent(12);
-        for (auto &package : _corePackages)
-        {
-            ImGui::Checkbox((package.second._package.getPath() + "##corepackage").c_str(), &package.second._selected);
-        }
-        ImGui::Unindent();
-    }
-    if (ImGui::CollapsingHeader("global addons"))
-    {
-        ImGui::Indent(12);
-        for (auto &package : _globalPackages)
-        {
-            ImGui::Checkbox(package.second._package.getPath().c_str(), &package.second._selected);
-            Tooltip(package.second._package.getUrl() + "@" + package.second._package.getCheckout());
-        }
-        ImGui::Unindent();
-    }
-    if (_localPackages.size() > 0)
-    {
-        if (ImGui::CollapsingHeader("local addons"))
-        {
-            ImGui::Indent(12);
-            for (auto &package : _localPackages)
-            {
-                ImGui::Checkbox(package.second._package.getPath().c_str(), &package.second._selected);
-                Tooltip(package.second._package.getUrl() + "@" + package.second._package.getCheckout());
-            }
-            ImGui::Unindent();
-        }
-    }
-
-    if (ImGui::CollapsingHeader("platforms, templates"))
-    {
-        ImGui::Indent(12);
-        auto size = ImVec2(ImGui::GetContentRegionAvail().x / 2, 0);
-        ImGui::BeginChild("platforms", size);
-        ImGui::Text("platforms");
-
-        auto selectedTargets = std::vector<ofTargetPlatform>();
-        for (auto &target : _targets)
-        {
-            ImGui::Checkbox(getTargetString(target._target).c_str(), &target._selected);
-            if (target.isSelected())
-            {
-                selectedTargets.push_back(target._target);
-            }
-        }
         ImGui::EndChild();
-        ImGui::SameLine();
-        ImGui::BeginChild("templates", size);
-        ImGui::Text("templates");
-        // TODO: update common selectable template list
-        for (auto &selectedTarget : selectedTargets)
-        {
-            ImGui::Text(getTargetString(selectedTarget).c_str());
-            // _templates[selectedTarget]
-        }
-        for (auto &selectableTemplate : _commonTemplates)
-        {
-            ImGui::Checkbox(selectableTemplate._template.name.c_str(), &selectableTemplate._selected);
-            Tooltip(selectableTemplate._template.description);
-        }
-        ImGui::EndChild();
-        ImGui::Unindent();
     }
-
-    ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 200);
 }
 
 void gui::keyPressed(int key)
@@ -593,67 +726,6 @@ void gui::mouseExited(int x, int y) {}
 void gui::windowResized(int w, int h) {}
 void gui::dragEvent(ofDragInfo dragInfo) {}
 void gui::gotMessage(ofMessage msg) {}
-
-bool gui::Button(std::string text, OFPACKAGEMANAGER_GUI_SIZE size, bool primary)
-{
-    text = ofToUpper(text);
-    auto framePaddingHeight = 8;
-    if (size == OFPACKAGEMANAGER_GUI_SIZE::MEDIUM)
-    {
-        framePaddingHeight = 32;
-    }
-    else if (size == OFPACKAGEMANAGER_GUI_SIZE::BIG)
-    {
-        framePaddingHeight = 50;
-    }
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(20, framePaddingHeight));
-    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8);
-    if (primary)
-    {
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(213.0 / 255, 54.0 / 255, 116.0 / 255, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(148.0 / 255, 36.0 / 255, 81.0 / 255, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
-    }
-    auto pressed = false;
-    if (ImGui::Button(text.c_str()))
-    {
-        pressed = true;
-    }
-    ImGui::PopStyleVar(2);
-    if (primary)
-    {
-        ImGui::PopStyleColor(3);
-    }
-    return pressed;
-}
-
-void gui::PathChooser(std::string &path)
-{
-    ImGui::Text(path.empty() ? "please choose" : path.c_str());
-    ImGui::SameLine();
-    if (Button("choose"))
-    {
-        auto result = ofSystemLoadDialog("path", true, _app.getMyAppsPath());
-        if (result.bSuccess)
-        {
-            auto path_ = result.getPath();
-            // if(!path_.emtpy()){
-            path = path_;
-            // }
-        }
-    }
-}
-void gui::Tooltip(std::string text)
-{
-    if (ImGui::IsItemHovered())
-    {
-        ImGui::BeginTooltip();
-        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-        ImGui::TextUnformatted(text.c_str());
-        ImGui::PopTextWrapPos();
-        ImGui::EndTooltip();
-    }
-}
 
 void gui::onHomeStateEntered(ofxStateEnteredEventArgs &args)
 {
