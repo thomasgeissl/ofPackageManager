@@ -1,6 +1,10 @@
-#include "gui.h"
+#include "../defines.h"
+#include "./gui.h"
 #include "./Theme.h"
 #include "./helpers.h"
+#include "./fonts/tahoma.h"
+#include "./fonts/fa_solid_900.h"
+#include "./fonts/font_awesome_5.h"
 static int footerHeight = 64;
 static int consoleHeight = 200;
 static int buttonWidth = 200;
@@ -18,6 +22,8 @@ gui::gui(ofPackageManager app) : ofBaseApp(), _app(app),
                                  _showMetricsWindow(false),
                                  _showStyleEditor(false),
                                  _showDemoWindow(false),
+                                 _aboutModalOpened(false),
+                                 _preferencesModalOpened(false),
                                  _searchModalOpened(false),
                                  _projectDirectoryPath(app.getMyAppsPath())
 {
@@ -59,6 +65,7 @@ gui::gui(ofPackageManager app) : ofBaseApp(), _app(app),
     // TODO: add support for lambda functions to ofxStateMachine
     // _homeState->addEnteredListener([&]{ofLogNotice() << "home entered";});
     _homeState->addEnteredListener(this, &gui::onHomeStateEntered);
+    _configureProjectState->addEnteredListener(this, &gui::onConfigureStateEntered);
     _stateMachine.start();
 
     _targets.push_back(selectableTarget(OF_TARGET_LINUX, ofGetTargetPlatform() == OF_TARGET_LINUX));
@@ -81,9 +88,22 @@ void gui::setup()
     ofSetWindowTitle("ofPackageManager");
     ofSetFrameRate(60);
     ofSetBackgroundColor(16, 16, 16);
+
     _gui.setup(nullptr, false);
     _gui.setTheme(new Theme());
-    _originalBuffer = std::cout.rdbuf(_consoleBuffer.rdbuf());
+
+    static const ImWchar icon_ranges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
+    ImGuiIO &io = ImGui::GetIO();
+    ImFontConfig config;
+    config.FontDataOwnedByAtlas = false;
+    config.GlyphMinAdvanceX = 13.0f;
+    // io.Fonts->AddFontDefault();
+    config.MergeMode = false;
+    io.Fonts->AddFontFromMemoryTTF((void *)tahoma, sizeof(tahoma), 13.f, &config);
+    config.MergeMode = true;
+    io.Fonts->AddFontFromMemoryTTF((void *)fa_solid_900, sizeof(fa_solid_900), 13.f, &config, icon_ranges);
+
+    // _originalBuffer = std::cout.rdbuf(_consoleBuffer.rdbuf());
 }
 
 void gui::exit()
@@ -94,33 +114,9 @@ void gui::exit()
 void gui::update()
 {
     auto frameNum = ofGetFrameNum();
-    // update packages list every 60 frames
     if (frameNum % 60 == 0)
     {
-        for (auto package : _app.getCorePackages())
-        {
-            if (_corePackages.find(package.getPath()) == _corePackages.end())
-            {
-                // TODO: check value
-                _corePackages[package.getPath()] = selectablePackage(package, false);
-            }
-        }
-        for (auto package : _app.getGloballyInstalledPackages())
-        {
-            if (_globalPackages.find(package.getPath()) == _globalPackages.end())
-            {
-                // TODO: check value
-                _globalPackages[package.getPath()] = selectablePackage(package, false);
-            }
-        }
-        for (auto package : _app.getLocallyInstalledPackages())
-        {
-            if (_localPackages.find(package.getPath()) == _localPackages.end())
-            {
-                // TODO: check value
-                _localPackages[package.getPath()] = selectablePackage(package, false);
-            }
-        }
+        updatePackagesLists();
     }
 }
 
@@ -131,7 +127,7 @@ void gui::draw()
     bool open = true;
     ImGui::SetNextWindowPos(ImVec2(0, menuHeight));
     ImGui::SetNextWindowSize(ImVec2(ofGetWidth(), ofGetHeight() - menuHeight));
-    if (ImGui::Begin("window", &open, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration))
+    if (ImGui::Begin("window", &open, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBringToFrontOnFocus))
     {
         drawSideBar();
         ImGui::SameLine();
@@ -189,12 +185,23 @@ void gui::draw()
             ImGui::EndChild();
         }
 
+        if (_aboutModalOpened)
+        {
+            _aboutModalOpened = false;
+            ImGui::OpenPopup("about");
+        }
+        if (_preferencesModalOpened)
+        {
+            _preferencesModalOpened = false;
+            ImGui::OpenPopup("preferences");
+        }
         if (_searchModalOpened)
         {
             _searchModalOpened = false;
             ImGui::OpenPopup("search");
         }
         drawModals();
+        drawNotifications();
         ImGui::End();
     }
 
@@ -211,11 +218,11 @@ ImVec2 gui::drawMenu()
         {
             if (ImGui::MenuItem("About"))
             {
-                ImGui::OpenPopup("About##modal");
+                _aboutModalOpened = true;
             }
             if (ImGui::MenuItem("Preferences"))
             {
-                ImGui::OpenPopup("Preferences");
+                _preferencesModalOpened = true;
             }
             if (ImGui::MenuItem("Quit"))
             {
@@ -286,6 +293,31 @@ void gui::drawSideBar()
     }
     ImGui::EndChild();
 }
+void gui::drawNotifications()
+{
+    _notifications.update();
+    if (_notifications.size() == 0)
+    {
+        return;
+    }
+    ImGui::SetNextWindowSize(ImVec2(ofGetWidth() * 0.5, ofGetHeight() * 0.2));
+    ImGui::SetNextWindowPos(ImVec2(ofGetWidth() * 0.5, 32));
+    auto open = true;
+    if (ImGui::Begin("notifications", &open, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration))
+    {
+        for (auto notification : _notifications.getData())
+        {
+            std::string id = "notification_";
+            id += notification._id;
+            if (ImGui::BeginChild(id.c_str()))
+            {
+                ImGui::TextWrapped(notification._message.c_str());
+                ImGui::EndChild();
+            }
+        }
+        ImGui::End();
+    }
+}
 void gui::drawConsole()
 {
     ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0, 0, 0, 1.0f));
@@ -296,16 +328,64 @@ void gui::drawConsole()
 }
 void gui::drawModals()
 {
-    if (ImGui::BeginPopupModal("about", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
+    if (BeginModal("about"))
     {
+        if (ImGui::BeginChild("modalContent", ImVec2(-1, -footerHeight - padding)))
+        {
+            std::string version = "ofPackageManager version: ";
+            version += _app.getVersion().toString();
+            ImGui::Text(version.c_str());
+            std::string pgVersion = "ofxProjectGenerator commit: ";
+            pgVersion += OFXPROJECTGENERATOR_COMMIT;
+            ImGui::Text(pgVersion.c_str());
+
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 16);
+            ImGui::Text("license:");
+            std::string license = "This software is distributed under the MIT License.\n\nCopyright(c) 2019 Thomas Geissl\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.";
+            ImGui::TextWrapped(license.c_str());
+
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 16);
+            ImGui::Text("source code:");
+            ImGui::TextWrapped("The source can be found on github, feel free to file issues, fork, fix and PR.");
+            std::string url = "https://github.com/thomasgeissl/ofPackageManager/";
+            (ImGui::TextWrapped(url.c_str()));
+            ImGui::SameLine();
+            if(Button("open"))
+            {
+                ofLaunchBrowser(url);
+            }
+            ImGui::EndChild();
+        }
+        if (BeginActions(1))
+        {
+            if (Button("close", ImVec2(buttonWidth, -1)))
+            {
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndChild();
+        }
         ImGui::EndPopup();
     }
-    ImGui::SetNextWindowSize(ImVec2(ofGetWidth() * 0.8, ofGetHeight() * 0.8));
-    ImGui::SetNextWindowPos(ImVec2(ofGetWidth() * .1, ofGetHeight() * .1));
-    if (ImGui::BeginPopupModal("search", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    if (BeginModal("preferences"))
     {
-        auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
-        if (ImGui::BeginChild("globalPackages", ImVec2(-1, -footerHeight - padding)))
+        if (ImGui::BeginChild("modalContent", ImVec2(-1, -footerHeight - padding)))
+        {
+            ImGui::EndChild();
+        }
+        if (BeginActions(1))
+        {
+            if (Button("close", ImVec2(buttonWidth, -1)))
+            {
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndChild();
+        }
+        ImGui::EndPopup();
+    }
+    if (BeginModal("search"))
+    {
+        if (ImGui::BeginChild("modalContent", ImVec2(-1, -footerHeight - padding)))
         {
             char name[128] = "";
             ImGui::PushItemWidth(ImGui::GetContentRegionAvailWidth());
@@ -321,7 +401,6 @@ void gui::drawModals()
 
             if (_searchResults.size() > 0)
             {
-
                 static ImGuiTableFlags flags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable;
                 if (ImGui::BeginTable("table1", 4, flags))
                 {
@@ -347,7 +426,7 @@ void gui::drawModals()
                         ImGui::TableSetColumnIndex(2);
                         ImGui::Text(ofToString(repo._forks).c_str());
                         ImGui::TableSetColumnIndex(3);
-     
+
                         std::string id = "open##";
                         id += repo._url;
                         if (Button(id.c_str()))
@@ -359,7 +438,10 @@ void gui::drawModals()
                         id += repo._url;
                         if (Button(id.c_str()))
                         {
-                            _app.installPackageByUrl(repo._cloneUrl, "latest");
+                            auto package = _app.installPackageByUrl(repo._cloneUrl, "latest");
+                            std::string message = "successfully installed ";
+                            message += repo._name;
+                            _notifications.add(message);
                         }
                         i++;
                     }
@@ -381,6 +463,7 @@ void gui::drawModals()
             }
             ImGui::EndChild();
         }
+        // TODO: tag selector
         if (BeginActions(1))
         {
             if (Button("close", ImVec2(buttonWidth, -1)))
@@ -390,27 +473,6 @@ void gui::drawModals()
             ImGui::EndChild();
         }
 
-        // {
-        //     for (auto &tag : repo._tags)
-        //     {
-        //         const bool is_selected = true;
-        //         if (ImGui::Selectable(tag.c_str(), is_selected))
-        //         {
-        //             // TODO: setselected
-        //         }
-
-        //         if (is_selected)
-        //         {
-        //             ImGui::SetItemDefaultFocus();
-        //         }
-        //     }
-
-        //     ImGui::EndCombo();
-        // }
-
-        // std::string buttonText = "install##";
-        // buttonText += repo._url;
-        // // repo.toString()
         ImGui::EndPopup();
     }
 }
@@ -547,18 +609,21 @@ void gui::drawUpdateMultiple()
 }
 void gui::drawConfigure()
 {
-    // auto availableHeight = ImGui::GetWindowHeight() - ImGui::GetCursorPosY();
     auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
     if (ImGui::BeginChild("configure", ImVec2(-1, -footerHeight - padding)))
     {
         ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::GetStyle().Colors[ImGuiCol_ButtonActive]);
-        if (ImGui::BeginChild("configureHeader", ImVec2(0, 32)))
-        {
-            ImGui::Text(_projectName.c_str());
-            ImGui::Text(_projectPath.c_str());
-            ImGui::EndChild();
-        }
+        auto font = ImGui::GetFont();
+        auto originalScale = font->Scale;
+        font->Scale = 1.5f;
+        ImGui::PushFont(font);
+        ImGui::TextColored(ImGui::GetStyle().Colors[ImGuiCol_ButtonActive], _projectName.c_str());
+        font->Scale = originalScale;
+        ImGui::PopFont();
+        ImGui::Text(_projectPath.c_str());
         ImGui::PopStyleColor();
+
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
 
         if (ImGui::BeginChild("configureContent", ImVec2(0, 0)))
         {
@@ -598,7 +663,6 @@ void gui::drawConfigure()
 
             if (_showAdvancedOptions)
             {
-
                 if (ImGui::CollapsingHeader("platforms, templates"))
                 {
                     ImGui::Indent(indentation);
@@ -647,7 +711,6 @@ void gui::drawConfigure()
         ImGui::SameLine();
         if (Button("generate project", ImVec2(buttonWidth, -1), true))
         {
-            ofLogNotice() << "generating project";
             // TODO: move to package manager, so it can be called from the cli as well
             // set of root, required by project manager
             setOFRoot(_app.getOfPath());
@@ -696,7 +759,9 @@ void gui::drawConfigure()
                     }
                     // finally generate the project
                     project->save();
-                    ofLogNotice() << addonsMakeText;
+                    // ofLogNotice() << addonsMakeText;
+                    _notifications.add(
+                        "successfully generated project");
 
                     // TODO: override addons.make with commit hash comments
 
@@ -726,6 +791,24 @@ void gui::mouseExited(int x, int y) {}
 void gui::windowResized(int w, int h) {}
 void gui::dragEvent(ofDragInfo dragInfo) {}
 void gui::gotMessage(ofMessage msg) {}
+void gui::updatePackagesLists()
+{
+    for (auto package : _app.getCorePackages())
+    {
+        if (_corePackages.count(package.getPath()) == 0)
+        {
+            _corePackages[package.getPath()] = selectablePackage(package, false);
+        }
+        if (_globalPackages.find(package.getPath()) == _globalPackages.end())
+        {
+            _globalPackages[package.getPath()] = selectablePackage(package, false);
+        }
+        if (_localPackages.find(package.getPath()) == _localPackages.end())
+        {
+            _localPackages[package.getPath()] = selectablePackage(package, false);
+        }
+    }
+}
 
 void gui::onHomeStateEntered(ofxStateEnteredEventArgs &args)
 {
@@ -742,4 +825,28 @@ void gui::onHomeStateEntered(ofxStateEnteredEventArgs &args)
         package.second._selected = false;
     }
     // TODO: reset templates and targets
+}
+
+void gui::onConfigureStateEntered(ofxStateEnteredEventArgs &args)
+{
+    _corePackages.clear();
+    _globalPackages.clear();
+    _localPackages.clear();
+    updatePackagesLists();
+    auto selectedPackages = _app.getPackagesListedInAddonsMakeFile();
+    for (auto package : selectedPackages)
+    {
+        if (_corePackages.count(package.getPath()) > 0)
+        {
+            _corePackages[package.getPath()]._selected = true;
+        }
+        if (_globalPackages.count(package.getPath()) > 0)
+        {
+            _globalPackages[package.getPath()]._selected = true;
+        }
+        if (_localPackages.count(package.getPath()) > 0)
+        {
+            _localPackages[package.getPath()]._selected = true;
+        }
+    }
 }

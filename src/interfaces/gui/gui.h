@@ -6,6 +6,7 @@
 #include "../../ofApp.h"
 #include "generators/projectGenerator/ofProjectGenerator.h"
 #include "../../ghRepo.h"
+#include "./notifications.h"
 
 enum OFPACKAGEMANAGER_GUI_SIZE
 {
@@ -84,9 +85,12 @@ public:
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);
 
+    void updatePackagesLists();
+
 private:
     ofPackageManager _app;
     ofxImGui::Gui _gui;
+    notifications _notifications;
     ofxStateMachine _stateMachine;
     ofxState::pointer _homeState;
     ofxState::pointer _installState;
@@ -119,12 +123,15 @@ private:
     bool _showConsole;
 
 
+    bool _aboutModalOpened;
+    bool _preferencesModalOpened;
     bool _searchModalOpened;
 
     std::stringstream _consoleBuffer;
     std::streambuf * _originalBuffer;
 
     ImVec2 drawMenu();
+    void drawNotifications();
     void drawSideBar();
     void drawConsole();
     void drawModals();
@@ -137,4 +144,5 @@ private:
     void drawConfigure();
 
     void onHomeStateEntered(ofxStateEnteredEventArgs &args);
+    void onConfigureStateEntered(ofxStateEnteredEventArgs &args);
 };
