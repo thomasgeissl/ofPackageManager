@@ -118,6 +118,10 @@ void gui::update()
     {
         updatePackagesLists();
     }
+    if (frameNum % 60 * 5 == 0)
+    {
+        updateRecentProjectsList();
+    }
 }
 
 void gui::draw()
@@ -351,21 +355,14 @@ void gui::drawModals()
             std::string url = "https://github.com/thomasgeissl/ofPackageManager/";
             (ImGui::TextWrapped(url.c_str()));
             ImGui::SameLine();
-            if(Button("open"))
+            if (Button("open"))
             {
                 ofLaunchBrowser(url);
             }
             ImGui::EndChild();
         }
-        if (BeginActions(1))
-        {
-            if (Button("close", ImVec2(buttonWidth, -1)))
-            {
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::EndChild();
-        }
-        ImGui::EndPopup();
+
+        EndModal(buttonWidth);
     }
     if (BeginModal("preferences"))
     {
@@ -478,11 +475,35 @@ void gui::drawModals()
 }
 void gui::drawRecentProjects()
 {
-    // if (ImGui::Begin("recent projects"))
-    // {
-    //     ImGui::Text("recent projects");
-    //     ImGui::End();
-    // }
+    static ImGuiTableFlags flags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable;
+    if (ImGui::BeginTable("recentProjectsTable", 2, flags))
+    {
+        ImGui::TableSetupColumn("path", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupColumn("actions", ImGuiTableColumnFlags_WidthFixed);
+        ImGui::TableHeadersRow();
+        for (auto p : _recentProjects)
+        {
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text(p._path.c_str());
+            ImGui::TableSetColumnIndex(1);
+            std::string removeButtonId = "remove##";
+            removeButtonId += p._path;
+            if (Button(removeButtonId.c_str()))
+            {
+            }
+            std::string buttonId = "configure##";
+            buttonId += p._path;
+            ImGui::SameLine();
+            if (Button(buttonId.c_str()))
+            {
+                _projectPath = p._path;
+                _stateMachine.trigger("configure");
+            }
+        }
+
+        ImGui::EndTable();
+    }
 }
 
 void gui::drawHome()
@@ -569,6 +590,10 @@ void gui::drawUpdate()
     if (ImGui::BeginChild("update", ImVec2(-1, -footerHeight - padding)))
     {
         PathChooser(_projectPath, _app.getMyAppsPath());
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 48);
+        ImGui::Text("or select one of your recent projects");
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
+        drawRecentProjects();
         ImGui::EndChild();
     }
     if (BeginActions(1))
@@ -586,6 +611,20 @@ void gui::drawUpdate()
                 ofLogNotice() << _projectPath;
                 _app.generateProject(_projectPath);
                 _projectName = ofFilePath::getBaseName(_projectPath);
+                ofJson recentProjects = ofJson::array();
+                for (auto recentProject : _recentProjects)
+                {
+                    ofJson o;
+                    o["path"] = recentProject._path;
+                    recentProjects.push_back(o);
+                }
+                ofJson o;
+                o["path"] = _projectPath;
+                recentProjects.push_back(o);
+
+                auto path = ofToDataPath("recentProjects.json");
+                ofFile file(path, ofFile::ReadWrite);
+                recentProjects >> file;
                 _stateMachine.trigger("configure");
             }
         }
@@ -806,6 +845,21 @@ void gui::updatePackagesLists()
         if (_localPackages.find(package.getPath()) == _localPackages.end())
         {
             _localPackages[package.getPath()] = selectablePackage(package, false);
+        }
+    }
+}
+void gui::updateRecentProjectsList()
+{
+    auto path = ofToDataPath("recentProjects.json");
+    ofFile file(path, ofFile::ReadOnly);
+    ofJson data;
+    if (file.exists())
+    {
+        file >> data;
+        _recentProjects.clear();
+        for (auto p : data)
+        {
+            _recentProjects.push_back(project(p["path"]));
         }
     }
 }

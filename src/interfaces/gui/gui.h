@@ -8,13 +8,14 @@
 #include "../../ghRepo.h"
 #include "./notifications.h"
 
-enum OFPACKAGEMANAGER_GUI_SIZE
-{
-    SMALL,
-    MEDIUM,
-    BIG
-};
 
+class project {
+    public:
+    project(std::string path) : _path(path){
+
+    }
+    std::string _path;
+};
 class selectablePackage
 {
 public:
@@ -86,6 +87,7 @@ public:
     void gotMessage(ofMessage msg);
 
     void updatePackagesLists();
+    void updateRecentProjectsList();
 
 private:
     ofPackageManager _app;
@@ -114,6 +116,7 @@ private:
     std::vector<selectableTarget> _targets;
     std::vector<selectableTemplate> _commonTemplates;
     std::map<ofTargetPlatform, std::vector<baseProject::Template> > _templates;
+    std::vector<project> _recentProjects;
 
     bool _fullscreen;
     bool _showAdvancedOptions;

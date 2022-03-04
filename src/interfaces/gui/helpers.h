@@ -25,11 +25,10 @@ bool Button(std::string text, ImVec2 size = ImVec2(0,0), bool primary = false)
     return pressed;
 }
 
-void PathChooser(std::string &path, std::string startPath = "")
+void PathChooser(std::string &path, std::string startPath = "", ImVec2 size = ImVec2(0,0))
 {
-    ImGui::Text(path.empty() ? "please choose" : path.c_str());
-    ImGui::SameLine();
-    if (ImGui::Button("choose"))
+    ImGui::Text(path.empty() ? "path has not yet been selected" : path.c_str());
+    if (Button("open file dialog", size, path.empty()))
     {
         auto result = ofSystemLoadDialog("path", true, startPath);
         if (result.bSuccess)
@@ -72,4 +71,15 @@ bool BeginModal(std::string title){
         return true;
     }
     return false;
+}
+void EndModal(int buttonWidth){
+        if (BeginActions(1))
+        {
+            if (Button("close", ImVec2(buttonWidth, -1)))
+            {
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndChild();
+        }
+        ImGui::EndPopup();
 }
