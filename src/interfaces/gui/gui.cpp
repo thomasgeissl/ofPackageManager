@@ -481,6 +481,7 @@ void gui::drawRecentProjects()
         ImGui::TableSetupColumn("path", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableSetupColumn("actions", ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableHeadersRow();
+        auto index = 0;
         for (auto p : _recentProjects)
         {
             ImGui::TableNextRow();
@@ -491,6 +492,17 @@ void gui::drawRecentProjects()
             removeButtonId += p._path;
             if (Button(removeButtonId.c_str()))
             {
+                _recentProjects.erase(_recentProjects.begin() + index);
+                ofJson recentProjects = ofJson::array();
+                for (auto recentProject : _recentProjects)
+                {
+                    ofJson o;
+                    o["path"] = recentProject._path;
+                    recentProjects.push_back(o);
+                }
+                auto path = ofToDataPath("recentProjects.json");
+                ofFile file(path, ofFile::ReadWrite);
+                recentProjects >> file;
             }
             std::string buttonId = "configure##";
             buttonId += p._path;
@@ -500,6 +512,7 @@ void gui::drawRecentProjects()
                 _projectPath = p._path;
                 _stateMachine.trigger("configure");
             }
+            index++;
         }
 
         ImGui::EndTable();
@@ -838,10 +851,16 @@ void gui::updatePackagesLists()
         {
             _corePackages[package.getPath()] = selectablePackage(package, false);
         }
+    }
+    for (auto package : _app.getGloballyInstalledPackages())
+    {
         if (_globalPackages.find(package.getPath()) == _globalPackages.end())
         {
             _globalPackages[package.getPath()] = selectablePackage(package, false);
         }
+    }
+    for (auto package : _app.getLocallyInstalledPackages())
+    {
         if (_localPackages.find(package.getPath()) == _localPackages.end())
         {
             _localPackages[package.getPath()] = selectablePackage(package, false);
