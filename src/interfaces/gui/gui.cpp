@@ -386,10 +386,12 @@ void gui::drawModals()
         if (ImGui::BeginChild("modalContent", ImVec2(-1, -footerHeight - padding)))
         {
             char name[128] = "";
+            strcpy(name, _queryText.c_str());
             ImGui::PushItemWidth(ImGui::GetContentRegionAvailWidth());
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(8, 16));
             if (ImGui::InputText("##querytext", name, IM_ARRAYSIZE(name), ImGuiInputTextFlags_EnterReturnsTrue))
             {
+                _queryText = name;
                 _searchResults = _app.searchPackageOnGithubByName2(name);
                 _selectedSearchResult = ghRepo();
             }
@@ -436,7 +438,11 @@ void gui::drawModals()
                         id += repo._url;
                         if (Button(id.c_str()))
                         {
-                            auto package = _app.installPackageByUrl(repo._cloneUrl, "latest");
+                            std::string destinationPath = ""; // locally by default
+                            if(_stateMachine.isCurrentState(_installState)){
+                                destinationPath = _app.getAddonsPath();
+                            }
+                            auto package = _app.installPackageByUrl(repo._cloneUrl, "latest", destinationPath);
                             std::string message = "successfully installed ";
                             message += repo._name;
                             _notifications.add(message);

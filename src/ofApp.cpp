@@ -16,6 +16,7 @@ ofPackageManager::ofPackageManager(std::string cwdPath) : _silent(false),
 														  _cwdPath(cwdPath),
 														  _configDirPath(ofFilePath::join(ofFilePath::getUserHomeDir(), ".ofPackageManager")),
 														  _packagesPath(ofFilePath::join(_configDirPath, "ofPackages")),
+														  _ofPackagesUrl("https://raw.githubusercontent.com/thomasgeissl/ofPackageManager/master/ofPackages.json"),
 														  _globalConfigPath(ofFilePath::join(_configDirPath, "cli.config.json")),
 														  _localAddonsPath("local_addons"),
 														  _configJson(getConfig())
@@ -580,6 +581,10 @@ std::vector<ofPackage> ofPackageManager::getPackagesListedInAddonsMakeFile()
 		}
 	}
 	return packages;
+}
+
+std::string ofPackageManager::getAddonsPath(){
+    return ofFilePath::join(getOfPath(), "addons");
 }
 
 // bool ofPackageManager::generateProject()

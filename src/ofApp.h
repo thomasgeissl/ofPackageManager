@@ -38,6 +38,7 @@ public:
 	std::vector<ofPackage> getGloballyInstalledPackages();
 	std::vector<ofPackage> getLocallyInstalledPackages();
 	std::vector<ofPackage> getPackagesListedInAddonsMakeFile();
+	std::string getAddonsPath();
 
 
 	ofJson searchPackageInDatabaseById(std::string id);
@@ -109,6 +110,7 @@ private:
 	std::string _cwdPath;
 	std::string _configDirPath;
 	std::string _packagesPath;
+	std::string _ofPackagesUrl;
 	std::string _globalConfigPath;
 	std::string _localAddonsPath;
 	ofJson _configJson;
