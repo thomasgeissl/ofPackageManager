@@ -1,6 +1,7 @@
 #include "ofMain.h"
 #include "ofxUnitTests.h"
 #include "ofApp.h"
+#include "./interfaces/gui/gui.h"
 #include "./interfaces/cli.h"
 #include "./interfaces/jsonInterface.h"
 
@@ -18,7 +19,12 @@ int main(int argc, char **argv)
 
 	ofPackageManager app(cwdPath.string());
 	jsonInterface jsonI(app);
-	if (jsonI.accept(argc, argv))
+	if (argc == 1)
+	{
+		ofSetupOpenGL(1024, 768, OF_WINDOW);
+		return ofRunApp(new gui(app));
+	}
+	else if (jsonI.accept(argc, argv))
 	{
 		auto result = jsonI.exec(argc, argv);
 		std::cout << result.dump() << std::endl;

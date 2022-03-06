@@ -1,0 +1,65 @@
+{
+    "ofxCv": {
+        "git": "https://github.com/kylemcdonald/ofxCv.git"
+    },
+    "ofxDmx": {
+        "git": "https://github.com/kylemcdonald/ofxDmx.git"
+    },
+    "ofxMidi": {
+        "git": "https://github.com/danomatika/ofxMidi.git"
+    },
+    "ofxLua": {
+        "git": "https://github.com/danomatika/ofxLua.git"
+    },
+    "ofxPd": {
+        "git": "https://github.com/danomatika/ofxPd.git"
+    },
+    "ofxHTTP": {
+        "git": "https://github.com/bakercp/ofxHTTP.git"
+    },
+    "ofxIO": {
+        "git": "https://github.com/bakercp/ofxIO.git"
+    },
+    "ofxSerial": {
+        "git": "https://github.com/bakercp/ofxSerial.git"
+    },
+    "ofxDOM": {
+        "git": "https://github.com/bakercp/ofxDOM.git"
+    },
+    "ofxMUI": {
+        "git": "https://github.com/bakercp/ofxMUI.git"
+    },
+    "ofxDlib": {
+        "git": "https://github.com/bakercp/ofxDlib.git"
+    },
+    "ofxPointer": {
+        "git": "https://github.com/bakercp/ofxPointer.git"
+    },
+    "ofxSSLManager": {
+        "git": "https://github.com/bakercp/ofxSSLManager.git"
+    },
+    "ofxTaskQueue": {
+        "git": "https://github.com/bakercp/ofxTaskQueue.git"
+    },
+    "ofxFatLines": {
+        "git": "https://github.com/roymacdonald/ofxFatLines.git"
+    },
+    "ofxSoundObjects": {
+        "git": "https://github.com/roymacdonald/ofxSoundObjects.git"
+    },
+    "ofxAruco": {
+        "git": "https://github.com/arturoc/ofxAruco.git"
+    },
+    "ofxEasing": {
+        "git": "https://github.com/arturoc/ofxEasing.git"
+    },
+    "ofxHttpUtils": {
+        "git": "https://github.com/arturoc/ofxHttpUtils.git"
+    },
+    "ofxPDSP": {
+        "git": "https://github.com/npisanti/ofxPDSP"
+    },
+    "ofxAudioFile": {
+        "git": "https://github.com/npisanti/ofxAudioFile.git"
+    }
+}

@@ -20,7 +20,6 @@ ofPackageManager::ofPackageManager(std::string cwdPath) : _silent(false),
 														  _localAddonsPath("local_addons"),
 														  _configJson(getConfig())
 {
-	// ofSetLogLevel(OF_LOG_VERBOSE);
 }
 
 bool ofPackageManager::addPackageToAddonsMakeFile(ofPackage package)
@@ -163,18 +162,18 @@ bool ofPackageManager::configure(bool global)
 	}
 
 	auto ofPath = ofFilePath::getAbsolutePath(getAbsolutePath("../../.."), false);
-	
 
 	if (!_silent)
 	{
 		auto findOfAutomatically = _clu.getBoolAnswer("Do you want to automatically detect the openFrameworks directory? This will iterate through your home directory and its children, three levels deep. It might be annoying because your OS might ask for permission to access those directories.");
-		if(findOfAutomatically){
+		if (findOfAutomatically)
+		{
 			auto foundPath = findOfPathInwardly(ofFilePath::getUserHomeDir(), 3);
 			if (!foundPath.empty())
 			{
 				ofPath = foundPath;
 			}
-		} 
+		}
 	}
 
 	ofJson configJson;
@@ -191,8 +190,8 @@ bool ofPackageManager::configure(bool global)
 
 	_configJson = configJson;
 
-
-	if(!hasPackagesDatabase()){
+	if (!hasPackagesDatabase())
+	{
 		installPackagesDatabase();
 	}
 
@@ -319,6 +318,21 @@ ofJson ofPackageManager::searchPackageOnGithubByUser(std::string user)
 		ofLogNotice("search") << outputString;);
 	return resultJson;
 }
+std::vector<ghRepo> ofPackageManager::searchPackageOnGithubByName2(std::string name)
+{
+	std::string url = "https://api.github.com/search/repositories?q=" + name;
+	ofHttpRequest request(url, "ofPackageManager");
+	request.headers["User-Agent"] = "ofPackageManager";
+	ofURLFileLoader loader;
+	auto response = loader.handleRequest(request);
+	auto resultJson = ofJson::parse(response.data.getText());
+	std::vector<ghRepo> repos;
+	for (auto repo : resultJson["items"])
+	{
+		repos.push_back(ghRepo(repo));
+	}
+	return repos;
+}
 
 ofPackage ofPackageManager::installPackageByGithub(std::string github, std::string checkout, std::string destinationPath)
 {
@@ -353,7 +367,8 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 		if (repoDirectory.exists())
 		{
 			IFNOTSILENT(
-				if (_clu.getBoolAnswer(destinationPath + "/" + name + " already exists. Do you want to pull and checkout the specified commit?", true)) {
+				if (_clu.getBoolAnswer(destinationPath + "/" + name + " already exists. Do you want to pull and checkout the specified commit?", true))
+				{
 					ofLogNotice("TODO") << "Unfortunately it is not yet implemented due to missing ofxGit::repo::pull";
 					// TODO: pull and checkout, pull still does not work in ofxGit2
 				});
@@ -422,7 +437,8 @@ ofPackage ofPackageManager::maybeInstallOneOfThePackages(ofJson packages, std::s
 
 ofJson ofPackageManager::getAvailablePackages()
 {
-	if(!hasPackagesDatabase()){
+	if (!hasPackagesDatabase())
+	{
 		installPackagesDatabase();
 	}
 	ofDirectory ofPackagesDirectory(getOfPackagesPath());
@@ -446,9 +462,9 @@ ofJson ofPackageManager::getAvailablePackages()
 	}
 	return result;
 }
-std::vector<std::string> ofPackageManager::getCorePackages()
+std::vector<ofPackage> ofPackageManager::getCorePackages()
 {
-	std::vector<std::string> coreAddons;
+	std::vector<ofPackage> corePackages;
 
 	auto globalAddonsDir = ofDirectory(ofFilePath::join(getOfPath(), "addons"));
 	globalAddonsDir.listDir();
@@ -460,12 +476,12 @@ std::vector<std::string> ofPackageManager::getCorePackages()
 			ofxGit::repository addon(path);
 			if (!addon.isRepository())
 			{
-				coreAddons.push_back(file.getFileName());
+				corePackages.push_back(ofPackage(file.getFileName()));
 			}
 		}
 	}
 
-	return coreAddons;
+	return corePackages;
 }
 std::vector<ofPackage> ofPackageManager::getGloballyInstalledPackages()
 {
@@ -566,38 +582,39 @@ std::vector<ofPackage> ofPackageManager::getPackagesListedInAddonsMakeFile()
 	return packages;
 }
 
-bool ofPackageManager::generateProject()
-{
-	auto isWindows = true;
-#if defined(TARGET_OSX) || defined(TARGET_LINUX)
-	isWindows = false;
-#endif
-	std::string pgPath = _configJson["pgPath"].get<std::string>();
-	std::string ofPath = isWindows ? "/ofPath=" : "-o";
-	ofPath += "\"";
-	ofPath += getConfig()["ofPath"].get<std::string>();
-	ofPath += "\"";
-	std::string packages = isWindows ? "/addons=" : "-a";
-	packages += "\"";
-	auto requiredPackages = getPackagesListedInAddonsMakeFile();
-	for (auto package : requiredPackages)
-	{
-		packages += package.getPath();
-		packages += ", ";
-	}
-	packages += "\"";
-	auto addons = getConfig()["ofPath"].get<std::string>();
-	// TODO: platforms and templates
+// bool ofPackageManager::generateProject()
+// {
+// 	auto isWindows = true;
+// #if defined(TARGET_OSX) || defined(TARGET_LINUX)
+// 	isWindows = false;
+// #endif
+// 	std::string pgPath = _configJson["pgPath"].get<std::string>();
+// 	std::string ofPath = isWindows ? "/ofPath=" : "-o";
+// 	ofPath += "\"";
+// 	ofPath += getConfig()["ofPath"].get<std::string>();
+// 	ofPath += "\"";
+// 	std::string packages = isWindows ? "/addons=" : "-a";
+// 	packages += "\"";
+// 	auto requiredPackages = getPackagesListedInAddonsMakeFile();
+// 	for (auto package : requiredPackages)
+// 	{
+// 		packages += package.getPath();
+// 		packages += ", ";
+// 	}
+// 	packages += "\"";
+// 	auto addons = getConfig()["ofPath"].get<std::string>();
+// 	// TODO: platforms and templates
 
-	std::string verbose = isWindows ? "/verbose" : "-v";
-	std::string command = pgPath + " " + verbose + " " + ofPath + " " + packages;
-	auto result = ofSystem(command);
-	// TODO: parse result and return success or error
-	return false;
-}
+// 	std::string verbose = isWindows ? "/verbose" : "-v";
+// 	std::string command = pgPath + " " + verbose + " " + ofPath + " " + packages;
+// 	auto result = ofSystem(command);
+// 	// TODO: parse result and return success or error
+// 	return false;
+// }
 ofJson ofPackageManager::searchPackageInDatabaseById(std::string name)
 {
-	if(!hasPackagesDatabase()){
+	if (!hasPackagesDatabase())
+	{
 		installPackagesDatabase();
 	}
 	ofDirectory ofPackagesDirectory(getOfPackagesPath());
@@ -641,7 +658,8 @@ ofJson ofPackageManager::searchPackageInDatabaseById(std::string name)
 	}
 
 	IFNOTSILENT(
-		if (counter > 0) {
+		if (counter > 0)
+		{
 			std::cout << outputString << endl;
 
 			if (!addPackageToAddonsMakeFile(maybeInstallOneOfThePackages(result)))
@@ -655,7 +673,8 @@ ofJson ofPackageManager::searchPackageInDatabaseById(std::string name)
 					}
 				}
 			}
-		} else {
+		} else
+		{
 			std::cout << "Unfortunately this package was not found in the database." << endl;
 			if (_clu.getBoolAnswer("But it is probably available on github. Wanna give it a try?"))
 			{
@@ -792,7 +811,8 @@ ofPackage ofPackageManager::installPackage(std::string addon, std::string destin
 }
 ofPackage ofPackageManager::installPackageById(std::string id, std::string checkout, std::string destinationPath)
 {
-	if(!hasPackagesDatabase()){
+	if (!hasPackagesDatabase())
+	{
 		installPackagesDatabase();
 	}
 	if (isCorePackage(id))
@@ -887,29 +907,27 @@ bool ofPackageManager::hasPackagesDatabase()
 bool ofPackageManager::isCorePackage(std::string id)
 {
 	id = ofSplitString(id, "@").front();
-	auto coreAddons = getCorePackages();
-	return std::find(coreAddons.begin(), coreAddons.end(), id) != coreAddons.end();
-
-	auto globalAddonsDir = ofDirectory(ofFilePath::join(getOfPath(), "addons"));
-	globalAddonsDir.listDir();
-	for (auto file : globalAddonsDir.getFiles())
+	for (auto corePackage : getCorePackages())
 	{
-		auto path = file.getAbsolutePath();
-		if (file.getFileName() == id && file.isDirectory())
-		{ //starts with ofx
-			ofxGit::repository addon(path);
-			if (!addon.isRepository())
-			{
-				return true;
-			}
+		if (corePackage.getPath() == id)
+		{
+			return true;
 		}
 	}
 	return false;
 }
 
+std::string ofPackageManager::getCwdPath()
+{
+	return _cwdPath;
+}
 std::string ofPackageManager::getOfPath()
 {
 	return _configJson["ofPath"];
+}
+std::string ofPackageManager::getMyAppsPath()
+{
+	return ofFilePath::join(getOfPath(), ofFilePath::join("apps", "myApps"));
 }
 std::string ofPackageManager::getLocalAddonsPath()
 {
@@ -926,14 +944,14 @@ ofJson ofPackageManager::getConfig()
 	auto hasLocalConfig = false;
 	auto hasGlobalConfig = false;
 
-
+	ofLogNotice() << "getting config";
+	ofLogNotice() << isInsideOf;
 
 	ofJson configJson;
 	ofFile configFile;
 	ofFile globalConfigFile;
 	configFile.open(_globalConfigPath);
 	hasGlobalConfig = globalConfigFile.exists();
-
 
 	std::string path = _cwdPath;
 	auto level = 0;
@@ -954,34 +972,19 @@ ofJson ofPackageManager::getConfig()
 		hasLocalConfig = true;
 		configFile >> configJson;
 	}
-	else if(isInsideOf)
+	else if (isInsideOf)
 	{
 		configJson["ofPackagesPath"] = ofFilePath::join(_configDirPath, "ofPackages");
 		configJson["ofPath"] = findOfPathOutwardly(_cwdPath);
-	}else if(hasGlobalConfig){
+	}
+	else if (hasGlobalConfig)
+	{
 		globalConfigFile >> configJson;
-	}else{
-
+	}
+	else
+	{
 	}
 
-
-
-	IFNOTSILENT(
-		if(hasLocalConfig){
-			ofLogNotice() << "found a local config file";
-		}else if(isInsideOf){
-			ofLogNotice() << "inside an openFrameworks directory";
-		}else if(hasGlobalConfig){
-			ofLogNotice() << "using global config file, since no local config file is present and you are not inside an openFrameworks directory.";
-		}else{
-			ofLogError() << "could not get the config. You are probably not inside an openFrameworks directory or did not configure the package manager.";
-		}
-		// ofLogNotice() << "getting the config";
-		// ofLogNotice() << "localConfig " << hasLocalConfig;
-		// ofLogNotice() << "isInsideOf " << isInsideOf;
-		// ofLogNotice() << "globalConfig " << hasGlobalConfig;
-		ofLogNotice() << configJson.dump(4);
-	);
 	return configJson;
 }
 ofVersion ofPackageManager::getVersion()
@@ -996,6 +999,7 @@ void ofPackageManager::setConfig(ofJson config)
 void ofPackageManager::setCwdPath(std::string path)
 {
 	_cwdPath = path;
+	_configJson = getConfig();
 }
 void ofPackageManager::setSilent(bool value)
 {
@@ -1091,13 +1095,16 @@ bool ofPackageManager::isConfigured()
 	return true;
 }
 
-	
-bool ofPackageManager::isLocatedInsideOfDirectory(std::string path){
+bool ofPackageManager::isLocatedInsideOfDirectory(std::string path)
+{
+	return !findOfPathOutwardly(path).empty();
 	auto level = 0;
 	std::string ofPath = "";
-	while(ofPath.empty() && level < 4){
+	while (ofPath.empty() && level < 4)
+	{
 		fs::path p(path);
-		if(!findOfPathInwardly(path, 0).empty()){
+		if (!findOfPathInwardly(path, 0).empty())
+		{
 			return true;
 		}
 		path = p.parent_path().string();
@@ -1163,20 +1170,20 @@ std::string ofPackageManager::findOfPathInwardly(std::string path, int depth)
 	}
 }
 
-std::string ofPackageManager::findOfPathOutwardly(std::string path)
+std::string ofPackageManager::findOfPathOutwardly(std::string path, int maxLevel)
 {
 	auto level = 0;
-	auto maxLevel = 4;
 	std::string ofPath = "";
-	while(ofPath.empty() && level < maxLevel){
+	while (ofPath.empty() && level < maxLevel)
+	{
 		fs::path p(path);
 		ofPath = findOfPathInwardly(path, 0);
-		if(!ofPath.empty()){
+		if (!ofPath.empty())
+		{
 			return ofPath;
 		}
 		path = p.parent_path().string();
 		level++;
 	}
 	return ofPath;
-
 }

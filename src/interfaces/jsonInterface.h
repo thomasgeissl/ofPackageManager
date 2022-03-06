@@ -245,7 +245,8 @@ public:
                 result["payload"]["data"] = ofJson::array();
                 for (auto &coreAddon : v)
                 {
-                    result["payload"]["data"].push_back(coreAddon);
+                    // todo: return array of objects
+                    result["payload"]["data"].push_back(coreAddon.getPath());
                 }
             }
             else if (type == TYPE_GETGLOBALLYINSTALLEDPACKAGES)
