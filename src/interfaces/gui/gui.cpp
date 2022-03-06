@@ -113,6 +113,8 @@ void gui::exit()
 
 void gui::update()
 {
+    _notifications.update();
+    _animations.update();
     auto frameNum = ofGetFrameNum();
     if (frameNum % 60 == 0)
     {
@@ -299,7 +301,6 @@ void gui::drawSideBar()
 }
 void gui::drawNotifications()
 {
-    _notifications.update();
     if (_notifications.size() == 0)
     {
         return;
@@ -307,7 +308,7 @@ void gui::drawNotifications()
     ImGui::SetNextWindowSize(ImVec2(ofGetWidth() * 0.5, ofGetHeight() * 0.2));
     ImGui::SetNextWindowPos(ImVec2(ofGetWidth() * 0.5, 32));
     auto open = true;
-    if (ImGui::Begin("notifications", &open, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration))
+    if (ImGui::Begin("notifications", &open, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground))
     {
         for (auto notification : _notifications.getData())
         {
@@ -522,6 +523,12 @@ void gui::drawRecentProjects()
 void gui::drawHome()
 {
     ImGui::TextWrapped("Welcome to ofPackageManager - a package manager for openFrameworks.\n");
+
+    _animations.draw();
+
+        //     ImTextureID textureID = (ImTextureID)(uintptr_t)_preview.getTexture().getTextureData().textureID;
+        // auto size = ImGui::GetContentRegionAvail(); // for example
+        // ImGui::Image(textureID, glm::vec2(_preview.getWidth(), _preview.getHeight()));
 }
 void gui::drawInstall()
 {

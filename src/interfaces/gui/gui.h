@@ -7,6 +7,7 @@
 #include "generators/projectGenerator/ofProjectGenerator.h"
 #include "../../ghRepo.h"
 #include "./notifications.h"
+#include "./animations/controller.h"
 
 
 class project {
@@ -93,6 +94,9 @@ private:
     ofPackageManager _app;
     ofxImGui::Gui _gui;
     notifications _notifications;
+    animation::controller _animations;
+
+    // statemachine
     ofxStateMachine _stateMachine;
     ofxState::pointer _homeState;
     ofxState::pointer _installState;
@@ -100,6 +104,8 @@ private:
     ofxState::pointer _updateState;
     ofxState::pointer _updateMultipleState;
     ofxState::pointer _configureProjectState;
+    void onHomeStateEntered(ofxStateEnteredEventArgs &args);
+    void onConfigureStateEntered(ofxStateEnteredEventArgs &args);
 
     std::string _projectDirectoryPath;
     std::string _projectName;
@@ -118,6 +124,7 @@ private:
     std::map<ofTargetPlatform, std::vector<baseProject::Template> > _templates;
     std::vector<project> _recentProjects;
 
+    // view options
     bool _fullscreen;
     bool _showAdvancedOptions;
     bool _showStyleEditor;
@@ -125,14 +132,16 @@ private:
     bool _showMetricsWindow;
     bool _showConsole;
 
-
+    // temp modal state variables
     bool _aboutModalOpened;
     bool _preferencesModalOpened;
     bool _searchModalOpened;
 
+    // console
     std::stringstream _consoleBuffer;
     std::streambuf * _originalBuffer;
 
+    // ui elements
     ImVec2 drawMenu();
     void drawNotifications();
     void drawSideBar();
@@ -145,7 +154,4 @@ private:
     void drawUpdate();
     void drawUpdateMultiple();
     void drawConfigure();
-
-    void onHomeStateEntered(ofxStateEnteredEventArgs &args);
-    void onConfigureStateEntered(ofxStateEnteredEventArgs &args);
 };
