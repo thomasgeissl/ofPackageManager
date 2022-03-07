@@ -8,6 +8,7 @@
 static int footerHeight = 64;
 static int consoleHeight = 200;
 static int buttonWidth = 200;
+static ImGuiTableFlags tableFlags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable;
 
 gui::gui(ofPackageManager app) : ofBaseApp(), _app(app),
                                  _homeState(ofxState::create("home")),
@@ -549,20 +550,71 @@ void gui::drawInstall()
     auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
     if (ImGui::BeginChild("globalPackages", ImVec2(-1, -footerHeight - padding)))
     {
-        for (auto corePackage : _corePackages)
+        if (ImGui::BeginTable("globalPackagesTable", 3, tableFlags))
         {
-            ImGui::Text(corePackage.second._package.getPath().c_str());
+            ImGui::TableSetupColumn("name", ImGuiTableColumnFlags_WidthStretch);
+            ImGui::TableSetupColumn("author", ImGuiTableColumnFlags_WidthFixed);
+            ImGui::TableSetupColumn("actions", ImGuiTableColumnFlags_WidthFixed);
+            ImGui::TableHeadersRow();
+
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(16, 8));
+            for (auto corePackage : _corePackages)
+            {
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text(corePackage.second._package.getPath().c_str());
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("oF");
+                ImGui::TableSetColumnIndex(2);
+                std::string buttonId = "open##";
+                buttonId += corePackage.second._package.toString();
+                if (Button(buttonId.c_str()))
+                {
+                    std::string command = "open ";
+                    command += ofFilePath::join(_app.getAddonsPath(), corePackage.second._package.getPath());
+                    ofLogNotice("TODO") << "open finder/explorer " << command;
+                    // TODO: win, linux
+                    ofSystem(command);
+                }
+                ImGui::SameLine();
+                if(Button("remove##disabled", ImVec2(0,0), false, true)){
+                }
+            }
+
+            for (auto &package : _globalPackages)
+            {
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text(package.second._package.getPath().c_str());
+                Tooltip(package.second._package.toString());
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TableSetColumnIndex(2);
+                std::string buttonId = "open##";
+                buttonId += package.second._package.toString();
+                if (Button(buttonId.c_str()))
+                {
+                    std::string command = "open ";
+                    command += ofFilePath::join(_app.getAddonsPath(), package.second._package.getPath());
+                    ofLogNotice("TODO") << "open finder/explorer " << command;
+                    // TODO: win, linux
+                    ofSystem(command);
+                }
+                // ImGui::SameLine();
+                // buttonId = "upgrade##";
+                // buttonId += package.second._package.toString();
+                // if(ImGui::Button(buttonId.c_str())){
+
+                // }
+                ImGui::SameLine();
+                buttonId = "remove##";
+                buttonId += package.second._package.toString();
+                if (Button(buttonId.c_str()))
+                {
+                }
+            }
+            ImGui::EndTable();
+            ImGui::EndChild();
         }
-        for (auto &package : _globalPackages)
-        {
-            ImGui::Checkbox(package.second._package.getPath().c_str(), &package.second._selected);
-            Tooltip(package.second._package.toString());
-            ImGui::SameLine();
-            ImGui::Button("delete");
-            ImGui::SameLine();
-            ImGui::Button("upgrade");
-        }
-        ImGui::EndChild();
     }
     if (BeginActions(1))
     {
@@ -629,7 +681,7 @@ void gui::drawUpdate()
         {
             _openFromWebText = name;
         }
-        if (Button("choose destination and clone", ImVec2(0, 0), true, _openFromWebText.empty() ))
+        if (Button("choose destination and clone", ImVec2(0, 0), true, _openFromWebText.empty()))
         {
             auto result = ofSystemLoadDialog("path to projects", true, _app.getMyAppsPath());
             if (result.bSuccess)
