@@ -111,6 +111,7 @@ private:
     std::string _projectName;
     std::string _projectPath;
 
+    std::string _openFromWebText;
     std::string _queryText;
     std::vector<ghRepo> _searchResults;
     ghRepo _selectedSearchResult;
@@ -140,6 +141,10 @@ private:
     // console
     std::stringstream _consoleBuffer;
     std::streambuf * _originalBuffer;
+
+    // versions
+    ofVersion _version;
+    ofVersion _mostRecentVersion;
 
     // ui elements
     ImVec2 drawMenu();

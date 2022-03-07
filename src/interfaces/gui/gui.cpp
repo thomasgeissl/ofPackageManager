@@ -25,7 +25,9 @@ gui::gui(ofPackageManager app) : ofBaseApp(), _app(app),
                                  _aboutModalOpened(false),
                                  _preferencesModalOpened(false),
                                  _searchModalOpened(false),
-                                 _projectDirectoryPath(app.getMyAppsPath())
+                                 _projectDirectoryPath(app.getMyAppsPath()),
+                                 _version(_app.getVersion()),
+                                 _mostRecentVersion(_app.getNewestAvailableVersion())
 {
     _stateMachine.setInitialState(_homeState);
     _stateMachine.addTransition(_homeState, "create", _createState);
@@ -282,11 +284,11 @@ void gui::drawSideBar()
     {
         _stateMachine.trigger("install");
     }
-    if (Button("create project", buttonSize, _stateMachine.isCurrentState(_createState)))
+    if (Button("new project", buttonSize, _stateMachine.isCurrentState(_createState)))
     {
         _stateMachine.trigger("create");
     }
-    if (Button("update project", buttonSize, _stateMachine.isCurrentState(_updateState) || _stateMachine.isCurrentState(_configureProjectState)))
+    if (Button("open project", buttonSize, _stateMachine.isCurrentState(_updateState) || _stateMachine.isCurrentState(_configureProjectState)))
     {
         _stateMachine.trigger("update");
     }
@@ -339,8 +341,13 @@ void gui::drawModals()
         if (ImGui::BeginChild("modalContent", ImVec2(-1, -footerHeight - padding)))
         {
             std::string version = "ofPackageManager version: ";
-            version += _app.getVersion().toString();
+            version += _version.toString();
             ImGui::Text(version.c_str());
+
+            std::string mostRecentVersion = "ofPackageManager most recent version: ";
+            mostRecentVersion += _mostRecentVersion.toString();
+            ImGui::Text(mostRecentVersion.c_str());
+
             std::string pgVersion = "ofxProjectGenerator commit: ";
             pgVersion += OFXPROJECTGENERATOR_COMMIT;
             ImGui::Text(pgVersion.c_str());
@@ -439,7 +446,8 @@ void gui::drawModals()
                         if (Button(id.c_str()))
                         {
                             std::string destinationPath = ""; // locally by default
-                            if(_stateMachine.isCurrentState(_installState)){
+                            if (_stateMachine.isCurrentState(_installState))
+                            {
                                 destinationPath = _app.getAddonsPath();
                             }
                             auto package = _app.installPackageByUrl(repo._cloneUrl, "latest", destinationPath);
@@ -532,9 +540,9 @@ void gui::drawHome()
 
     _animations.draw();
 
-        //     ImTextureID textureID = (ImTextureID)(uintptr_t)_preview.getTexture().getTextureData().textureID;
-        // auto size = ImGui::GetContentRegionAvail(); // for example
-        // ImGui::Image(textureID, glm::vec2(_preview.getWidth(), _preview.getHeight()));
+    //     ImTextureID textureID = (ImTextureID)(uintptr_t)_preview.getTexture().getTextureData().textureID;
+    // auto size = ImGui::GetContentRegionAvail(); // for example
+    // ImGui::Image(textureID, glm::vec2(_preview.getWidth(), _preview.getHeight()));
 }
 void gui::drawInstall()
 {
@@ -615,7 +623,42 @@ void gui::drawUpdate()
     auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
     if (ImGui::BeginChild("update", ImVec2(-1, -footerHeight - padding)))
     {
+        ImGui::Text("choose a project from your local file system");
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
         PathChooser(_projectPath, _app.getMyAppsPath());
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 48);
+        ImGui::Text("or paste a public git url in here to clone the project");
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
+        char name[256] = "";
+        strcpy(name, _openFromWebText.c_str());
+        if (ImGui::InputText("##cloneUrl", name, IM_ARRAYSIZE(name)))
+        {
+            _openFromWebText = name;
+        }
+        if (!_openFromWebText.empty() &&  Button("choose destination and clone", ImVec2(0, 0), true))
+        {
+            auto result = ofSystemLoadDialog("path to projects", true, _app.getMyAppsPath());
+            if (result.bSuccess)
+            {
+                auto path = result.getPath();
+                if (ofDirectory::doesDirectoryExist(path))
+                {
+                    std::string projectName = ofFilePath::getBaseName(_openFromWebText);
+                    std::string projectPath = ofFilePath::join(path, projectName);
+                    ofxGit::repository repo(projectPath);
+                    if (repo.clone(_openFromWebText))
+                    {
+                        _projectName = projectName;
+                        _projectPath = projectPath;
+                        _notifications.add("successfully cloned project. it is ready to be configured.");
+                    }
+                    else
+                    {
+                        _notifications.add("sorry, could not clone project.");
+                    }
+                }
+            }
+        }
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 48);
         ImGui::Text("or select one of your recent projects");
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
@@ -638,15 +681,15 @@ void gui::drawUpdate()
                 _app.generateProject(_projectPath);
                 _projectName = ofFilePath::getBaseName(_projectPath);
                 ofJson recentProjects = ofJson::array();
+                ofJson o;
+                o["path"] = _projectPath;
+                recentProjects.push_back(o);
                 for (auto recentProject : _recentProjects)
                 {
                     ofJson o;
                     o["path"] = recentProject._path;
                     recentProjects.push_back(o);
                 }
-                ofJson o;
-                o["path"] = _projectPath;
-                recentProjects.push_back(o);
 
                 auto path = ofToDataPath("recentProjects.json");
                 ofFile file(path, ofFile::ReadWrite);
