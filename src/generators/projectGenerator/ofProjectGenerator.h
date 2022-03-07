@@ -1,0 +1,5 @@
+#include "./ofxProjectGenerator/src/projects/qtcreatorproject.h"
+#include "./ofxProjectGenerator/src/projects/visualStudioProject.h"
+#include "./ofxProjectGenerator/src/projects/xcodeProject.h"
+#include "./ofxProjectGenerator/src/projects/androidStudioProject.h"
+#include "./ofxProjectGenerator/src/utils/Utils.h"
