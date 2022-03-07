@@ -90,10 +90,6 @@ Run the global configuration in order to install addons globally. `ofPackageMana
 
 ofPackageManager also accepts json commands, this can be useful if you wanna integrate it into another application. It is documented [here](https://github.com/thomasgeissl/ofPackageManager/blob/master/docs/json.md).
 
-## Known issues
-
-- The version of the project generator bundled with 0.10.1 does not support comments in the addons.make file. It is fixed on github, the version included in the nightly builds should work.
-
 ## License
 
 This software is distributed under the [MIT License](https://en.wikipedia.org/wiki/MIT_License).
