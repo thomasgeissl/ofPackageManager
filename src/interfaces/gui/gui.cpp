@@ -602,17 +602,11 @@ void gui::drawCreate()
     {
         ofDirectory projectDirectory = ofDirectory(_projectDirectoryPath);
         ofDirectory projectDir = ofDirectory(_projectPath);
-        if (projectDirectory.exists())
+        if (Button("create and configure", ImVec2(buttonWidth, -1), true, !projectDirectory.exists() || projectDir.exists()))
         {
-            if (!projectDir.exists())
-            {
-                if (Button("create and configure", ImVec2(buttonWidth, -1), true))
-                {
-                    auto dataPath = ofFilePath::getAbsolutePath(".");
-                    _app.generateProject(_projectPath);
-                    _stateMachine.trigger("configure");
-                }
-            }
+            auto dataPath = ofFilePath::getAbsolutePath(".");
+            _app.generateProject(_projectPath);
+            _stateMachine.trigger("configure");
         }
         ImGui::EndChild();
     }
@@ -635,7 +629,7 @@ void gui::drawUpdate()
         {
             _openFromWebText = name;
         }
-        if (!_openFromWebText.empty() &&  Button("choose destination and clone", ImVec2(0, 0), true))
+        if (Button("choose destination and clone", ImVec2(0, 0), true, _openFromWebText.empty() ))
         {
             auto result = ofSystemLoadDialog("path to projects", true, _app.getMyAppsPath());
             if (result.bSuccess)
@@ -668,34 +662,31 @@ void gui::drawUpdate()
     if (BeginActions(1))
     {
         ofDirectory projectDir = ofDirectory(_projectPath);
-        if (!_projectPath.empty() && projectDir.exists())
+        if (Button("configure", ImVec2(buttonWidth, -1), true, _projectPath.empty() || !projectDir.exists()))
         {
-            if (Button("configure", ImVec2(buttonWidth, -1), true))
+            auto dataPath = ofFilePath::getAbsolutePath(".");
+            ofLogNotice() << _app.findOfPathOutwardly(dataPath, 6);
+            ofLogNotice() << _app.getOfPath();
+            ofLogNotice() << ofFilePath::getAbsolutePath(".");
+            ofLogNotice() << _app.getCwdPath();
+            ofLogNotice() << _projectPath;
+            _app.generateProject(_projectPath);
+            _projectName = ofFilePath::getBaseName(_projectPath);
+            ofJson recentProjects = ofJson::array();
+            ofJson o;
+            o["path"] = _projectPath;
+            recentProjects.push_back(o);
+            for (auto recentProject : _recentProjects)
             {
-                auto dataPath = ofFilePath::getAbsolutePath(".");
-                ofLogNotice() << _app.findOfPathOutwardly(dataPath, 6);
-                ofLogNotice() << _app.getOfPath();
-                ofLogNotice() << ofFilePath::getAbsolutePath(".");
-                ofLogNotice() << _app.getCwdPath();
-                ofLogNotice() << _projectPath;
-                _app.generateProject(_projectPath);
-                _projectName = ofFilePath::getBaseName(_projectPath);
-                ofJson recentProjects = ofJson::array();
                 ofJson o;
-                o["path"] = _projectPath;
+                o["path"] = recentProject._path;
                 recentProjects.push_back(o);
-                for (auto recentProject : _recentProjects)
-                {
-                    ofJson o;
-                    o["path"] = recentProject._path;
-                    recentProjects.push_back(o);
-                }
-
-                auto path = ofToDataPath("recentProjects.json");
-                ofFile file(path, ofFile::ReadWrite);
-                recentProjects >> file;
-                _stateMachine.trigger("configure");
             }
+
+            auto path = ofToDataPath("recentProjects.json");
+            ofFile file(path, ofFile::ReadWrite);
+            recentProjects >> file;
+            _stateMachine.trigger("configure");
         }
         ImGui::EndChild();
     }
