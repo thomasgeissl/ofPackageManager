@@ -90,6 +90,8 @@ public:
     void updatePackagesLists();
     void updateRecentProjectsList();
 
+    void openViaOfSystem(std::string path);
+
 private:
     ofPackageManager _app;
     ofxImGui::Gui _gui;
@@ -137,6 +139,7 @@ private:
     bool _aboutModalOpened;
     bool _preferencesModalOpened;
     bool _searchModalOpened;
+    bool _deletePackageModalOpened;
 
     // console
     std::stringstream _consoleBuffer;

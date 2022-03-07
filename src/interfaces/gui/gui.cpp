@@ -26,6 +26,7 @@ gui::gui(ofPackageManager app) : ofBaseApp(), _app(app),
                                  _aboutModalOpened(false),
                                  _preferencesModalOpened(false),
                                  _searchModalOpened(false),
+                                 _deletePackageModalOpened(false),
                                  _projectDirectoryPath(app.getMyAppsPath()),
                                  _version(_app.getVersion()),
                                  _mostRecentVersion(_app.getNewestAvailableVersion())
@@ -208,6 +209,11 @@ void gui::draw()
         {
             _searchModalOpened = false;
             ImGui::OpenPopup("search");
+        }
+        if (_deletePackageModalOpened)
+        {
+            _deletePackageModalOpened = false;
+            ImGui::OpenPopup("deletePackage");
         }
         drawModals();
         drawNotifications();
@@ -526,6 +532,7 @@ void gui::drawRecentProjects()
             if (Button(buttonId.c_str()))
             {
                 _projectPath = p._path;
+                _projectName = ofFilePath::getBaseName(p._path);
                 _stateMachine.trigger("configure");
             }
             index++;
@@ -570,14 +577,11 @@ void gui::drawInstall()
                 buttonId += corePackage.second._package.toString();
                 if (Button(buttonId.c_str()))
                 {
-                    std::string command = "open ";
-                    command += ofFilePath::join(_app.getAddonsPath(), corePackage.second._package.getPath());
-                    ofLogNotice("TODO") << "open finder/explorer " << command;
-                    // TODO: win, linux
-                    ofSystem(command);
+                    openViaOfSystem(ofFilePath::join(_app.getAddonsPath(), corePackage.second._package.getPath()));
                 }
                 ImGui::SameLine();
-                if(Button("remove##disabled", ImVec2(0,0), false, true)){
+                if (Button("remove##disabled", ImVec2(0, 0), false, true))
+                {
                 }
             }
 
@@ -593,11 +597,7 @@ void gui::drawInstall()
                 buttonId += package.second._package.toString();
                 if (Button(buttonId.c_str()))
                 {
-                    std::string command = "open ";
-                    command += ofFilePath::join(_app.getAddonsPath(), package.second._package.getPath());
-                    ofLogNotice("TODO") << "open finder/explorer " << command;
-                    // TODO: win, linux
-                    ofSystem(command);
+                    openViaOfSystem(ofFilePath::join(_app.getAddonsPath(), package.second._package.getPath()));
                 }
                 // ImGui::SameLine();
                 // buttonId = "upgrade##";
@@ -608,8 +608,15 @@ void gui::drawInstall()
                 ImGui::SameLine();
                 buttonId = "remove##";
                 buttonId += package.second._package.toString();
+                // TODO: probably makes sense to add a confirmation modal
                 if (Button(buttonId.c_str()))
                 {
+                    if (ofDirectory::removeDirectory(ofFilePath::join(_app.getAddonsPath(), package.second._package.getPath()), true, false))
+                    {
+                        _notifications.add("successfully removed " + package.first);
+                        _notifications.add("TODO: list still needs to be updated");
+                        // _globalPackages.erase(package.first);
+                    }
                 }
             }
             ImGui::EndTable();
@@ -773,6 +780,11 @@ void gui::drawConfigure()
         ImGui::PopFont();
         ImGui::Text(_projectPath.c_str());
         ImGui::PopStyleColor();
+        ImGui::SameLine();
+        if (Button("open##projectDir"))
+        {
+            openViaOfSystem(_projectPath);
+        }
 
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
 
@@ -980,6 +992,23 @@ void gui::updateRecentProjectsList()
             _recentProjects.push_back(project(p["path"]));
         }
     }
+}
+void gui::openViaOfSystem(std::string path)
+{
+
+    std::string command;
+#ifdef TARGET_OSX
+    command = "open ";
+#endif
+#ifdef TARGET_WIN
+    command = "start ";
+#endif
+#ifdef TARGET_LINUX
+    command = "xdg-open ";
+#endif
+    command += path;
+    // TODO: is there another way then ofSystem
+    ofSystem(command);
 }
 
 void gui::onHomeStateEntered(ofxStateEnteredEventArgs &args)
