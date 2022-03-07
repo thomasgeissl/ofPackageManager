@@ -234,7 +234,7 @@ public:
             }
             else if (type == TYPE_GETAVAILABLEPACKAGES)
             {
-                auto v = _app.getAvailablePackages();
+                auto v = _app.getPackagesDatabase();
                 result["success"] = true;
                 result["payload"]["data"] = v;
             }

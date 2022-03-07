@@ -119,10 +119,6 @@ public:
         {
             _app.updatePackagesDatabase();
         }
-        else if (task == "database")
-        {
-            _app.generateDatabaseEntryFile();
-        }
         else if (task == "help" || task == "man")
         {
             printManual();
@@ -133,17 +129,8 @@ public:
         }
         else if (task == "list")
         {
-            auto availablePackages = _app.getAvailablePackages();
-            // ofLogNotice() << availablePackages.dump(2);
-            for (auto &package : availablePackages)
-            {
-                std::cout << package["name"] << endl;
-                std::cout << "\t" << package["description"] << endl;
-                std::cout << "\t" << package["author"] << endl;
-                std::cout << "\t" << package["license"] << endl;
-                std::cout << "\t" << package["cloneUrl"] << endl
-                          << endl;
-            }
+            std::cout << _app.getPackagesDatabase().dump(4) << endl
+                      << endl;
         }
         else if (task == "version")
         {
@@ -176,7 +163,7 @@ public:
                     std::string option = argv[2];
                     if (option == "-g" || option == "--global")
                     {
-                        destinationPath = ofFilePath::join(_app.getOfPath(), "addons");
+                        destinationPath = _app.getAddonsPath();
                         global = true;
                     }
                     package = argv[3];

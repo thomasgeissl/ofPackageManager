@@ -19,10 +19,10 @@ public:
 	bool addPackageToAddonsMakeFile(std::string path);
 	bool addPackagesToAddonsMakeFile(std::string path);
 	bool addPackagesToAddonsMakeFile(std::vector<std::string> paths);
+
 	bool configure(bool global = false);
 	bool isNewerVersionAvailable();
 	ofVersion getNewestAvailableVersion();
-	void generateDatabaseEntryFile();
 
 	bool installPackagesFromAddonsMakeFile();
 	bool installDependenciesFromAddonConfig(std::string path, std::string destination);
@@ -32,30 +32,30 @@ public:
 	ofPackage installPackageById(std::string id, std::string checkout = "", std::string destinationPath = "");
 	ofPackage installPackageByGithub(std::string github, std::string checkout = "", std::string destinationPath = "");
 	ofPackage installPackageByUrl(std::string url, std::string checkout = "", std::string destinationPath = "");
-	ofPackage maybeInstallOneOfThePackages(ofJson packages, std::string destinationPath);
-	ofJson getAvailablePackages();
+	ofPackage maybeInstallOneOfThesePackages(ofJson packages, std::string destinationPath);
+
 	std::vector<ofPackage> getCorePackages();
 	std::vector<ofPackage> getGloballyInstalledPackages();
 	std::vector<ofPackage> getLocallyInstalledPackages();
 	std::vector<ofPackage> getPackagesListedInAddonsMakeFile();
-	std::string getAddonsPath();
-
 
 	ofJson searchPackageInDatabaseById(std::string id);
 	ofJson searchPackageOnGithubByName(std::string name);
 	ofJson searchPackageOnGithubByUser(std::string user);
 
 	std::vector<ghRepo> searchPackageOnGithubByName2(std::string name);
-	bool installPackagesDatabase();
+	bool installPackagesDatabase(bool force = false);
 	bool updatePackagesDatabase();
 	bool hasPackagesDatabase();
 	bool isCorePackage(std::string id);
 
 	std::string getCwdPath();
 	std::string getOfPath();
+	std::string getAddonsPath();
 	std::string getMyAppsPath();
 	std::string getLocalAddonsPath();
-	std::string getOfPackagesPath();
+	std::string getPackagesDatabasePath();
+	ofJson getPackagesDatabase();
 	ofJson getConfig();
 	ofVersion getVersion();
 
