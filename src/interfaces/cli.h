@@ -239,7 +239,7 @@ public:
                 ofLogError() << "please run config task, before installing packages.";
                 return false;
             }
-            _app.generateProject();
+            _app.generateProject(_app.getCwdPath());
         }
         else if (task.empty())
         {

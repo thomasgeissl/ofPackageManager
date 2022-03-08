@@ -1,4 +1,5 @@
 #include "ofApp.h"
+#include "./helpers.h"
 
 #define IFNOTSILENT(...) \
 	if (!_silent)        \
@@ -204,6 +205,7 @@ ofVersion ofPackageManager::getNewestAvailableVersion()
 {
 	ofHttpResponse request = ofLoadURL("https://raw.githubusercontent.com/thomasgeissl/ofPackageManager/master/src/defines.h");
 	auto defines = request.data.getText();
+	ofLogNotice() << defines;
 	auto mostRecentVersion = ofVersion(-1, -1, -1);
 	auto lines = ofSplitString(defines, "\n");
 	for (auto line : lines)
@@ -211,15 +213,15 @@ ofVersion ofPackageManager::getNewestAvailableVersion()
 		auto parts = ofSplitString(ofToLower(line), " ");
 		if (parts.size() == 3)
 		{
-			if (parts[1] == "major")
+			if (parts[1].find("major") != std::string::npos)
 			{
 				mostRecentVersion.setMajor(ofToInt(parts[2]));
 			}
-			else if (parts[1] == "minor")
+			if (parts[1].find("minor") != std::string::npos)
 			{
 				mostRecentVersion.setMinor(ofToInt(parts[2]));
 			}
-			else if (parts[1] == "patch")
+			if (parts[1].find("patch") != std::string::npos)
 			{
 				mostRecentVersion.setPatch(ofToInt(parts[2]));
 			}
@@ -227,7 +229,6 @@ ofVersion ofPackageManager::getNewestAvailableVersion()
 	}
 	return mostRecentVersion;
 }
-
 
 ofJson ofPackageManager::searchPackageOnGithubByName(string name)
 {
@@ -593,7 +594,6 @@ ofJson ofPackageManager::searchPackageInDatabaseById(std::string name)
 		}
 	}
 
-
 	IFNOTSILENT(
 		if (matchedKeys.size() > 0)
 		{
@@ -915,10 +915,6 @@ void ofPackageManager::setSilent(bool value)
 	_silent = value;
 	ofxGit::repository::setSilent(value);
 }
-std::string ofPackageManager::generateGithubUrl(std::string github)
-{
-	return "https://github.com/" + github + ".git";
-}
 
 std::string ofPackageManager::getAbsolutePath(std::string path)
 {
@@ -942,17 +938,6 @@ std::pair<std::string, std::string> ofPackageManager::getPathAndName(std::string
 		return std::make_pair(path, words[words.size() - 1]);
 	}
 	return std::make_pair("", name);
-}
-
-bool ofPackageManager::isGitUrl(std::string path)
-{
-	// TODO: check if string ends with .git
-	return path.substr(0, 4) == "git@" || path.substr(0, 4) == "http";
-}
-
-bool ofPackageManager::isGithubPair(std::string path)
-{
-	return ofSplitString(path, "/").size() > 1;
 }
 
 bool ofPackageManager::hasAddonsMakeFile(std::string path)
@@ -1018,6 +1003,23 @@ bool ofPackageManager::isLocatedInsideOfDirectory(std::string path)
 		}
 		path = p.parent_path().string();
 		level++;
+	}
+	return false;
+}
+bool ofPackageManager::isProject(std::string path)
+{
+	ofDirectory dir(path);
+	if (!dir.isDirectory())
+	{
+		return false;
+	}
+	dir.listDir();
+	for (size_t i = 0; i < dir.size(); i++)
+	{
+		if (dir.getName(i) == "src")
+		{
+			return true;
+		}
 	}
 	return false;
 }
@@ -1095,4 +1097,72 @@ std::string ofPackageManager::findOfPathOutwardly(std::string path, int maxLevel
 		level++;
 	}
 	return ofPath;
+}
+
+bool ofPackageManager::generateProject(std::string path, std::vector<ofPackage> packages, std::vector<ofTargetPlatform> platforms)
+{
+	auto projectPath = path.empty() ? getCwdPath() : path;
+	if (platforms.empty())
+	{
+		platforms.push_back(ofGetTargetPlatform());
+	}
+	setCwdPath(projectPath);
+	setOFRoot(getOfPath());
+	ofFile addonsMakeFile = ofFile(ofFilePath::join(projectPath, "addons.make"), ofFile::ReadWrite);
+	std::vector<std::string> addonsMakeBackup;
+	if (addonsMakeFile.exists())
+	{
+		ofBuffer buffer = ofBufferFromFile(ofFilePath::join(projectPath, "addons.make"));
+		for (auto line : buffer.getLines())
+		{
+			addonsMakeBackup.push_back(line);
+		}
+	}
+	auto success = true;
+	for (auto platform : platforms)
+	{
+		std::string addonsMakeText = "";
+		auto project = getTargetProject(platform);
+		auto templateName = "";
+		project->create(projectPath, templateName);
+		for (auto package : packages)
+		{
+			project->addAddon(package.getPath());
+			addonsMakeText += package.toString();
+			addonsMakeText += "\n";
+		}
+		if(project->save()){
+			addonsMakeFile << addonsMakeText;
+		}else{
+			success = false;
+		}
+	}
+	return success;
+}
+
+bool ofPackageManager::recursivelyGenerateProjects(std::string path, std::vector<ofTargetPlatform> platforms)
+{
+	ofDirectory dir(path);
+	if (!dir.isDirectory())
+	{
+		return false;
+	}
+
+	if (isProject(path))
+	{
+		// nProjectsUpdated++;
+		generateProject(path, {}, platforms);
+		return true;
+	}
+
+	dir.listDir();
+	for (size_t i = 0; i < dir.size(); i++)
+	{
+		ofDirectory subDir(dir.getPath(i));
+		if (subDir.isDirectory())
+		{
+			recursivelyGenerateProjects(dir.getPath(i), platforms);
+		}
+	}
+	return true;
 }

@@ -101,7 +101,7 @@ private:
     // statemachine
     ofxStateMachine _stateMachine;
     ofxState::pointer _homeState;
-    ofxState::pointer _installState;
+    ofxState::pointer _manageGlobalPackagesState;
     ofxState::pointer _createState;
     ofxState::pointer _updateState;
     ofxState::pointer _updateMultipleState;
@@ -110,6 +110,7 @@ private:
     void onConfigureStateEntered(ofxStateEnteredEventArgs &args);
 
     std::string _projectDirectoryPath;
+    std::string _multipleProjectsDirectoryPath;
     std::string _projectName;
     std::string _projectPath;
 
@@ -150,7 +151,7 @@ private:
     ofVersion _mostRecentVersion;
 
     // ui elements
-    ImVec2 drawMenu();
+    ImVec2 drawMainMenu();
     void drawNotifications();
     void drawSideBar();
     void drawConsole();
@@ -160,6 +161,6 @@ private:
     void drawInstall();
     void drawCreate();
     void drawUpdate();
-    void drawUpdateMultiple();
+    void drawUpdateMultipleProjects();
     void drawConfigure();
 };

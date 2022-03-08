@@ -62,48 +62,21 @@ public:
 	void setConfig(ofJson config);
 	void setCwdPath(std::string path);
 	void setSilent(bool value = true);
-	std::string generateGithubUrl(std::string github);
 	std::string getAbsolutePath(std::string path);
 	std::pair<std::string, std::string> getPathAndName(std::string name);
 
-	bool isGitUrl(std::string path);
-	bool isGithubPair(std::string path);
 	bool hasAddonsMakeFile(std::string path);
 	bool hasAddonConfigFile(std::string path);
 	bool hasPackageManagerConfig(std::string path);
 	bool isConfigured();
 	bool isLocatedInsideOfDirectory(std::string path);
+	bool isProject(std::string path);
+
 	std::string findOfPathInwardly(std::string path, int depth);
 	std::string findOfPathOutwardly(std::string path, int maxLevel = 8);
 
-	bool generateProject(){
-		return false;
-	}
-	bool generateProject(std::string path)
-	{
-		setCwdPath(path);
-		setOFRoot(getOfPath());
-		if(ofFile::doesFileExist(ofFilePath::join(path, "addons.make"))){
-			ofLogNotice() << "TODO: backup addons.make";
-		}
-
-		auto target = ofGetTargetPlatform();
-		auto project = getTargetProject(target);
-		auto targetS = getTargetString(target);
-		auto templateName = "";
-		project->create(path, templateName);
-
-		for(auto package : getPackagesListedInAddonsMakeFile()){
-			ofLogNotice() << package.toString();
-			project->addAddon(package.getPath());
-		}
-		// project->parseAddons();
-		return project->save();
-	}
-
-	void updateMultipleProjects(std::string path){
-
-	}
+	bool generateProject(std::string path, std::vector<ofPackage> packages = {}, std::vector<ofTargetPlatform> platforms = {});
+	bool recursivelyGenerateProjects(std::string path, std::vector<ofTargetPlatform> platforms = {});
 
 private:
 	bool _silent;
