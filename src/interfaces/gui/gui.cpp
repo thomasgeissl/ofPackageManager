@@ -314,21 +314,29 @@ void gui::drawNotifications()
     {
         return;
     }
-    ImGui::SetNextWindowSize(ImVec2(ofGetWidth() * 0.5, ofGetHeight() * 0.2));
+    ImGui::SetNextWindowSize(ImVec2(ofGetWidth() * 0.5, 128));
     ImGui::SetNextWindowPos(ImVec2(ofGetWidth() * 0.5, 32));
+    auto style = ImGui::GetStyle();
     auto open = true;
     if (ImGui::Begin("notifications", &open, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground))
     {
+        // ImGui::PushStyleColor(ImGuiCol_ChildBg, style.Colors[ImGuiCol_Button]);
+        ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(213.0 / 255, 54.0 / 255, 116.0 / 255, 1.0f));
+        ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 8);
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(16,8));
         for (auto notification : _notifications.getData())
         {
             std::string id = "notification_";
             id += notification._id;
-            if (ImGui::BeginChild(id.c_str()))
+            if (ImGui::BeginChild(id.c_str(), ImVec2(0, 32)))
             {
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 16);
                 ImGui::TextWrapped(notification._message.c_str());
                 ImGui::EndChild();
             }
         }
+        ImGui::PopStyleVar(2);
+        ImGui::PopStyleColor();
         ImGui::End();
     }
 }
@@ -941,9 +949,7 @@ void gui::drawConfigure()
     }
 }
 
-void gui::keyPressed(int key)
-{
-}
+void gui::keyPressed(int key) {}
 void gui::keyReleased(int key) {}
 void gui::mouseMoved(int x, int y) {}
 void gui::mouseDragged(int x, int y, int button) {}
