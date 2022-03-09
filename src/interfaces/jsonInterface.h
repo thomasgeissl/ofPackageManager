@@ -65,9 +65,10 @@ public:
             {
                 result["errors"].push_back("missing config property");
             }
+            // TODO: clean up, use porject path instead
             if (doesKeyExist(payload, "cwd"))
             {
-                _app.setCwdPath(payload["cwd"].get<std::string>());
+                _app.setProjectPath(payload["cwd"].get<std::string>());
             }
             else
             {

@@ -91,6 +91,7 @@ public:
     void updateRecentProjectsList();
 
     void openViaOfSystem(std::string path);
+    void addToRecentProjects(std::string path);
 
 private:
     ofPackageManager _app;
@@ -128,6 +129,7 @@ private:
     baseProject::Template _selectedTemplate;
     std::map<ofTargetPlatform, std::vector<baseProject::Template> > _templates;
     std::vector<project> _recentProjects;
+    std::vector<ofPackage> _missingPackages;
 
     // view options
     bool _fullscreen;
@@ -165,5 +167,6 @@ private:
     void drawUpdate();
     void drawUpdateMultipleProjects();
     void drawConfigureProject();
+    void drawMissingPackages();
     void drawPlatformAndTemplateChooser();
 };

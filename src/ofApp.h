@@ -50,6 +50,7 @@ public:
 	bool isCorePackage(std::string id);
 
 	std::string getCwdPath();
+	std::string getProjectPath();
 	std::string getOfPath();
 	std::string getAddonsPath();
 	std::string getMyAppsPath();
@@ -58,9 +59,10 @@ public:
 	ofJson getPackagesDatabase();
 	ofJson getConfig();
 	ofVersion getVersion();
+	std::vector<ofPackage> getMissingPackages();
 
 	void setConfig(ofJson config);
-	void setCwdPath(std::string path);
+	void setProjectPath(std::string path);
 	void setSilent(bool value = true);
 	std::string getAbsolutePath(std::string path);
 	std::pair<std::string, std::string> getPathAndName(std::string name);
@@ -83,8 +85,8 @@ public:
 private:
 	bool _silent;
 	std::string _cwdPath;
-	std::string _configDirPath;
-	std::string _packagesPath;
+	std::string _projectPath;
+	std::string _appDataDirectoryPath;
 	std::string _ofPackagesUrl;
 	std::string _globalConfigPath;
 	std::string _localAddonsPath;

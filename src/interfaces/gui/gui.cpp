@@ -749,6 +749,7 @@ void gui::drawCreate()
         {
             auto dataPath = ofFilePath::getAbsolutePath(".");
             _app.generateProject(_projectPath);
+            addToRecentProjects(_projectPath);
             _stateMachine.trigger("configure");
         }
         EndActions();
@@ -815,20 +816,9 @@ void gui::drawUpdate()
             ofLogNotice() << _projectPath;
             _app.generateProject(_projectPath);
             _projectName = ofFilePath::getBaseName(_projectPath);
-            ofJson recentProjects = ofJson::array();
-            ofJson o;
-            o["path"] = _projectPath;
-            recentProjects.push_back(o);
-            for (auto recentProject : _recentProjects)
-            {
-                ofJson o;
-                o["path"] = recentProject._path;
-                recentProjects.push_back(o);
-            }
 
-            auto path = ofToDataPath("recentProjects.json");
-            ofFile file(path, ofFile::ReadWrite);
-            recentProjects >> file;
+            addToRecentProjects(_projectPath);
+
             _stateMachine.trigger("configure");
         }
         EndActions();
@@ -889,6 +879,7 @@ void gui::drawConfigureProject()
 
         if (ImGui::BeginChild("configureContent", ImVec2(0, 0)))
         {
+            drawMissingPackages();
             auto indentation = 24;
             if (ImGui::CollapsingHeader("core addons"))
             {
@@ -993,6 +984,38 @@ void gui::drawConfigureProject()
             }
         }
         EndActions();
+    }
+}
+void gui::drawMissingPackages()
+{
+    if (_missingPackages.size())
+    {
+        ImGui::TextWrapped("ooops, there are some missing packages.");
+
+        if (ImGui::BeginTable("missingPackages", 2, tableFlags))
+        {
+            ImGui::TableSetupColumn("name", ImGuiTableColumnFlags_WidthStretch);
+            ImGui::TableSetupColumn("actions", ImGuiTableColumnFlags_WidthFixed);
+            ImGui::TableHeadersRow();
+            for (auto &missingPackage : _missingPackages)
+            {
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text(missingPackage.toString().c_str());
+                ImGui::TableSetColumnIndex(1);
+                if (!missingPackage.getUrl().empty())
+                {
+                    std::string buttonId = "install##";
+                    buttonId += missingPackage.toString();
+                    if (Button(buttonId.c_str()))
+                    {
+                        _app.installPackageByUrl(missingPackage.getUrl(), missingPackage.getCheckout());
+                        _missingPackages = _app.getMissingPackages();
+                    }
+                }
+            }
+            ImGui::EndTable();
+        }
     }
 }
 void gui::drawPlatformAndTemplateChooser()
@@ -1143,6 +1166,28 @@ void gui::openViaOfSystem(std::string path)
     // TODO: is there another way then ofSystem
     ofSystem(command);
 }
+void gui::addToRecentProjects(std::string path)
+{
+    ofJson recentProjects = ofJson::array();
+    ofJson o;
+    o["path"] = path;
+    recentProjects.push_back(o);
+    for (auto recentProject : _recentProjects)
+    {
+        ofJson o;
+        o["path"] = recentProject._path;
+        recentProjects.push_back(o);
+    }
+    // TODO: remove duplicates
+
+    auto recentProjectsPath = ofToDataPath("recentProjects.json");
+    ofFile file(recentProjectsPath, ofFile::ReadWrite);
+    if (!file.exists())
+    {
+        file.create();
+    }
+    recentProjects >> file;
+}
 
 void gui::onHomeStateEntered(ofxStateEnteredEventArgs &args)
 {
@@ -1163,10 +1208,12 @@ void gui::onHomeStateEntered(ofxStateEnteredEventArgs &args)
 
 void gui::onConfigureStateEntered(ofxStateEnteredEventArgs &args)
 {
+    _app.setProjectPath(_projectPath);
     _corePackages.clear();
     _globalPackages.clear();
     _localPackages.clear();
     updatePackagesLists();
+    _missingPackages = _app.getMissingPackages();
     auto selectedPackages = _app.getPackagesListedInAddonsMakeFile();
     for (auto package : selectedPackages)
     {

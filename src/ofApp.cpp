@@ -15,10 +15,10 @@ namespace fs = std::filesystem;
 
 ofPackageManager::ofPackageManager(std::string cwdPath) : _silent(false),
 														  _cwdPath(cwdPath),
-														  _configDirPath(ofFilePath::join(ofFilePath::getUserHomeDir(), ".ofPackageManager")),
-														  _packagesPath(ofFilePath::join(_configDirPath, "ofPackages")),
+														  _projectPath(cwdPath),
+														  _appDataDirectoryPath(ofFilePath::join(ofFilePath::getUserHomeDir(), ".ofPackageManager")),
 														  _ofPackagesUrl("https://raw.githubusercontent.com/thomasgeissl/ofPackageManager/master/ofPackages.json"),
-														  _globalConfigPath(ofFilePath::join(_configDirPath, "cli.config.json")),
+														  _globalConfigPath(ofFilePath::join(_appDataDirectoryPath, "cli.config.json")),
 														  _localAddonsPath("local_addons"),
 														  _configJson(getConfig())
 {
@@ -87,7 +87,7 @@ bool ofPackageManager::addPackageToAddonsMakeFile(ofPackage package)
 
 bool ofPackageManager::addPackageToAddonsMakeFile(std::string path)
 {
-	ofxGit::repository repo(ofFilePath::join(_cwdPath, path));
+	ofxGit::repository repo(ofFilePath::join(getProjectPath(), path));
 	if (repo.isRepository())
 	{
 		auto url = repo.getRemoteUrl();
@@ -96,7 +96,7 @@ bool ofPackageManager::addPackageToAddonsMakeFile(std::string path)
 	}
 	else
 	{
-		ofDirectory directory(ofFilePath::join(_cwdPath, path));
+		ofDirectory directory(ofFilePath::join(getProjectPath(), path));
 		if (directory.exists()) // && directory.size() > 0
 		{
 			if (_clu.getBoolAnswer(path + " is not a git repository, but a non-empty directory. Do you want to add all its children?"))
@@ -110,7 +110,7 @@ bool ofPackageManager::addPackageToAddonsMakeFile(std::string path)
 
 bool ofPackageManager::addPackagesToAddonsMakeFile(std::string path)
 {
-	ofDirectory directory(ofFilePath::join(_cwdPath, path));
+	ofDirectory directory(ofFilePath::join(getProjectPath(), path));
 	if (!directory.exists())
 	{
 		IFNOTSILENT(ofLogError() << "directory does not exit";);
@@ -135,7 +135,7 @@ bool ofPackageManager::addPackagesToAddonsMakeFile(std::vector<std::string> path
 	auto result = true;
 	for (auto path : paths)
 	{
-		if (!addPackageToAddonsMakeFile(ofFilePath::join(_cwdPath, path)))
+		if (!addPackageToAddonsMakeFile(ofFilePath::join(getProjectPath(), path)))
 		{
 			result = false;
 		}
@@ -144,7 +144,7 @@ bool ofPackageManager::addPackagesToAddonsMakeFile(std::vector<std::string> path
 }
 bool ofPackageManager::configure(bool global)
 {
-	auto configPath = ofFilePath::join(_cwdPath, "ofPackageManager.cli.config.json");
+	auto configPath = ofFilePath::join(getProjectPath(), "ofPackageManager.cli.config.json");
 	std::string relativeOrAbsolute = "relative";
 	if (global)
 	{
@@ -181,10 +181,6 @@ bool ofPackageManager::configure(bool global)
 
 	ofJson configJson;
 	configJson["ofPath"] = _clu.getStringAnswer("Absolute path to openFrameworks?", ofPath);
-	auto ofPackagesPath = _clu.getStringAnswer("Absolute path to packages directory?", ofFilePath::join(_configDirPath, "ofPackages"));
-	configJson["ofPackagesPath"] = ofPackagesPath;
-	// configJson["localAddonsPath"] = _clu.getStringAnswer("local addons directory?", "local_addons");
-	// configJson["pgPath"] = _clu.getStringAnswer("Absolute path to the projet generator?", ofFilePath::join(configJson["ofPath"].get<std::string>(), "projectGenerator-osx"));
 
 	configFile.create();
 	configFile.open(configPath, ofFile::WriteOnly);
@@ -201,6 +197,20 @@ bool ofPackageManager::configure(bool global)
 bool ofPackageManager::isNewerVersionAvailable()
 {
 	return getNewestAvailableVersion() > getVersion();
+}
+std::vector<ofPackage> ofPackageManager::getMissingPackages()
+{
+	std::vector<ofPackage> missingPackages;
+
+	auto requiredPackages = getPackagesListedInAddonsMakeFile();
+	for(auto & requiredPackage : requiredPackages){
+		auto globalPath = ofFilePath::join(getAddonsPath(),  requiredPackage.getPath());
+		auto localPath = ofFilePath::join(getProjectPath(),  requiredPackage.getPath());
+		if(!ofDirectory::doesDirectoryExist(globalPath) && !ofDirectory::doesDirectoryExist(localPath)  ){
+			missingPackages.push_back(requiredPackage);
+		}
+	}
+	return missingPackages;
 }
 ofVersion ofPackageManager::getNewestAvailableVersion()
 {
@@ -390,7 +400,7 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 		installDependenciesFromAddonConfig(ofFilePath::join(destinationPath, name), destinationPath);
 	}
 
-	return ofPackage(ofFilePath::join(ofFilePath::makeRelative(_cwdPath, destinationPath), name), url, repo.getCommitHash());
+	return ofPackage(ofFilePath::join(ofFilePath::makeRelative(getProjectPath(), destinationPath), name), url, repo.getCommitHash());
 }
 
 ofPackage ofPackageManager::maybeInstallOneOfThesePackages(ofJson packages, std::string destinationPath = "")
@@ -638,7 +648,7 @@ bool ofPackageManager::installDependenciesFromAddonConfig(std::string path, std:
 {
 	if (!ofFilePath::isAbsolute(path))
 	{
-		path = ofFilePath::join(_cwdPath, path);
+		path = ofFilePath::join(getProjectPath(), path);
 	}
 	ofFile addonConfigFile(ofFilePath::join(path, "addon_config.mk"));
 	if (addonConfigFile.exists())
@@ -819,9 +829,13 @@ std::string ofPackageManager::getCwdPath()
 {
 	return _cwdPath;
 }
+std::string ofPackageManager::getProjectPath()
+{
+	return _projectPath;
+}
 std::string ofPackageManager::getOfPath()
 {
-	return findOfPathOutwardly(_cwdPath);
+	return findOfPathOutwardly(getProjectPath());
 }
 std::string ofPackageManager::getAddonsPath()
 {
@@ -849,7 +863,7 @@ ofJson ofPackageManager::getPackagesDatabase()
 
 ofJson ofPackageManager::getConfig()
 {
-	auto isInsideOf = isLocatedInsideOfDirectory(_cwdPath);
+	auto isInsideOf = isLocatedInsideOfDirectory(getProjectPath());
 	auto hasLocalConfig = false;
 	auto hasGlobalConfig = false;
 
@@ -862,7 +876,7 @@ ofJson ofPackageManager::getConfig()
 	configFile.open(_globalConfigPath);
 	hasGlobalConfig = globalConfigFile.exists();
 
-	std::string path = _cwdPath;
+	std::string path = getProjectPath();
 	auto level = 0;
 	while (!hasPackageManagerConfig(getAbsolutePath(path)))
 	{
@@ -883,8 +897,8 @@ ofJson ofPackageManager::getConfig()
 	}
 	else if (isInsideOf)
 	{
-		configJson["ofPackagesPath"] = ofFilePath::join(_configDirPath, "ofPackages");
-		configJson["ofPath"] = findOfPathOutwardly(_cwdPath);
+		configJson["ofPackagesPath"] = ofFilePath::join(_appDataDirectoryPath, "ofPackages");
+		configJson["ofPath"] = findOfPathOutwardly(path);
 	}
 	else if (hasGlobalConfig)
 	{
@@ -905,10 +919,9 @@ void ofPackageManager::setConfig(ofJson config)
 {
 	_configJson = config;
 }
-void ofPackageManager::setCwdPath(std::string path)
+void ofPackageManager::setProjectPath(std::string path)
 {
-	_cwdPath = path;
-	_configJson = getConfig();
+	_projectPath = path;
 }
 void ofPackageManager::setSilent(bool value)
 {
@@ -922,7 +935,7 @@ std::string ofPackageManager::getAbsolutePath(std::string path)
 	{
 		return path;
 	}
-	return ofFilePath::join(_cwdPath, path);
+	return ofFilePath::join(getProjectPath(), path);
 }
 
 std::pair<std::string, std::string> ofPackageManager::getPathAndName(std::string name)
@@ -944,7 +957,7 @@ bool ofPackageManager::hasAddonsMakeFile(std::string path)
 {
 	if (!ofFilePath::isAbsolute(path))
 	{
-		path = ofFilePath::join(_cwdPath, path);
+		path = ofFilePath::join(getProjectPath(), path);
 	}
 	ofFile addonsMakeFile(ofFilePath::join(path, "addons.make"));
 	return addonsMakeFile.exists();
@@ -954,7 +967,8 @@ bool ofPackageManager::hasAddonConfigFile(std::string path)
 {
 	if (!ofFilePath::isAbsolute(path))
 	{
-		path = ofFilePath::join(_cwdPath, path);
+		// TODO: why project path
+		path = ofFilePath::join(getProjectPath(), path);
 	}
 	ofFile addonConfigFile(ofFilePath::join(path, "addon_config.mk"));
 	return addonConfigFile.exists();
@@ -974,7 +988,7 @@ bool ofPackageManager::hasPackageManagerConfig(std::string path)
 }
 bool ofPackageManager::isConfigured()
 {
-	std::string path = _cwdPath;
+	std::string path = getProjectPath();
 	while (!hasPackageManagerConfig(getAbsolutePath(path)))
 	{
 		ofFile file(path);
@@ -983,7 +997,7 @@ bool ofPackageManager::isConfigured()
 		// TODO: does that work on windows
 		if (path.size() < 4)
 		{
-			return hasPackageManagerConfig(_configDirPath);
+			return hasPackageManagerConfig(_appDataDirectoryPath);
 		}
 	}
 	return true;
@@ -1106,7 +1120,7 @@ bool ofPackageManager::generateProject(std::string path, std::vector<ofPackage> 
 	{
 		platforms.push_back(ofGetTargetPlatform());
 	}
-	setCwdPath(projectPath);
+	setProjectPath(projectPath);
 	setOFRoot(getOfPath());
 	ofFile addonsMakeFile = ofFile(ofFilePath::join(projectPath, "addons.make"), ofFile::ReadWrite);
 	std::vector<std::string> addonsMakeBackup;
