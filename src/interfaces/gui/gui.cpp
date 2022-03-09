@@ -696,14 +696,14 @@ void gui::drawManageGlobalPackages()
     {
         if (!_showAvailablePackages)
         {
-            if (Button("show available packages", ImVec2(buttonWidth, -1)))
+            if (Button("show installable addons", ImVec2(buttonWidth, -1)))
             {
                 _showAvailablePackages = true;
             }
         }
         else
         {
-            if (Button("hide available packages", ImVec2(buttonWidth, -1)))
+            if (Button("hide installable addons", ImVec2(buttonWidth, -1)))
             {
                 _showAvailablePackages = false;
             }
