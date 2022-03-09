@@ -205,7 +205,6 @@ ofVersion ofPackageManager::getNewestAvailableVersion()
 {
 	ofHttpResponse request = ofLoadURL("https://raw.githubusercontent.com/thomasgeissl/ofPackageManager/master/src/defines.h");
 	auto defines = request.data.getText();
-	ofLogNotice() << defines;
 	auto mostRecentVersion = ofVersion(-1, -1, -1);
 	auto lines = ofSplitString(defines, "\n");
 	for (auto line : lines)
@@ -1099,7 +1098,7 @@ std::string ofPackageManager::findOfPathOutwardly(std::string path, int maxLevel
 	return ofPath;
 }
 
-bool ofPackageManager::generateProject(std::string path, std::vector<ofPackage> packages, std::vector<ofTargetPlatform> platforms)
+bool ofPackageManager::generateProject(std::string path, std::vector<ofPackage> packages, std::vector<ofTargetPlatform> platforms, baseProject::Template template_)
 {
 	auto projectPath = path.empty() ? getCwdPath() : path;
 	if (platforms.empty())
@@ -1123,7 +1122,10 @@ bool ofPackageManager::generateProject(std::string path, std::vector<ofPackage> 
 	{
 		std::string addonsMakeText = "";
 		auto project = getTargetProject(platform);
-		auto templateName = "";
+		std::string templateName = "";
+		if(!template_.dir.path().empty()){
+			templateName = template_.name;
+		}
 		project->create(projectPath, templateName);
 		for (auto package : packages)
 		{
@@ -1131,9 +1133,12 @@ bool ofPackageManager::generateProject(std::string path, std::vector<ofPackage> 
 			addonsMakeText += package.toString();
 			addonsMakeText += "\n";
 		}
-		if(project->save()){
+		if (project->save())
+		{
 			addonsMakeFile << addonsMakeText;
-		}else{
+		}
+		else
+		{
 			success = false;
 		}
 	}
@@ -1165,4 +1170,29 @@ bool ofPackageManager::recursivelyGenerateProjects(std::string path, std::vector
 		}
 	}
 	return true;
+}
+std::vector<ofTargetPlatform> ofPackageManager::getPlatforms()
+{
+	std::vector<ofTargetPlatform> platforms;
+	platforms.push_back(OF_TARGET_LINUX);
+	platforms.push_back(OF_TARGET_LINUX64);
+	platforms.push_back(OF_TARGET_LINUXARMV6L);
+	platforms.push_back(OF_TARGET_LINUXARMV7L);
+	platforms.push_back(OF_TARGET_MINGW);
+	platforms.push_back(OF_TARGET_WINVS);
+	platforms.push_back(OF_TARGET_OSX);
+	platforms.push_back(OF_TARGET_IOS);
+	platforms.push_back(OF_TARGET_ANDROID);
+	return platforms;
+}
+std::map<ofTargetPlatform, std::vector<baseProject::Template> > ofPackageManager::getTemplates()
+{
+	setOFRoot(getOfPath());
+	std::map<ofTargetPlatform, std::vector<baseProject::Template> > templates;
+	for (auto platform : getPlatforms())
+	{
+		templates[platform] = getTargetProject(platform)->listAvailableTemplates(getTargetString(platform));
+	}
+
+	return templates;
 }

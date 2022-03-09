@@ -29,7 +29,8 @@ gui::gui(ofPackageManager app) : ofBaseApp(), _app(app),
                                  _deletePackageModalOpened(false),
                                  _projectDirectoryPath(app.getMyAppsPath()),
                                  _version(_app.getVersion()),
-                                 _mostRecentVersion(_app.getNewestAvailableVersion())
+                                 _mostRecentVersion(_app.getNewestAvailableVersion()),
+                                 _templates(_app.getTemplates())
 {
     _stateMachine.setInitialState(_homeState);
     _stateMachine.addTransition(_homeState, "create", _createState);
@@ -73,19 +74,9 @@ gui::gui(ofPackageManager app) : ofBaseApp(), _app(app),
     _configureProjectState->addEnteredListener(this, &gui::onConfigureStateEntered);
     _stateMachine.start();
 
-    _targets.push_back(selectableTarget(OF_TARGET_LINUX, ofGetTargetPlatform() == OF_TARGET_LINUX));
-    _targets.push_back(selectableTarget(OF_TARGET_LINUX64, ofGetTargetPlatform() == OF_TARGET_LINUX64));
-    _targets.push_back(selectableTarget(OF_TARGET_LINUXARMV6L, ofGetTargetPlatform() == OF_TARGET_LINUXARMV6L));
-    _targets.push_back(selectableTarget(OF_TARGET_LINUXARMV7L, ofGetTargetPlatform() == OF_TARGET_LINUXARMV7L));
-    _targets.push_back(selectableTarget(OF_TARGET_MINGW, ofGetTargetPlatform() == OF_TARGET_MINGW));
-    _targets.push_back(selectableTarget(OF_TARGET_WINVS, ofGetTargetPlatform() == OF_TARGET_WINVS));
-    _targets.push_back(selectableTarget(OF_TARGET_OSX, ofGetTargetPlatform() == OF_TARGET_OSX));
-    _targets.push_back(selectableTarget(OF_TARGET_IOS, ofGetTargetPlatform() == OF_TARGET_IOS));
-    _targets.push_back(selectableTarget(OF_TARGET_ANDROID, ofGetTargetPlatform() == OF_TARGET_ANDROID));
-
-    for (auto &target : _targets)
+    for (auto platform : _app.getPlatforms())
     {
-        _templates[target._target] = getTargetProject(target._target)->listAvailableTemplates(getTargetString(target._target));
+        _targets.push_back(selectableTarget(platform, ofGetTargetPlatform() == platform));
     }
 }
 void gui::setup()
@@ -121,11 +112,11 @@ void gui::update()
     _notifications.update();
     _animations.update();
     auto frameNum = ofGetFrameNum();
-    if (frameNum % 60 == 0)
+    if (frameNum % 60 * 10 == 0)
     {
         updatePackagesLists();
     }
-    if (frameNum % 60 * 5 == 0)
+    if (frameNum % 60 * 30 == 0)
     {
         updateRecentProjectsList();
     }
@@ -425,7 +416,7 @@ void gui::drawModals()
             {
                 ImGui::CloseCurrentPopup();
             }
-            ImGui::EndChild();
+            EndActions();
         }
         ImGui::EndPopup();
     }
@@ -523,7 +514,7 @@ void gui::drawModals()
             {
                 ImGui::CloseCurrentPopup();
             }
-            ImGui::EndChild();
+            EndActions();
         }
 
         ImGui::EndPopup();
@@ -663,7 +654,7 @@ void gui::drawInstall()
         {
             _searchModalOpened = true;
         }
-        ImGui::EndChild();
+        EndActions();
     }
 }
 void gui::drawCreate()
@@ -701,7 +692,7 @@ void gui::drawCreate()
             _app.generateProject(_projectPath);
             _stateMachine.trigger("configure");
         }
-        ImGui::EndChild();
+        EndActions();
     }
 }
 void gui::drawUpdate()
@@ -781,7 +772,7 @@ void gui::drawUpdate()
             recentProjects >> file;
             _stateMachine.trigger("configure");
         }
-        ImGui::EndChild();
+        EndActions();
     }
 }
 void gui::drawUpdateMultipleProjects()
@@ -804,7 +795,7 @@ void gui::drawUpdateMultipleProjects()
         {
             _app.recursivelyGenerateProjects(_multipleProjectsDirectoryPath);
         }
-        ImGui::EndChild();
+        EndActions();
     }
 }
 void gui::drawConfigure()
@@ -871,35 +862,85 @@ void gui::drawConfigure()
                 if (ImGui::CollapsingHeader("platforms, templates"))
                 {
                     ImGui::Indent(indentation);
-                    auto size = ImVec2(ImGui::GetContentRegionAvail().x / 2, 0);
-                    ImGui::BeginChild("platforms", size);
-                    ImGui::Text("platforms");
+                    auto size = ImVec2(0, 0);
 
                     auto selectedTargets = std::vector<ofTargetPlatform>();
+                    std::vector<std::string> selectedPlatformStrings;
                     for (auto &target : _targets)
                     {
                         ImGui::Checkbox(getTargetString(target._target).c_str(), &target._selected);
                         if (target.isSelected())
                         {
                             selectedTargets.push_back(target._target);
+                            selectedPlatformStrings.push_back(getTargetString(target._target));
                         }
                     }
-                    ImGui::EndChild();
-                    ImGui::SameLine();
-                    ImGui::BeginChild("templates", size);
-                    ImGui::Text("templates");
-                    // TODO: update common selectable template list
-                    for (auto &selectedTarget : selectedTargets)
+
+                    // sorry. it was quite late when i wrote this, probably the most inefficent way to find templates which are available for all selcted platforms
+                    // also, this should not be done every frame
+                    std::vector<baseProject::Template> filteredTemplates;
+
+                    for (auto &selectedPlatform : selectedTargets)
                     {
-                        ImGui::Text(getTargetString(selectedTarget).c_str());
-                        // _templates[selectedTarget]
+                        for (auto templateForSelectedPlatform : _templates[selectedPlatform])
+                        {
+                            auto availableForAllSelectedPlatforms = true;
+                            for (auto &selectedPlatform : selectedTargets)
+                            {
+                                if (!ofContains(templateForSelectedPlatform.platforms, getTargetString(selectedPlatform)))
+                                {
+                                    availableForAllSelectedPlatforms = false;
+                                }
+                            }
+                            if (availableForAllSelectedPlatforms)
+                            {
+                                auto alreadyIncluded = false;
+                                for (auto filteredTemplate : filteredTemplates)
+                                {
+                                    if (filteredTemplate.description == templateForSelectedPlatform.description)
+                                    {
+                                        alreadyIncluded = true;
+                                    }
+                                }
+                                if (!alreadyIncluded)
+                                {
+                                    filteredTemplates.push_back(templateForSelectedPlatform);
+                                }
+                            }
+                        }
                     }
-                    for (auto &selectableTemplate : _commonTemplates)
+                    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 16);
+                    ImGui::PushItemWidth(ImGui::GetContentRegionAvailWidth());
+                    if (ImGui::BeginCombo("##template", _selectedTemplate.description.empty() ? "default template" : _selectedTemplate.description.c_str(), 0))
                     {
-                        ImGui::Checkbox(selectableTemplate._template.name.c_str(), &selectableTemplate._selected);
-                        Tooltip(selectableTemplate._template.description);
+                        auto is_selected = _selectedTemplate.description.empty();
+                        if (ImGui::Selectable("default template", is_selected))
+                        {
+                            _selectedTemplate = baseProject::Template();
+                            if (is_selected)
+                            {
+                                ImGui::SetItemDefaultFocus();
+                            }
+                        }
+                        for (auto &selectedTarget : selectedTargets)
+                        {
+                            for (auto template_ : filteredTemplates)
+                            {
+                                auto is_selected = template_.description == _selectedTemplate.description;
+                                if (ImGui::Selectable(template_.description.c_str(), is_selected))
+                                {
+                                    _selectedTemplate = template_;
+                                }
+                                if (is_selected)
+                                {
+                                    ImGui::SetItemDefaultFocus();
+                                }
+                            }
+                        }
+
+                        ImGui::EndCombo();
                     }
-                    ImGui::EndChild();
+                    ImGui::PopItemWidth();
                     ImGui::Unindent(indentation);
                 }
             }
@@ -946,7 +987,8 @@ void gui::drawConfigure()
                     ofPackages.push_back(package._package);
                 }
             }
-            for (auto &target : _targets){
+            for (auto &target : _targets)
+            {
                 if (target.isSelected())
                 {
                     platforms.push_back(target._target);
@@ -962,7 +1004,7 @@ void gui::drawConfigure()
                 _notifications.add("sorry, could not generate project. the output in the console might help to figure out what's going wrong.");
             }
         }
-        ImGui::EndChild();
+        EndActions();
     }
 }
 

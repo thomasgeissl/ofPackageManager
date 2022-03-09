@@ -124,7 +124,7 @@ private:
     std::map<string, selectablePackage> _localPackages;
 
     std::vector<selectableTarget> _targets;
-    std::vector<selectableTemplate> _commonTemplates;
+    baseProject::Template _selectedTemplate;
     std::map<ofTargetPlatform, std::vector<baseProject::Template> > _templates;
     std::vector<project> _recentProjects;
 

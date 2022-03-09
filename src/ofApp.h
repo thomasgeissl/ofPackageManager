@@ -75,8 +75,10 @@ public:
 	std::string findOfPathInwardly(std::string path, int depth);
 	std::string findOfPathOutwardly(std::string path, int maxLevel = 8);
 
-	bool generateProject(std::string path, std::vector<ofPackage> packages = {}, std::vector<ofTargetPlatform> platforms = {});
+	bool generateProject(std::string path, std::vector<ofPackage> packages = {}, std::vector<ofTargetPlatform> platforms = {}, baseProject::Template = baseProject::Template());
 	bool recursivelyGenerateProjects(std::string path, std::vector<ofTargetPlatform> platforms = {});
+	std::vector<ofTargetPlatform> getPlatforms();
+	std::map<ofTargetPlatform, std::vector<baseProject::Template>> getTemplates();
 
 private:
 	bool _silent;

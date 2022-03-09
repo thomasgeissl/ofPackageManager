@@ -76,6 +76,7 @@ void Tooltip(std::string text)
 
 bool BeginActions(int numberOfButtons, int buttonWidth = 200)
 {
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0,16));
     if (ImGui::BeginChild("actions", ImVec2(0, 0)))
     {
         auto style = ImGui::GetStyle();
@@ -83,6 +84,10 @@ bool BeginActions(int numberOfButtons, int buttonWidth = 200)
         return true;
     }
     return false;
+}
+void EndActions(){
+    ImGui::EndChild();
+    ImGui::PopStyleVar();
 }
 
 bool BeginModal(std::string title)
