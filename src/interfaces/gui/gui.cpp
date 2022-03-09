@@ -600,7 +600,7 @@ void gui::drawManageGlobalPackages()
                 ImGui::TableSetColumnIndex(1);
                 ImGui::Text("oF");
                 ImGui::TableSetColumnIndex(2);
-                std::string buttonId = "open##";
+                std::string buttonId = "open directory##";
                 buttonId += corePackage.second._package.toString();
                 if (Button(buttonId.c_str()))
                 {
@@ -626,7 +626,7 @@ void gui::drawManageGlobalPackages()
                 Tooltip(package.second._package.toString());
                 ImGui::TableSetColumnIndex(1);
                 ImGui::TableSetColumnIndex(2);
-                std::string buttonId = "open##";
+                std::string buttonId = "open directory##";
                 buttonId += package.second._package.toString();
                 if (Button(buttonId.c_str()))
                 {
@@ -671,7 +671,15 @@ void gui::drawManageGlobalPackages()
                         std::string author = it.value()["author"];
                         ImGui::Text(author.c_str());
                         ImGui::TableSetColumnIndex(2);
-                        std::string buttonId = "install##";
+                        std::string buttonId = "open website##";
+                        buttonId += gitUrl;
+                        if (Button(buttonId.c_str()))
+                        {
+                            std::string website = it.value()["website"];
+                            ofLaunchBrowser(website);
+                        }
+                        ImGui::SameLine();
+                        buttonId = "install##";
                         buttonId += gitUrl;
                         if (Button(buttonId.c_str()))
                         {
@@ -680,28 +688,27 @@ void gui::drawManageGlobalPackages()
                     }
                 }
             }
-
             ImGui::EndTable();
-
-            if (!_showAvailablePackages)
-            {
-                if (Button("show available packages"))
-                {
-                    _showAvailablePackages = true;
-                }
-            }
-            else
-            {
-                if (Button("hide available packages"))
-                {
-                    _showAvailablePackages = false;
-                }
-            }
             ImGui::EndChild();
         }
     }
-    if (BeginActions(1))
+    if (BeginActions(2))
     {
+        if (!_showAvailablePackages)
+        {
+            if (Button("show available packages", ImVec2(buttonWidth, -1)))
+            {
+                _showAvailablePackages = true;
+            }
+        }
+        else
+        {
+            if (Button("hide available packages", ImVec2(buttonWidth, -1)))
+            {
+                _showAvailablePackages = false;
+            }
+        }
+        ImGui::SameLine();
         if (Button("install additional addons", ImVec2(buttonWidth, -1)))
         {
             _searchModalOpened = true;

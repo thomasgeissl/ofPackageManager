@@ -1,86 +1,107 @@
 {
     "ofxCv": {
         "git": "https://github.com/kylemcdonald/ofxCv.git",
+        "website": "https://github.com/kylemcdonald/ofxCv",
         "author": "Kyle McDonald"
     },
     "ofxDmx": {
         "git": "https://github.com/kylemcdonald/ofxDmx.git",
+        "website": "https://github.com/kylemcdonald/ofxDmx",
         "author": "Kyle McDonald"
     },
     "ofxMidi": {
         "git": "https://github.com/danomatika/ofxMidi.git",
+        "website": "https://github.com/danomatika/ofxMidi",
         "author": "Dan Wilcox"
     },
     "ofxLua": {
         "git": "https://github.com/danomatika/ofxLua.git",
+        "website": "https://github.com/danomatika/ofxLua",
         "author": "Dan Wilcox"
     },
     "ofxPd": {
         "git": "https://github.com/danomatika/ofxPd.git",
+        "website": "https://github.com/danomatika/ofxPd",
         "author": "Dan Wilcox"
     },
     "ofxHTTP": {
         "git": "https://github.com/bakercp/ofxHTTP.git",
+        "website": "https://github.com/bakercp/ofxHTTP",
         "author": "Christopher Baker"
     },
     "ofxIO": {
         "git": "https://github.com/bakercp/ofxIO.git",
+        "website": "https://github.com/bakercp/ofxIOit",
         "author": "Christopher Baker"
     },
     "ofxSerial": {
         "git": "https://github.com/bakercp/ofxSerial.git",
+        "website": "https://github.com/bakercp/ofxSerial",
         "author": "Christopher Baker"
     },
     "ofxDOM": {
         "git": "https://github.com/bakercp/ofxDOM.git",
+        "website": "https://github.com/bakercp/ofxDOM",
         "author": "Christopher Baker"
     },
     "ofxMUI": {
         "git": "https://github.com/bakercp/ofxMUI.git",
+        "website": "https://github.com/bakercp/ofxMUI",
         "author": "Christopher Baker"
     },
     "ofxDlib": {
         "git": "https://github.com/bakercp/ofxDlib.git",
+        "website": "https://github.com/bakercp/ofxDlib",
         "author": "Christopher Baker"
     },
     "ofxPointer": {
         "git": "https://github.com/bakercp/ofxPointer.git",
+        "website": "https://github.com/bakercp/ofxPointer.git",
         "author": "Christopher Baker"
     },
     "ofxSSLManager": {
         "git": "https://github.com/bakercp/ofxSSLManager.git",
+        "website": "https://github.com/bakercp/ofxSSLManager",
         "author": "Christopher Baker"
     },
     "ofxTaskQueue": {
         "git": "https://github.com/bakercp/ofxTaskQueue.git",
+        "website": "https://github.com/bakercp/ofxTaskQueue",
         "author": "Christopher Baker"
     },
     "ofxFatLines": {
         "git": "https://github.com/roymacdonald/ofxFatLines.git",
+        "website": "https://github.com/roymacdonald/ofxFatLines",
         "author": "Roy Macdonald"
     },
     "ofxSoundObjects": {
         "git": "https://github.com/roymacdonald/ofxSoundObjects.git",
+        "website": "https://github.com/roymacdonald/ofxSoundObjects",
         "author": "Roy Macdonald"
     },
     "ofxAruco": {
         "git": "https://github.com/arturoc/ofxAruco.git",
+        "website": "https://github.com/arturoc/ofxAruco",
         "author": "Arturo Castro"
     },
     "ofxEasing": {
         "git": "https://github.com/arturoc/ofxEasing.git",
+        "website": "https://github.com/arturoc/ofxEasing",
         "author": "Arturo Castro"
     },
     "ofxHttpUtils": {
         "git": "https://github.com/arturoc/ofxHttpUtils.git",
+        "website": "https://github.com/arturoc/ofxHttpUtils",
         "author": "Arturo Castro"
     },
     "ofxPDSP": {
         "git": "https://github.com/npisanti/ofxPDSP",
+        "website": "https://github.com/npisanti/ofxPDSP",
         "author": "Nicola Pisanti"
     },
     "ofxAudioFile": {
         "git": "https://github.com/npisanti/ofxAudioFile.git",
+        "website": "https://github.com/npisanti/ofxAudioFile",
         "author": "Nicola Pisanti"
     }
 }
