@@ -1145,7 +1145,7 @@ bool ofPackageManager::generateProject(std::string path, std::vector<ofPackage> 
 	return success;
 }
 
-bool ofPackageManager::recursivelyGenerateProjects(std::string path, std::vector<ofTargetPlatform> platforms)
+bool ofPackageManager::recursivelyGenerateProjects(std::string path, std::vector<ofTargetPlatform> platforms, baseProject::Template template_)
 {
 	ofDirectory dir(path);
 	if (!dir.isDirectory())
@@ -1156,8 +1156,7 @@ bool ofPackageManager::recursivelyGenerateProjects(std::string path, std::vector
 	if (isProject(path))
 	{
 		// nProjectsUpdated++;
-		generateProject(path, {}, platforms);
-		return true;
+		return generateProject(path, {}, platforms, template_);
 	}
 
 	dir.listDir();
@@ -1166,7 +1165,7 @@ bool ofPackageManager::recursivelyGenerateProjects(std::string path, std::vector
 		ofDirectory subDir(dir.getPath(i));
 		if (subDir.isDirectory())
 		{
-			recursivelyGenerateProjects(dir.getPath(i), platforms);
+			recursivelyGenerateProjects(dir.getPath(i), platforms, template_);
 		}
 	}
 	return true;

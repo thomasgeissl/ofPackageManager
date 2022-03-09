@@ -68,6 +68,8 @@ void Theme::setup()
 	colors[ImGuiCol_TableRowBg] = bgColor;
 	colors[ImGuiCol_TableRowBgAlt] = altBgColor;
 	colors[ImGuiCol_TableHeaderBg] = lightBgColor;
+	colors[ImGuiCol_TableBorderLight] = panelColor;
+	colors[ImGuiCol_TableBorderStrong] = panelColor;
 
 	style->WindowRounding = 0.0f;
 	style->ChildRounding = 0.0f;

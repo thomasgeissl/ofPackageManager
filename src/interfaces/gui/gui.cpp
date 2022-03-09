@@ -156,7 +156,7 @@ void gui::draw()
                 }
                 else if (_stateMachine.isCurrentState(_configureProjectState))
                 {
-                    drawConfigure();
+                    drawConfigureProject();
                 }
                 else if (_stateMachine.isCurrentState(_updateMultipleState))
                 {
@@ -785,7 +785,7 @@ void gui::drawUpdateMultipleProjects()
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
         PathChooser(_multipleProjectsDirectoryPath, _app.getMyAppsPath());
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
-        ImGui::Text("TODO: platform chooser");
+        drawPlatformAndTemplateChooser();
         ImGui::EndChild();
     }
 
@@ -793,12 +793,18 @@ void gui::drawUpdateMultipleProjects()
     {
         if (Button("update multiple projects", ImVec2(buttonWidth, -1), true, !ofDirectory::doesDirectoryExist(_multipleProjectsDirectoryPath, false)))
         {
-            _app.recursivelyGenerateProjects(_multipleProjectsDirectoryPath);
+            if(_app.recursivelyGenerateProjects(_multipleProjectsDirectoryPath)){
+                _notifications.add("successfully updated projects");
+            }
+            else
+            {
+                _notifications.add("sorry, could not update projects. the output in the console might help to figure out what's going wrong.");
+            }
         }
         EndActions();
     }
 }
-void gui::drawConfigure()
+void gui::drawConfigureProject()
 {
     auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
     if (ImGui::BeginChild("configure", ImVec2(-1, -footerHeight - padding)))
@@ -862,85 +868,7 @@ void gui::drawConfigure()
                 if (ImGui::CollapsingHeader("platforms, templates"))
                 {
                     ImGui::Indent(indentation);
-                    auto size = ImVec2(0, 0);
-
-                    auto selectedTargets = std::vector<ofTargetPlatform>();
-                    std::vector<std::string> selectedPlatformStrings;
-                    for (auto &target : _targets)
-                    {
-                        ImGui::Checkbox(getTargetString(target._target).c_str(), &target._selected);
-                        if (target.isSelected())
-                        {
-                            selectedTargets.push_back(target._target);
-                            selectedPlatformStrings.push_back(getTargetString(target._target));
-                        }
-                    }
-
-                    // sorry. it was quite late when i wrote this, probably the most inefficent way to find templates which are available for all selcted platforms
-                    // also, this should not be done every frame
-                    std::vector<baseProject::Template> filteredTemplates;
-
-                    for (auto &selectedPlatform : selectedTargets)
-                    {
-                        for (auto templateForSelectedPlatform : _templates[selectedPlatform])
-                        {
-                            auto availableForAllSelectedPlatforms = true;
-                            for (auto &selectedPlatform : selectedTargets)
-                            {
-                                if (!ofContains(templateForSelectedPlatform.platforms, getTargetString(selectedPlatform)))
-                                {
-                                    availableForAllSelectedPlatforms = false;
-                                }
-                            }
-                            if (availableForAllSelectedPlatforms)
-                            {
-                                auto alreadyIncluded = false;
-                                for (auto filteredTemplate : filteredTemplates)
-                                {
-                                    if (filteredTemplate.description == templateForSelectedPlatform.description)
-                                    {
-                                        alreadyIncluded = true;
-                                    }
-                                }
-                                if (!alreadyIncluded)
-                                {
-                                    filteredTemplates.push_back(templateForSelectedPlatform);
-                                }
-                            }
-                        }
-                    }
-                    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 16);
-                    ImGui::PushItemWidth(ImGui::GetContentRegionAvailWidth());
-                    if (ImGui::BeginCombo("##template", _selectedTemplate.description.empty() ? "default template" : _selectedTemplate.description.c_str(), 0))
-                    {
-                        auto is_selected = _selectedTemplate.description.empty();
-                        if (ImGui::Selectable("default template", is_selected))
-                        {
-                            _selectedTemplate = baseProject::Template();
-                            if (is_selected)
-                            {
-                                ImGui::SetItemDefaultFocus();
-                            }
-                        }
-                        for (auto &selectedTarget : selectedTargets)
-                        {
-                            for (auto template_ : filteredTemplates)
-                            {
-                                auto is_selected = template_.description == _selectedTemplate.description;
-                                if (ImGui::Selectable(template_.description.c_str(), is_selected))
-                                {
-                                    _selectedTemplate = template_;
-                                }
-                                if (is_selected)
-                                {
-                                    ImGui::SetItemDefaultFocus();
-                                }
-                            }
-                        }
-
-                        ImGui::EndCombo();
-                    }
-                    ImGui::PopItemWidth();
+                    drawPlatformAndTemplateChooser();
                     ImGui::Unindent(indentation);
                 }
             }
@@ -1006,6 +934,86 @@ void gui::drawConfigure()
         }
         EndActions();
     }
+}
+void gui::drawPlatformAndTemplateChooser()
+{
+    auto selectedTargets = std::vector<ofTargetPlatform>();
+    std::vector<std::string> selectedPlatformStrings;
+    for (auto &target : _targets)
+    {
+        ImGui::Checkbox(getTargetString(target._target).c_str(), &target._selected);
+        if (target.isSelected())
+        {
+            selectedTargets.push_back(target._target);
+            selectedPlatformStrings.push_back(getTargetString(target._target));
+        }
+    }
+
+    // sorry. it was quite late when i wrote this, probably the most inefficent way to find templates which are available for all selcted platforms
+    // also, this should not be done every frame
+    std::vector<baseProject::Template> filteredTemplates;
+
+    for (auto &selectedPlatform : selectedTargets)
+    {
+        for (auto templateForSelectedPlatform : _templates[selectedPlatform])
+        {
+            auto availableForAllSelectedPlatforms = true;
+            for (auto &selectedPlatform : selectedTargets)
+            {
+                if (!ofContains(templateForSelectedPlatform.platforms, getTargetString(selectedPlatform)))
+                {
+                    availableForAllSelectedPlatforms = false;
+                }
+            }
+            if (availableForAllSelectedPlatforms)
+            {
+                auto alreadyIncluded = false;
+                for (auto filteredTemplate : filteredTemplates)
+                {
+                    if (filteredTemplate.description == templateForSelectedPlatform.description)
+                    {
+                        alreadyIncluded = true;
+                    }
+                }
+                if (!alreadyIncluded)
+                {
+                    filteredTemplates.push_back(templateForSelectedPlatform);
+                }
+            }
+        }
+    }
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 16);
+    ImGui::PushItemWidth(ImGui::GetContentRegionAvailWidth());
+    if (ImGui::BeginCombo("##template", _selectedTemplate.description.empty() ? "default template" : _selectedTemplate.description.c_str(), 0))
+    {
+        auto is_selected = _selectedTemplate.description.empty();
+        if (ImGui::Selectable("default template", is_selected))
+        {
+            _selectedTemplate = baseProject::Template();
+            if (is_selected)
+            {
+                ImGui::SetItemDefaultFocus();
+            }
+        }
+        for (auto &selectedTarget : selectedTargets)
+        {
+            for (auto template_ : filteredTemplates)
+            {
+                auto is_selected = template_.description == _selectedTemplate.description;
+                if (ImGui::Selectable(template_.description.c_str(), is_selected))
+                {
+                    _selectedTemplate = template_;
+                }
+                if (is_selected)
+                {
+                    ImGui::SetItemDefaultFocus();
+                }
+            }
+        }
+
+        ImGui::EndCombo();
+    }
+    ImGui::PopItemWidth();
 }
 
 void gui::keyPressed(int key) {}

@@ -31,7 +31,6 @@ class notifications
 public:
     notifications()
     {
-        add("test message");
     }
     void update()
     {
@@ -51,10 +50,10 @@ public:
     {
         return _data.size();
     }
-    std::vector<notification> getData(){
+    std::vector<notification> getData()
+    {
         return _data;
     }
-
 
 private:
     std::vector<notification> _data;

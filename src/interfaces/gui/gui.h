@@ -162,5 +162,6 @@ private:
     void drawCreate();
     void drawUpdate();
     void drawUpdateMultipleProjects();
-    void drawConfigure();
+    void drawConfigureProject();
+    void drawPlatformAndTemplateChooser();
 };
