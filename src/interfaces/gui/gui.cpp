@@ -20,6 +20,7 @@ gui::gui(ofPackageManager app) : ofBaseApp(), _app(app),
                                  _fullscreen(false),
                                  _showAdvancedOptions(false),
                                  _showConsole(false),
+                                 _showAvailablePackages(false),
                                  _showMetricsWindow(false),
                                  _showStyleEditor(false),
                                  _showDemoWindow(false),
@@ -30,7 +31,8 @@ gui::gui(ofPackageManager app) : ofBaseApp(), _app(app),
                                  _projectDirectoryPath(app.getMyAppsPath()),
                                  _version(_app.getVersion()),
                                  _mostRecentVersion(_app.getNewestAvailableVersion()),
-                                 _templates(_app.getTemplates())
+                                 _templates(_app.getTemplates()),
+                                 _packagesDatabase(_app.getPackagesDatabase())
 {
     _stateMachine.setInitialState(_homeState);
     _stateMachine.addTransition(_homeState, "create", _createState);
@@ -76,7 +78,7 @@ gui::gui(ofPackageManager app) : ofBaseApp(), _app(app),
 
     for (auto platform : _app.getPlatforms())
     {
-        _targets.push_back(selectableTarget(platform, ofGetTargetPlatform() == platform));
+        _platforms.push_back(selectableTarget(platform, ofGetTargetPlatform() == platform));
     }
 }
 void gui::setup()
@@ -144,7 +146,7 @@ void gui::draw()
                 }
                 if (_stateMachine.isCurrentState(_manageGlobalPackagesState))
                 {
-                    drawInstall();
+                    drawManageGlobalPackages();
                 }
                 else if (_stateMachine.isCurrentState(_createState))
                 {
@@ -577,7 +579,7 @@ void gui::drawHome()
     // auto size = ImGui::GetContentRegionAvail(); // for example
     // ImGui::Image(textureID, glm::vec2(_preview.getWidth(), _preview.getHeight()));
 }
-void gui::drawInstall()
+void gui::drawManageGlobalPackages()
 {
     auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
     if (ImGui::BeginChild("globalPackages", ImVec2(-1, -footerHeight - padding)))
@@ -585,8 +587,8 @@ void gui::drawInstall()
         if (ImGui::BeginTable("globalPackagesTable", 3, tableFlags))
         {
             ImGui::TableSetupColumn("name", ImGuiTableColumnFlags_WidthStretch);
-            ImGui::TableSetupColumn("author", ImGuiTableColumnFlags_WidthFixed);
-            ImGui::TableSetupColumn("actions", ImGuiTableColumnFlags_WidthFixed);
+            ImGui::TableSetupColumn("author");
+            ImGui::TableSetupColumn("actions");
             ImGui::TableHeadersRow();
 
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(16, 8));
@@ -608,6 +610,12 @@ void gui::drawInstall()
                 if (Button("remove##disabled", ImVec2(0, 0), false, true))
                 {
                 }
+            }
+            if (_globalPackages.size() > 0)
+            {
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("---");
             }
 
             for (auto &package : _globalPackages)
@@ -644,7 +652,51 @@ void gui::drawInstall()
                     }
                 }
             }
+            if (_showAvailablePackages)
+            {
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("---");
+
+                for (auto it : ofJson::iterator_wrapper(_packagesDatabase))
+                {
+                    if (_globalPackages.count(it.key()) == 0)
+                    {
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::Text(it.key().c_str());
+                        std::string gitUrl = it.value()["git"];
+                        Tooltip(gitUrl.c_str());
+                        ImGui::TableSetColumnIndex(1);
+                        std::string author = it.value()["author"];
+                        ImGui::Text(author.c_str());
+                        ImGui::TableSetColumnIndex(2);
+                        std::string buttonId = "install##";
+                        buttonId += gitUrl;
+                        if (Button(buttonId.c_str()))
+                        {
+                            _app.installPackageById(it.key(), "latest", _app.getAddonsPath());
+                        }
+                    }
+                }
+            }
+
             ImGui::EndTable();
+
+            if (!_showAvailablePackages)
+            {
+                if (Button("show available packages"))
+                {
+                    _showAvailablePackages = true;
+                }
+            }
+            else
+            {
+                if (Button("hide available packages"))
+                {
+                    _showAvailablePackages = false;
+                }
+            }
             ImGui::EndChild();
         }
     }
@@ -793,7 +845,8 @@ void gui::drawUpdateMultipleProjects()
     {
         if (Button("update multiple projects", ImVec2(buttonWidth, -1), true, !ofDirectory::doesDirectoryExist(_multipleProjectsDirectoryPath, false)))
         {
-            if(_app.recursivelyGenerateProjects(_multipleProjectsDirectoryPath)){
+            if (_app.recursivelyGenerateProjects(_multipleProjectsDirectoryPath))
+            {
                 _notifications.add("successfully updated projects");
             }
             else
@@ -915,7 +968,7 @@ void gui::drawConfigureProject()
                     ofPackages.push_back(package._package);
                 }
             }
-            for (auto &target : _targets)
+            for (auto &target : _platforms)
             {
                 if (target.isSelected())
                 {
@@ -939,7 +992,7 @@ void gui::drawPlatformAndTemplateChooser()
 {
     auto selectedTargets = std::vector<ofTargetPlatform>();
     std::vector<std::string> selectedPlatformStrings;
-    for (auto &target : _targets)
+    for (auto &target : _platforms)
     {
         ImGui::Checkbox(getTargetString(target._target).c_str(), &target._selected);
         if (target.isSelected())

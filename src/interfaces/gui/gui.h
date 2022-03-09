@@ -122,8 +122,9 @@ private:
     std::map<string, selectablePackage> _corePackages;
     std::map<string, selectablePackage> _globalPackages;
     std::map<string, selectablePackage> _localPackages;
+    ofJson _packagesDatabase;
 
-    std::vector<selectableTarget> _targets;
+    std::vector<selectableTarget> _platforms;
     baseProject::Template _selectedTemplate;
     std::map<ofTargetPlatform, std::vector<baseProject::Template> > _templates;
     std::vector<project> _recentProjects;
@@ -135,6 +136,7 @@ private:
     bool _showDemoWindow;
     bool _showMetricsWindow;
     bool _showConsole;
+    bool _showAvailablePackages;
 
     // temp modal state variables
     bool _aboutModalOpened;
@@ -158,7 +160,7 @@ private:
     void drawModals();
     void drawRecentProjects();
     void drawHome();
-    void drawInstall();
+    void drawManageGlobalPackages();
     void drawCreate();
     void drawUpdate();
     void drawUpdateMultipleProjects();

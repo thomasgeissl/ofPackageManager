@@ -22,6 +22,7 @@ ofPackageManager::ofPackageManager(std::string cwdPath) : _silent(false),
 														  _localAddonsPath("local_addons"),
 														  _configJson(getConfig())
 {
+	installPackagesDatabase();
 }
 
 bool ofPackageManager::addPackageToAddonsMakeFile(ofPackage package)
