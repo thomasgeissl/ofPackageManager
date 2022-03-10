@@ -4,9 +4,31 @@
 #include "./interfaces/gui/gui.h"
 #include "./interfaces/cli.h"
 #include "./interfaces/jsonInterface.h"
+#include "./whereami.h"
 
 int main(int argc, char **argv)
 {
+	std::string cwdPath;
+	char *path = NULL;
+	int length, dirname_length;
+	int i;
+
+	length = wai_getExecutablePath(NULL, 0, &dirname_length);
+	if (length > 0)
+	{
+		path = (char *)malloc(length + 1);
+		if (!path)
+			abort();
+		wai_getExecutablePath(path, length, &dirname_length);
+		path[length] = '\0';
+		// printf("executable path: %s\n", path);
+		path[dirname_length] = '\0';
+		// printf("  dirname: %s\n", path);
+		// printf("  basename: %s\n", path + dirname_length + 1);
+		cwdPath = path;
+		free(path);
+	}
+
 	ofInit();
 
 #if defined(TARGET_OSX) || defined(TARGET_LINUX)
@@ -15,9 +37,9 @@ int main(int argc, char **argv)
 	ofSetLoggerChannel(logger);
 #endif
 	//    ofSetLogLevel(OF_LOG_VERBOSE);
-	filesystem::path cwdPath = filesystem::current_path();
-
-	ofPackageManager app(cwdPath.string());
+	// filesystem::path cwdPath = filesystem::current_path();
+	// ofPackageManager app(cwdPath.string());
+	ofPackageManager app(cwdPath);
 	jsonInterface jsonI(app);
 	if (argc == 1)
 	{

@@ -386,6 +386,10 @@ void gui::drawModals()
             pgVersion += OFXPROJECTGENERATOR_COMMIT;
             ImGui::Text(pgVersion.c_str());
 
+            std::string cwdPath = "cwd: ";
+            cwdPath += _app.getCwdPath();
+            ImGui::Text(cwdPath.c_str());
+
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 16);
             ImGui::Text("license:");
             std::string license = "This software is distributed under the MIT License.\n\nCopyright(c) 2019 Thomas Geissl\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.";
@@ -410,6 +414,8 @@ void gui::drawModals()
     {
         if (ImGui::BeginChild("modalContent", ImVec2(-1, -footerHeight - padding)))
         {
+            ImGui::Text("TODO");
+            ImGui::Text(_app.getOfPath().c_str());
             ImGui::EndChild();
         }
         if (BeginActions(1))
