@@ -92,8 +92,8 @@ void EndActions(){
 
 bool BeginModal(std::string title)
 {
-    ImGui::SetNextWindowSize(ImVec2(ofGetWidth() * 0.6, ofGetHeight() * 0.6));
-    ImGui::SetNextWindowPos(ImVec2(ofGetWidth() * .2, ofGetHeight() * .2));
+    ImGui::SetNextWindowSize(ImVec2(ofGetWidth() * 0.7, ofGetHeight() * 0.7));
+    ImGui::SetNextWindowPos(ImVec2(ofGetWidth() * .15, ofGetHeight() * .15));
     if (ImGui::BeginPopupModal(title.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar))
     {
         return true;

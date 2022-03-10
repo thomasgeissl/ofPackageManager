@@ -338,6 +338,7 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 	}
 	destinationPath = getAbsolutePath(destinationPath);
 	auto name = ofSplitString(url, "/").back();
+	// TODO: fix that for windows
 	std::string suffix = ".git";
 	if (0 == name.compare(name.size() - suffix.size(), suffix.size(), suffix))
 	{
@@ -351,7 +352,7 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 	ofDirectory destinationDirectory(destinationPath);
 	auto repoPath = ofFilePath::join(destinationPath, name);
 	ofDirectory repoDirectory(repoPath);
-	ofxGit::repository repo(ofFilePath::join(destinationPath, name));
+	ofxGit::repository repo(repoPath);
 	if (destinationDirectory.exists())
 	{
 		if (repoDirectory.exists())

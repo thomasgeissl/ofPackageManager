@@ -10,6 +10,7 @@ public:
     ghRepo(ofJson data) : _data(data)
     {
         _name = data["full_name"];
+        _shortName = data["name"];
         _cloneUrl = data["clone_url"];
         _url = data["html_url"];
         _updatedAt = data["updated_at"];
@@ -35,6 +36,7 @@ public:
     }
     ofJson _data;
     std::string _name;
+    std::string _shortName;
     std::string _cloneUrl;
     std::string _url;
     std::string _updatedAt;

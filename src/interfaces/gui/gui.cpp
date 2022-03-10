@@ -73,6 +73,8 @@ gui::gui(ofPackageManager app) : ofBaseApp(), _app(app),
     // TODO: add support for lambda functions to ofxStateMachine
     // _homeState->addEnteredListener([&]{ofLogNotice() << "home entered";});
     _homeState->addEnteredListener(this, &gui::onHomeStateEntered);
+    _manageGlobalPackagesState->addEnteredListener(this, &gui::onManageGlobalPackagesEntered);
+    _updateState->addEnteredListener(this, &gui::onUpdateProjectStateEntered);
     _configureProjectState->addEnteredListener(this, &gui::onConfigureStateEntered);
     _stateMachine.start();
 
@@ -102,6 +104,8 @@ void gui::setup()
     io.Fonts->AddFontFromMemoryTTF((void *)fa_solid_900, sizeof(fa_solid_900), 13.f, &config, icon_ranges);
 
     // _originalBuffer = std::cout.rdbuf(_consoleBuffer.rdbuf());
+    updatePackagesLists();
+    updateRecentProjectsList();
 }
 
 void gui::exit()
@@ -114,13 +118,9 @@ void gui::update()
     _notifications.update();
     _animations.update();
     auto frameNum = ofGetFrameNum();
-    if (frameNum % 60 * 10 == 0)
+    if ((_stateMachine.isCurrentState(_manageGlobalPackagesState) || _stateMachine.isCurrentState(_configureProjectState)) && frameNum % 60 * 10 == 0)
     {
         updatePackagesLists();
-    }
-    if (frameNum % 60 * 30 == 0)
-    {
-        updateRecentProjectsList();
     }
 }
 
@@ -442,13 +442,13 @@ void gui::drawModals()
 
             if (_searchResults.size() > 0)
             {
-                static ImGuiTableFlags flags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable;
+                static ImGuiTableFlags flags = ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable;
                 if (ImGui::BeginTable("table1", 4, flags))
                 {
                     ImGui::TableSetupColumn("name", ImGuiTableColumnFlags_WidthStretch);
                     ImGui::TableSetupColumn("stars", ImGuiTableColumnFlags_WidthFixed);
                     ImGui::TableSetupColumn("forks", ImGuiTableColumnFlags_WidthFixed);
-                    ImGui::TableSetupColumn("actions", ImGuiTableColumnFlags_WidthFixed);
+                    ImGui::TableSetupColumn("actions");
                     ImGui::TableHeadersRow();
 
                     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(16, 8));
@@ -468,26 +468,55 @@ void gui::drawModals()
                         ImGui::Text(ofToString(repo._forks).c_str());
                         ImGui::TableSetColumnIndex(3);
 
-                        std::string id = "open##";
+                        std::string id = "open website##";
                         id += repo._url;
                         if (Button(id.c_str()))
                         {
                             ofLaunchBrowser(repo._url);
                         }
                         ImGui::SameLine();
-                        id = "install##";
+                        if (_stateMachine.isCurrentState(_manageGlobalPackagesState))
+                        {
+                            id = "install globally##";
+                        }
+                        else
+                        {
+                            id = "install##";
+                        }
+                        auto isMissing = false;
+                        for (auto &missingPackage : _missingPackages)
+                        {
+                            if (missingPackage.getPath() == repo._shortName)
+                            {
+                                isMissing = true;
+                            }
+                        }
+                        if (isMissing)
+                        {
+                            ImGui::SameLine();
+                            id = "install globally##";
+                            id += repo._name;
+                        }
+
                         id += repo._url;
                         if (Button(id.c_str()))
                         {
                             std::string destinationPath = ""; // locally by default
-                            if (_stateMachine.isCurrentState(_manageGlobalPackagesState))
+                            if (_stateMachine.isCurrentState(_manageGlobalPackagesState) || isMissing)
                             {
                                 destinationPath = _app.getAddonsPath();
                             }
                             auto package = _app.installPackageByUrl(repo._cloneUrl, "latest", destinationPath);
+                            updatePackagesLists(true);
+                            updateSelectedPackages();
+                            updateMissingPackages();
                             std::string message = "successfully installed ";
                             message += repo._name;
                             _notifications.add(message);
+                        }
+                        if (isMissing)
+                        {
+                            Tooltip("will install globally, since it is a missing dependency");
                         }
                         i++;
                     }
@@ -769,10 +798,12 @@ void gui::drawUpdate()
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
         char name[256] = "";
         strcpy(name, _openFromWebText.c_str());
+        ImGui::PushItemWidth(ImGui::GetContentRegionAvailWidth());
         if (ImGui::InputText("##cloneUrl", name, IM_ARRAYSIZE(name)))
         {
             _openFromWebText = name;
         }
+        ImGui::PopItemWidth();
         if (Button("choose destination and clone", ImVec2(0, 0), true, _openFromWebText.empty()))
         {
             auto result = ofSystemLoadDialog("path to projects", true, _app.getMyAppsPath());
@@ -870,7 +901,7 @@ void gui::drawConfigureProject()
         ImGui::Text(_projectPath.c_str());
         ImGui::PopStyleColor();
         ImGui::SameLine();
-        if (Button("open##projectDir"))
+        if (Button("open directory##projectDir"))
         {
             openViaOfSystem(_projectPath);
         }
@@ -880,6 +911,10 @@ void gui::drawConfigureProject()
         if (ImGui::BeginChild("configureContent", ImVec2(0, 0)))
         {
             drawMissingPackages();
+            if (_missingPackages.size())
+            {
+                ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
+            }
             auto indentation = 24;
             if (ImGui::CollapsingHeader("core addons"))
             {
@@ -991,6 +1026,11 @@ void gui::drawMissingPackages()
     if (_missingPackages.size())
     {
         ImGui::TextWrapped("ooops, there are some missing packages.");
+        ImGui::SameLine();
+        if (Button("refresh"))
+        {
+            updateMissingPackages();
+        }
 
         if (ImGui::BeginTable("missingPackages", 2, tableFlags))
         {
@@ -1001,7 +1041,8 @@ void gui::drawMissingPackages()
             {
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
-                ImGui::Text(missingPackage.toString().c_str());
+                ImGui::Text(missingPackage.getPath().c_str());
+                Tooltip(missingPackage.toString());
                 ImGui::TableSetColumnIndex(1);
                 if (!missingPackage.getUrl().empty())
                 {
@@ -1009,8 +1050,21 @@ void gui::drawMissingPackages()
                     buttonId += missingPackage.toString();
                     if (Button(buttonId.c_str()))
                     {
-                        _app.installPackageByUrl(missingPackage.getUrl(), missingPackage.getCheckout());
-                        _missingPackages = _app.getMissingPackages();
+                        _app.installPackageByUrl(missingPackage.getUrl(), missingPackage.getCheckout(), missingPackage.getPath());
+                        updateMissingPackages();
+                    }
+                }
+                else
+                {
+                    std::string buttonId = "search##";
+                    buttonId += missingPackage.toString();
+                    if (Button(buttonId.c_str()))
+                    {
+                        _queryText = missingPackage.getPath();
+                        _searchResults = _app.searchPackageOnGithubByName2(_queryText);
+                        _searchModalOpened = true;
+                        // _app.installPackageByUrl(missingPackage.getUrl(), missingPackage.getCheckout(), missingPackage.getPath());
+                        // _missingPackages = _app.getMissingPackages();
                     }
                 }
             }
@@ -1110,8 +1164,14 @@ void gui::mouseExited(int x, int y) {}
 void gui::windowResized(int w, int h) {}
 void gui::dragEvent(ofDragInfo dragInfo) {}
 void gui::gotMessage(ofMessage msg) {}
-void gui::updatePackagesLists()
+void gui::updatePackagesLists(bool clear)
 {
+    if (clear)
+    {
+        _corePackages.clear();
+        _globalPackages.clear();
+        _localPackages.clear();
+    }
     for (auto package : _app.getCorePackages())
     {
         if (_corePackages.count(package.getPath()) == 0)
@@ -1134,6 +1194,25 @@ void gui::updatePackagesLists()
         }
     }
 }
+void gui::updateSelectedPackages()
+{
+    auto selectedPackages = _app.getPackagesListedInAddonsMakeFile();
+    for (auto package : selectedPackages)
+    {
+        if (_corePackages.count(package.getPath()) > 0)
+        {
+            _corePackages[package.getPath()]._selected = true;
+        }
+        if (_globalPackages.count(package.getPath()) > 0)
+        {
+            _globalPackages[package.getPath()]._selected = true;
+        }
+        if (_localPackages.count(package.getPath()) > 0)
+        {
+            _localPackages[package.getPath()]._selected = true;
+        }
+    }
+}
 void gui::updateRecentProjectsList()
 {
     auto path = ofToDataPath("recentProjects.json");
@@ -1148,6 +1227,10 @@ void gui::updateRecentProjectsList()
             _recentProjects.push_back(project(p["path"]));
         }
     }
+}
+void gui::updateMissingPackages()
+{
+    _missingPackages = _app.getMissingPackages();
 }
 void gui::openViaOfSystem(std::string path)
 {
@@ -1203,31 +1286,22 @@ void gui::onHomeStateEntered(ofxStateEnteredEventArgs &args)
     {
         package.second._selected = false;
     }
-    // TODO: reset templates and targets
+    // TODO: reset platforms
+    _selectedTemplate = baseProject::Template();
+}
+void gui::onManageGlobalPackagesEntered(ofxStateEnteredEventArgs &args)
+{
+    _missingPackages.clear();
+}
+void gui::onUpdateProjectStateEntered(ofxStateEnteredEventArgs &args)
+{
+    updateRecentProjectsList();
 }
 
 void gui::onConfigureStateEntered(ofxStateEnteredEventArgs &args)
 {
     _app.setProjectPath(_projectPath);
-    _corePackages.clear();
-    _globalPackages.clear();
-    _localPackages.clear();
-    updatePackagesLists();
-    _missingPackages = _app.getMissingPackages();
-    auto selectedPackages = _app.getPackagesListedInAddonsMakeFile();
-    for (auto package : selectedPackages)
-    {
-        if (_corePackages.count(package.getPath()) > 0)
-        {
-            _corePackages[package.getPath()]._selected = true;
-        }
-        if (_globalPackages.count(package.getPath()) > 0)
-        {
-            _globalPackages[package.getPath()]._selected = true;
-        }
-        if (_localPackages.count(package.getPath()) > 0)
-        {
-            _localPackages[package.getPath()]._selected = true;
-        }
-    }
+    updatePackagesLists(true);
+    updateSelectedPackages();
+    updateMissingPackages();
 }

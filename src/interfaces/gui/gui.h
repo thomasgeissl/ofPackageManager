@@ -87,8 +87,10 @@ public:
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);
 
-    void updatePackagesLists();
+    void updatePackagesLists(bool clear = false);
+    void updateSelectedPackages();
     void updateRecentProjectsList();
+    void updateMissingPackages();
 
     void openViaOfSystem(std::string path);
     void addToRecentProjects(std::string path);
@@ -108,6 +110,8 @@ private:
     ofxState::pointer _updateMultipleState;
     ofxState::pointer _configureProjectState;
     void onHomeStateEntered(ofxStateEnteredEventArgs &args);
+    void onManageGlobalPackagesEntered(ofxStateEnteredEventArgs &args);
+    void onUpdateProjectStateEntered(ofxStateEnteredEventArgs &args);
     void onConfigureStateEntered(ofxStateEnteredEventArgs &args);
 
     std::string _projectDirectoryPath;
