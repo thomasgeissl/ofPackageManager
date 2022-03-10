@@ -442,13 +442,12 @@ void gui::drawModals()
 
             if (_searchResults.size() > 0)
             {
-                static ImGuiTableFlags flags = ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable;
-                if (ImGui::BeginTable("table1", 4, flags))
+                if (ImGui::BeginTable("table1", 4, tableFlags))
                 {
                     ImGui::TableSetupColumn("name", ImGuiTableColumnFlags_WidthStretch);
                     ImGui::TableSetupColumn("stars", ImGuiTableColumnFlags_WidthFixed);
                     ImGui::TableSetupColumn("forks", ImGuiTableColumnFlags_WidthFixed);
-                    ImGui::TableSetupColumn("actions");
+                    ImGui::TableSetupColumn("actions", ImGuiTableColumnFlags_WidthFixed);
                     ImGui::TableHeadersRow();
 
                     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(16, 8));
@@ -790,14 +789,18 @@ void gui::drawUpdate()
     auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
     if (ImGui::BeginChild("update", ImVec2(-1, -footerHeight - padding)))
     {
+        auto indentation = 24;
         ImGui::Text("choose a project from your local file system");
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
+        ImGui::Indent(indentation);
         PathChooser(_projectPath, _app.getMyAppsPath());
+        ImGui::Unindent(indentation);
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 48);
         ImGui::Text("or paste a public git url in here to clone the project");
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
         char name[256] = "";
         strcpy(name, _openFromWebText.c_str());
+        ImGui::Indent(indentation);
         ImGui::PushItemWidth(ImGui::GetContentRegionAvailWidth());
         if (ImGui::InputText("##cloneUrl", name, IM_ARRAYSIZE(name)))
         {
@@ -828,10 +831,13 @@ void gui::drawUpdate()
                 }
             }
         }
+        ImGui::Unindent(indentation);
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 48);
         ImGui::Text("or select one of your recent projects");
+        ImGui::Indent(indentation);
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
         drawRecentProjects();
+        ImGui::Unindent(indentation);
         ImGui::EndChild();
     }
     if (BeginActions(1))
