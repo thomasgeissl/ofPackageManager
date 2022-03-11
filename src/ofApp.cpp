@@ -1102,7 +1102,6 @@ std::string ofPackageManager::findOfPathOutwardly(std::string path, int maxLevel
 	std::string ofPath = "";
 	while (ofPath.empty() && level < maxLevel)
 	{
-		ofLogNotice() << "finding oF path " << path << maxLevel << " " << level;
 		fs::path p(path);
 		ofPath = findOfPathInwardly(path, 0);
 		if (!ofPath.empty())

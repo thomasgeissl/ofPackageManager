@@ -8,7 +8,16 @@
 
 int main(int argc, char **argv)
 {
-	std::string cwdPath;
+	ofInit();
+
+#if defined(TARGET_OSX) || defined(TARGET_LINUX)
+	std::shared_ptr<ofColorsLoggerChannel> logger{
+		new ofColorsLoggerChannel};
+	ofSetLoggerChannel(logger);
+#endif
+	//    ofSetLogLevel(OF_LOG_VERBOSE);
+
+	std::string executablePath;
 	char *path = NULL;
 	int length, dirname_length;
 	int i;
@@ -21,25 +30,17 @@ int main(int argc, char **argv)
 			abort();
 		wai_getExecutablePath(path, length, &dirname_length);
 		path[length] = '\0';
-		// printf("executable path: %s\n", path);
+		printf("executable path: %s\n", path);
 		path[dirname_length] = '\0';
-		// printf("  dirname: %s\n", path);
-		// printf("  basename: %s\n", path + dirname_length + 1);
-		cwdPath = path;
+		printf("  dirname: %s\n", path);
+		printf("  basename: %s\n", path + dirname_length + 1);
+		executablePath = path;
 		free(path);
 	}
 
-	ofInit();
-
-#if defined(TARGET_OSX) || defined(TARGET_LINUX)
-	std::shared_ptr<ofColorsLoggerChannel> logger{
-		new ofColorsLoggerChannel};
-	ofSetLoggerChannel(logger);
-#endif
-	//    ofSetLogLevel(OF_LOG_VERBOSE);
-	// filesystem::path cwdPath = filesystem::current_path();
-	// ofPackageManager app(cwdPath.string());
-	ofPackageManager app(cwdPath);
+	std::string cwdPath = filesystem::current_path().string();
+	ofLogNotice() << cwdPath << " " << executablePath;
+	ofPackageManager app(cwdPath != "/" ? cwdPath : executablePath);
 	jsonInterface jsonI(app);
 	if (argc == 1)
 	{

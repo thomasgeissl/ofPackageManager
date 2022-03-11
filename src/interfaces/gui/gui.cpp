@@ -388,7 +388,7 @@ void gui::drawModals()
 
             std::string cwdPath = "cwd: ";
             cwdPath += _app.getCwdPath();
-            ImGui::Text(cwdPath.c_str());
+            ImGui::TextWrapped(cwdPath.c_str());
 
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 16);
             ImGui::Text("license:");
@@ -607,7 +607,7 @@ void gui::drawHome()
 {
     ImGui::TextWrapped("Welcome to ofPackageManager - a package manager for openFrameworks.\n");
 
-    _animations.draw();
+    // _animations.draw();
 
     //     ImTextureID textureID = (ImTextureID)(uintptr_t)_preview.getTexture().getTextureData().textureID;
     // auto size = ImGui::GetContentRegionAvail(); // for example
