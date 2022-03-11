@@ -851,13 +851,13 @@ void gui::drawUpdate()
         ofDirectory projectDir = ofDirectory(_projectPath);
         if (Button("configure", ImVec2(buttonWidth, -1), true, _projectPath.empty() || !projectDir.exists()))
         {
+            _app.setProjectPath(_projectPath);
             auto dataPath = ofFilePath::getAbsolutePath(".");
-            ofLogNotice() << _app.findOfPathOutwardly(dataPath, 6);
-            ofLogNotice() << _app.getOfPath();
-            ofLogNotice() << ofFilePath::getAbsolutePath(".");
-            ofLogNotice() << _app.getCwdPath();
-            ofLogNotice() << _projectPath;
-            _app.generateProject(_projectPath);
+            auto packages = _app.getPackagesListedInAddonsMakeFile();
+            for(auto package : packages){
+                ofLogNotice() << package.toString();
+            }
+            _app.generateProject(_projectPath, packages);
             _projectName = ofFilePath::getBaseName(_projectPath);
 
             addToRecentProjects(_projectPath);
@@ -1062,8 +1062,9 @@ void gui::drawMissingPackages()
                     buttonId += missingPackage.toString();
                     if (Button(buttonId.c_str()))
                     {
-                        _app.installPackageByUrl(missingPackage.getUrl(), missingPackage.getCheckout(), missingPackage.getPath());
+                        _app.installPackageByUrl(missingPackage.getUrl(), missingPackage.getCheckout());
                         updateMissingPackages();
+                        updateSelectedPackages();
                     }
                 }
                 else
