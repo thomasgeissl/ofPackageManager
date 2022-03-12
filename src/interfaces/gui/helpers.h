@@ -72,6 +72,26 @@ bool MenuButton(std::string text, ImVec2 size = ImVec2(0, 0), bool active = fals
     }
     return pressed;
 }
+bool MinButton(std::string text, ImVec2 size = ImVec2(0, 0))
+{
+    auto style = ImGui::GetStyle();
+    auto actionColor = style.Colors[ImGuiCol_ResizeGripActive];
+    text = ofToUpper(text);
+    auto framePaddingHeight = 8;
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0,0,0,0));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, actionColor);
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, style.Colors[ImGuiCol_Button]);
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+    auto pressed = false;
+    if (ImGui::Button(text.c_str(), size))
+    {
+        pressed = true;
+    }
+    ImGui::PopStyleVar(1);
+    ImGui::PopStyleColor(4);
+    return pressed;
+}
 
 void PathChooser(std::string &path, std::string startPath = "", ImVec2 size = ImVec2(0, 0))
 {

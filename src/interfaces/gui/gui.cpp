@@ -115,10 +115,14 @@ void gui::exit()
 
 void gui::update()
 {
-    _notifications.update();
-    _animations.update();
     auto frameNum = ofGetFrameNum();
-    if ((_stateMachine.isCurrentState(_manageGlobalPackagesState) || _stateMachine.isCurrentState(_configureProjectState)) && frameNum % 60 * 10 == 0)
+    _notifications.update();
+
+    if (_stateMachine.isCurrentState(_homeState))
+    {
+        _animations.update();
+    }
+    else if ((_stateMachine.isCurrentState(_manageGlobalPackagesState) || _stateMachine.isCurrentState(_configureProjectState)) && frameNum % 60 * 10 == 0)
     {
         updatePackagesLists();
     }
@@ -559,8 +563,7 @@ void gui::drawModals()
 }
 void gui::drawRecentProjects()
 {
-    static ImGuiTableFlags flags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable;
-    if (ImGui::BeginTable("recentProjectsTable", 2, flags))
+    if (ImGui::BeginTable("recentProjectsTable", 2, tableFlags))
     {
         ImGui::TableSetupColumn("path", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableSetupColumn("actions", ImGuiTableColumnFlags_WidthFixed);
@@ -607,13 +610,21 @@ void gui::drawRecentProjects()
 
 void gui::drawHome()
 {
-    ImGui::TextWrapped("Welcome to ofPackageManager - a package manager for openFrameworks.\n");
-
-    // _animations.draw();
-
-    //     ImTextureID textureID = (ImTextureID)(uintptr_t)_preview.getTexture().getTextureData().textureID;
-    // auto size = ImGui::GetContentRegionAvail(); // for example
-    // ImGui::Image(textureID, glm::vec2(_preview.getWidth(), _preview.getHeight()));
+    auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
+    if (ImGui::BeginChild("home", ImVec2(-1, -footerHeight - padding)))
+    {
+    _animations.draw();
+        ImGui::EndChild();
+    }
+    if (ImGui::BeginChild("homeActions"))
+    {
+        auto label = _animations.getCurrentLabel();
+        auto url = _animations.getCurrentUrl();
+        if(!label.empty() && !url.empty() && MinButton(label, ImGui::GetContentRegionAvail())){
+            ofLaunchBrowser(url);
+        }
+        ImGui::EndChild();
+    }
 }
 void gui::drawManageGlobalPackages()
 {
@@ -623,8 +634,8 @@ void gui::drawManageGlobalPackages()
         if (ImGui::BeginTable("globalPackagesTable", 3, tableFlags))
         {
             ImGui::TableSetupColumn("name", ImGuiTableColumnFlags_WidthStretch);
-            ImGui::TableSetupColumn("author");
-            ImGui::TableSetupColumn("actions");
+            ImGui::TableSetupColumn("author", ImGuiTableColumnFlags_WidthFixed);
+            ImGui::TableSetupColumn("actions", ImGuiTableColumnFlags_WidthFixed);
             ImGui::TableHeadersRow();
 
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(16, 8));

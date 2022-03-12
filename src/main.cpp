@@ -30,16 +30,15 @@ int main(int argc, char **argv)
 			abort();
 		wai_getExecutablePath(path, length, &dirname_length);
 		path[length] = '\0';
-		printf("executable path: %s\n", path);
+		// printf("executable path: %s\n", path);
 		path[dirname_length] = '\0';
-		printf("  dirname: %s\n", path);
-		printf("  basename: %s\n", path + dirname_length + 1);
+		// printf("  dirname: %s\n", path);
+		// printf("  basename: %s\n", path + dirname_length + 1);
 		executablePath = path;
 		free(path);
 	}
 
 	std::string cwdPath = filesystem::current_path().string();
-	ofLogNotice() << cwdPath << " " << executablePath;
 	ofPackageManager app(cwdPath != "/" ? cwdPath : executablePath);
 	jsonInterface jsonI(app);
 	if (argc == 1)
