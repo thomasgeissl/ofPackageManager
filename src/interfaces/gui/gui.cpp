@@ -103,7 +103,7 @@ void gui::setup()
     config.MergeMode = true;
     io.Fonts->AddFontFromMemoryTTF((void *)fa_solid_900, sizeof(fa_solid_900), 13.f, &config, icon_ranges);
 
-    // _originalBuffer = std::cout.rdbuf(_consoleBuffer.rdbuf());
+    _originalBuffer = std::cout.rdbuf(_consoleBuffer.rdbuf());
     updatePackagesLists();
     updateRecentProjectsList();
 }
@@ -233,11 +233,11 @@ ImVec2 gui::drawMainMenu()
             {
                 _aboutModalOpened = true;
             }
-            if (ImGui::MenuItem("Preferences"))
+            if (ImGui::MenuItem("Preferences", getShortCutLabel(",").c_str()))
             {
                 _preferencesModalOpened = true;
             }
-            if (ImGui::MenuItem("Quit"))
+            if (ImGui::MenuItem("Quit", getShortCutLabel("q").c_str()))
             {
                 ofExit();
             }
@@ -245,11 +245,11 @@ ImVec2 gui::drawMainMenu()
         }
         if (ImGui::BeginMenu("File"))
         {
-            if (ImGui::MenuItem("New"))
+            if (ImGui::MenuItem("New", getShortCutLabel("n").c_str()))
             {
                 _stateMachine.trigger("create");
             }
-            if (ImGui::MenuItem("Open"))
+            if (ImGui::MenuItem("Open", getShortCutLabel("o").c_str()))
             {
                 _stateMachine.trigger("update");
             }
@@ -270,12 +270,12 @@ ImVec2 gui::drawMainMenu()
         }
         if (ImGui::BeginMenu("View"))
         {
-            if (ImGui::MenuItem("fullscreen", NULL, &_fullscreen))
+            if (ImGui::MenuItem("fullscreen", getShortCutLabel("f").c_str(), &_fullscreen))
             {
                 ofToggleFullscreen();
             }
             ImGui::MenuItem("advanced options", NULL, &_showAdvancedOptions);
-            ImGui::MenuItem("console", NULL, &_showConsole);
+            ImGui::MenuItem("console", getShortCutLabel("c", true, true).c_str(), &_showConsole);
             if (_showAdvancedOptions)
             {
                 ImGui::Separator();
@@ -1170,7 +1170,61 @@ void gui::drawPlatformAndTemplateChooser()
 }
 
 void gui::keyPressed(int key) {}
-void gui::keyReleased(int key) {}
+void gui::keyReleased(int key)
+{
+    auto commandKeyPressed = false;
+    auto shiftKeyPressed = ofGetKeyPressed(OF_KEY_SHIFT);
+#ifdef TARGET_OSX
+    commandKeyPressed = ofGetKeyPressed(OF_KEY_COMMAND);
+#endif
+#ifdef TARGET_WIN
+    commandKeyPressed = ofGetKeyPressed(OF_KEY_CTRL);
+#endif
+#ifdef TARGET_LINUX
+    commandKeyPressed = ofGetKeyPressed(OF_KEY_CTRL);
+#endif
+    if (!commandKeyPressed)
+    {
+        return;
+    }
+    switch (key)
+    {
+    case ',':
+    {
+        _preferencesModalOpened = true;
+        break;
+    }
+    case 'c':
+    {
+        if (shiftKeyPressed)
+        {
+            _showConsole = !_showConsole;
+        }
+        break;
+    }
+    case 'f':
+    {
+        _fullscreen = !_fullscreen;
+        ofToggleFullscreen();
+        break;
+    }
+    case 'n':
+    {
+        _stateMachine.trigger("create");
+        break;
+    }
+    case 'o':
+    {
+        _stateMachine.trigger("update");
+        break;
+    }
+    case 'q':
+    {
+        ofExit();
+        break;
+    }
+    }
+}
 void gui::mouseMoved(int x, int y) {}
 void gui::mouseDragged(int x, int y, int button) {}
 void gui::mousePressed(int x, int y, int button) {}
@@ -1250,7 +1304,6 @@ void gui::updateMissingPackages()
 }
 void gui::openViaOfSystem(std::string path)
 {
-
     std::string command;
 #ifdef TARGET_OSX
     command = "open ";
