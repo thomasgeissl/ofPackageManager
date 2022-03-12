@@ -13,6 +13,8 @@
 class ofPackageManager
 {
 public:
+	class config {
+	};
 	ofPackageManager(std::string cwdPath);
 
 	bool addPackageToAddonsMakeFile(ofPackage package);
@@ -20,7 +22,6 @@ public:
 	bool addPackagesToAddonsMakeFile(std::string path);
 	bool addPackagesToAddonsMakeFile(std::vector<std::string> paths);
 
-	bool configure(bool global = false);
 	bool isNewerVersionAvailable();
 	ofVersion getNewestAvailableVersion();
 
@@ -57,11 +58,9 @@ public:
 	std::string getLocalAddonsPath();
 	std::string getPackagesDatabasePath();
 	ofJson getPackagesDatabase();
-	ofJson getConfig();
 	ofVersion getVersion();
 	std::vector<ofPackage> getMissingPackages();
 
-	void setConfig(ofJson config);
 	void setProjectPath(std::string path);
 	void setSilent(bool value = true);
 	std::string getAbsolutePath(std::string path);
@@ -69,8 +68,6 @@ public:
 
 	bool hasAddonsMakeFile(std::string path);
 	bool hasAddonConfigFile(std::string path);
-	bool hasPackageManagerConfig(std::string path);
-	bool isConfigured();
 	bool isLocatedInsideOfDirectory(std::string path);
 	bool isProject(std::string path);
 
@@ -90,6 +87,5 @@ private:
 	std::string _ofPackagesUrl;
 	std::string _globalConfigPath;
 	std::string _localAddonsPath;
-	ofJson _configJson;
 	ofxCommandLineUtils _clu;
 };

@@ -19,8 +19,7 @@ ofPackageManager::ofPackageManager(std::string cwdPath) : _silent(false),
 														  _appDataDirectoryPath(ofFilePath::join(ofFilePath::getUserHomeDir(), ".ofPackageManager")),
 														  _ofPackagesUrl("https://raw.githubusercontent.com/thomasgeissl/ofPackageManager/master/ofPackages.json"),
 														  _globalConfigPath(ofFilePath::join(_appDataDirectoryPath, "cli.config.json")),
-														  _localAddonsPath("local_addons"),
-														  _configJson(getConfig())
+														  _localAddonsPath("local_addons")
 {
 	installPackagesDatabase();
 }
@@ -141,57 +140,6 @@ bool ofPackageManager::addPackagesToAddonsMakeFile(std::vector<std::string> path
 		}
 	}
 	return result;
-}
-bool ofPackageManager::configure(bool global)
-{
-	auto configPath = ofFilePath::join(getProjectPath(), "ofPackageManager.cli.config.json");
-	std::string relativeOrAbsolute = "relative";
-	if (global)
-	{
-		configPath = _globalConfigPath;
-		relativeOrAbsolute = "absolute";
-	}
-	ofFile configFile(configPath);
-	if (configFile.exists())
-	{
-		if (!_silent)
-		{
-			ofLogWarning("config") << "Config file already exits.";
-			if (!_clu.getBoolAnswer("Do you want to override it?"))
-			{
-				return false;
-			}
-		}
-	}
-
-	auto ofPath = ofFilePath::getAbsolutePath(getAbsolutePath("../../.."), false);
-
-	if (!_silent)
-	{
-		auto findOfAutomatically = _clu.getBoolAnswer("Do you want to automatically detect the openFrameworks directory? This will iterate through your home directory and its children, three levels deep. It might be annoying because your OS might ask for permission to access those directories.");
-		if (findOfAutomatically)
-		{
-			auto foundPath = findOfPathInwardly(ofFilePath::getUserHomeDir(), 3);
-			if (!foundPath.empty())
-			{
-				ofPath = foundPath;
-			}
-		}
-	}
-
-	ofJson configJson;
-	configJson["ofPath"] = _clu.getStringAnswer("Absolute path to openFrameworks?", ofPath);
-
-	configFile.create();
-	configFile.open(configPath, ofFile::WriteOnly);
-	configFile << configJson.dump(4);
-	configFile.close();
-
-	_configJson = configJson;
-
-	installPackagesDatabase();
-
-	return true;
 }
 
 bool ofPackageManager::isNewerVersionAvailable()
@@ -546,35 +494,6 @@ std::vector<ofPackage> ofPackageManager::getPackagesListedInAddonsMakeFile()
 	return packages;
 }
 
-// bool ofPackageManager::generateProject()
-// {
-// 	auto isWindows = true;
-// #if defined(TARGET_OSX) || defined(TARGET_LINUX)
-// 	isWindows = false;
-// #endif
-// 	std::string pgPath = _configJson["pgPath"].get<std::string>();
-// 	std::string ofPath = isWindows ? "/ofPath=" : "-o";
-// 	ofPath += "\"";
-// 	ofPath += getConfig()["ofPath"].get<std::string>();
-// 	ofPath += "\"";
-// 	std::string packages = isWindows ? "/addons=" : "-a";
-// 	packages += "\"";
-// 	auto requiredPackages = getPackagesListedInAddonsMakeFile();
-// 	for (auto package : requiredPackages)
-// 	{
-// 		packages += package.getPath();
-// 		packages += ", ";
-// 	}
-// 	packages += "\"";
-// 	auto addons = getConfig()["ofPath"].get<std::string>();
-// 	// TODO: platforms and templates
-
-// 	std::string verbose = isWindows ? "/verbose" : "-v";
-// 	std::string command = pgPath + " " + verbose + " " + ofPath + " " + packages;
-// 	auto result = ofSystem(command);
-// 	// TODO: parse result and return success or error
-// 	return false;
-// }
 ofJson ofPackageManager::searchPackageInDatabaseById(std::string name)
 {
 	installPackagesDatabase();
@@ -862,64 +781,11 @@ ofJson ofPackageManager::getPackagesDatabase()
 	return ofPackages;
 }
 
-ofJson ofPackageManager::getConfig()
-{
-	auto isInsideOf = isLocatedInsideOfDirectory(getProjectPath());
-	auto hasLocalConfig = false;
-	auto hasGlobalConfig = false;
-
-	ofLogNotice() << "getting config";
-	ofLogNotice() << isInsideOf;
-
-	ofJson configJson;
-	ofFile configFile;
-	ofFile globalConfigFile;
-	configFile.open(_globalConfigPath);
-	hasGlobalConfig = globalConfigFile.exists();
-
-	std::string path = getProjectPath();
-	auto level = 0;
-	while (!hasPackageManagerConfig(getAbsolutePath(path)))
-	{
-		fs::path p(path);
-		path = p.parent_path().string();
-		level++;
-		// TODO: does that work on windows
-		if (path.size() < 4 || level > 3)
-		{
-			break;
-		}
-	}
-	configFile.open(ofFilePath::join(path, "ofPackageManager.cli.config.json"));
-	if (configFile.exists())
-	{
-		hasLocalConfig = true;
-		configFile >> configJson;
-	}
-	else if (isInsideOf)
-	{
-		configJson["ofPackagesPath"] = ofFilePath::join(_appDataDirectoryPath, "ofPackages");
-		configJson["ofPath"] = findOfPathOutwardly(path);
-	}
-	else if (hasGlobalConfig)
-	{
-		globalConfigFile >> configJson;
-	}
-	else
-	{
-	}
-
-	return configJson;
-}
 ofVersion ofPackageManager::getVersion()
 {
 	return ofVersion(OFAPP_MAJOR_VERSION, OFAPP_MINOR_VERSION, OFAPP_PATCH_VERSION);
 }
 
-void ofPackageManager::setConfig(ofJson config)
-{
-	_configJson = config;
-}
 void ofPackageManager::setProjectPath(std::string path)
 {
 	_projectPath = path;
@@ -973,35 +839,6 @@ bool ofPackageManager::hasAddonConfigFile(std::string path)
 	}
 	ofFile addonConfigFile(ofFilePath::join(path, "addon_config.mk"));
 	return addonConfigFile.exists();
-}
-
-bool ofPackageManager::hasPackageManagerConfig(std::string path)
-{
-	if (!ofDirectory::doesDirectoryExist(path))
-	{
-		IFNOTSILENT(
-			ofLogWarning() << "dir does not exist " << path;);
-		return false;
-	}
-	ofFile packageManagerConfigFile(ofFilePath::join(path, "ofPackageManager.cli.config.json"));
-	ofFile cliConfigFile(ofFilePath::join(path, "cli.config.json"));
-	return cliConfigFile.exists() || packageManagerConfigFile.exists();
-}
-bool ofPackageManager::isConfigured()
-{
-	std::string path = getProjectPath();
-	while (!hasPackageManagerConfig(getAbsolutePath(path)))
-	{
-		ofFile file(path);
-		fs::path p(path);
-		path = p.parent_path().string();
-		// TODO: does that work on windows
-		if (path.size() < 4)
-		{
-			return hasPackageManagerConfig(_appDataDirectoryPath);
-		}
-	}
-	return true;
 }
 
 bool ofPackageManager::isLocatedInsideOfDirectory(std::string path)
