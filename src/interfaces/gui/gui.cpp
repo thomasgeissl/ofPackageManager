@@ -296,10 +296,10 @@ ImVec2 gui::drawMainMenu()
 }
 void gui::drawSideBar()
 {
-    ImGui::BeginChild("sideBar", ImVec2(200, -1));
+    ImGui::BeginChild("sideBar", ImVec2(200, 0));
     auto style = ImGui::GetStyle();
     auto numberOfButtons = _showAdvancedOptions ? 5 : 4;
-    auto availableHeight = ImGui::GetWindowHeight() - ImGui::GetCursorPosY() - style.ItemSpacing.y;
+    auto availableHeight = ImGui::GetWindowHeight() - ImGui::GetCursorPosY() + style.ItemSpacing.y;
     auto buttonSize = ImVec2(ImGui::GetContentRegionAvailWidth(), availableHeight / numberOfButtons - style.ItemSpacing.y);
     // auto buttonSize = ImVec2(ImGui::GetContentRegionAvailWidth(), footerHeight);
     if (MenuButton("home", buttonSize, _stateMachine.isCurrentState(_homeState)))
