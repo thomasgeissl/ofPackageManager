@@ -297,25 +297,26 @@ void gui::drawSideBar()
     auto numberOfButtons = _showAdvancedOptions ? 5 : 4;
     auto availableHeight = ImGui::GetWindowHeight() - ImGui::GetCursorPosY() - style.ItemSpacing.y;
     auto buttonSize = ImVec2(ImGui::GetContentRegionAvailWidth(), availableHeight / numberOfButtons - style.ItemSpacing.y);
-    if (Button("home", buttonSize, _stateMachine.isCurrentState(_homeState)))
+    // auto buttonSize = ImVec2(ImGui::GetContentRegionAvailWidth(), footerHeight);
+    if (MenuButton("home", buttonSize, _stateMachine.isCurrentState(_homeState)))
     {
         _stateMachine.trigger("home");
     }
-    if (Button("manage addons", buttonSize, _stateMachine.isCurrentState(_manageGlobalPackagesState)))
+    if (MenuButton("manage addons", buttonSize, _stateMachine.isCurrentState(_manageGlobalPackagesState)))
     {
         _stateMachine.trigger("manageGlobalPackages");
     }
-    if (Button("new project", buttonSize, _stateMachine.isCurrentState(_createState)))
+    if (MenuButton("new project", buttonSize, _stateMachine.isCurrentState(_createState)))
     {
         _stateMachine.trigger("create");
     }
-    if (Button("open project", buttonSize, _stateMachine.isCurrentState(_updateState)))
+    if (MenuButton("open project", buttonSize, _stateMachine.isCurrentState(_updateState)))
     {
         _stateMachine.trigger("update");
     }
     if (_showAdvancedOptions)
     {
-        if (Button("update multiple projects", buttonSize, _stateMachine.isCurrentState(_updateMultipleState)))
+        if (MenuButton("update multiple projects", buttonSize, _stateMachine.isCurrentState(_updateMultipleState)))
         {
             _stateMachine.trigger("updateMultiple");
         }
@@ -569,9 +570,10 @@ void gui::drawRecentProjects()
         {
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            ImGui::Text(p._path.c_str());
+            ImGui::TextWrapped(ofFilePath::getBaseName(p._path).c_str());
+            Tooltip(p._path.c_str());
             ImGui::TableSetColumnIndex(1);
-            std::string removeButtonId = "remove##";
+            std::string removeButtonId = "remove from list##";
             removeButtonId += p._path;
             if (Button(removeButtonId.c_str()))
             {
@@ -813,7 +815,7 @@ void gui::drawUpdate()
             _openFromWebText = name;
         }
         ImGui::PopItemWidth();
-        if (Button("choose destination and clone", ImVec2(0, 0), true, _openFromWebText.empty()))
+        if (Button("choose destination and clone", ImVec2(0, 0), false, _openFromWebText.empty()))
         {
             auto result = ofSystemLoadDialog("path to projects", true, _app.getMyAppsPath());
             if (result.bSuccess)
@@ -854,7 +856,8 @@ void gui::drawUpdate()
             _app.setProjectPath(_projectPath);
             auto dataPath = ofFilePath::getAbsolutePath(".");
             auto packages = _app.getPackagesListedInAddonsMakeFile();
-            for(auto package : packages){
+            for (auto package : packages)
+            {
                 ofLogNotice() << package.toString();
             }
             _app.generateProject(_projectPath, packages);

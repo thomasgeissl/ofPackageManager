@@ -46,10 +46,37 @@ bool Button(std::string text, ImVec2 size = ImVec2(0, 0), bool primary = false, 
     return pressed;
 }
 
+bool MenuButton(std::string text, ImVec2 size = ImVec2(0, 0), bool active = false)
+{
+    auto style = ImGui::GetStyle();
+    auto actionColor = style.Colors[ImGuiCol_ResizeGripActive];
+    text = ofToUpper(text);
+    auto framePaddingHeight = 8;
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8);
+    if (active)
+    {
+        ImGui::PushStyleColor(ImGuiCol_Button, actionColor);
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, actionColor);
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, style.Colors[ImGuiCol_Button]);
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+    }
+    auto pressed = false;
+    if (ImGui::Button(text.c_str(), size))
+    {
+        pressed = true;
+    }
+    ImGui::PopStyleVar(1);
+    if (active)
+    {
+        ImGui::PopStyleColor(4);
+    }
+    return pressed;
+}
+
 void PathChooser(std::string &path, std::string startPath = "", ImVec2 size = ImVec2(0, 0))
 {
     ImGui::Text(path.empty() ? "path has not yet been selected" : path.c_str());
-    if (Button("open file dialog", size, path.empty()))
+    if (Button("open file dialog", size))
     {
         auto result = ofSystemLoadDialog("path", true, startPath);
         if (result.bSuccess)

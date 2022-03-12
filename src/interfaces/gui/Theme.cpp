@@ -41,11 +41,11 @@ void Theme::setup()
 	colors[ImGuiCol_SliderGrab] = panelHoverColor;
 	colors[ImGuiCol_SliderGrabActive] = panelActiveColor;
 	colors[ImGuiCol_Button] = panelColor;
-	colors[ImGuiCol_ButtonHovered] = panelHoverColor;
-	colors[ImGuiCol_ButtonActive] = panelHoverColor;
+	colors[ImGuiCol_ButtonHovered] = lightBgColor;
+	colors[ImGuiCol_ButtonActive] = lightBgColor;
 	colors[ImGuiCol_Header] = panelColor;
-	colors[ImGuiCol_HeaderHovered] = panelHoverColor;
-	colors[ImGuiCol_HeaderActive] = panelActiveColor;
+	colors[ImGuiCol_HeaderHovered] = panelColor;
+	colors[ImGuiCol_HeaderActive] = panelColor;
 	colors[ImGuiCol_Separator] = borderColor;
 	colors[ImGuiCol_SeparatorHovered] = borderColor;
 	colors[ImGuiCol_SeparatorActive] = borderColor;
