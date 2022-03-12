@@ -9,10 +9,8 @@ class demo : public animation::base {
     void update(){
         auto colors = ImGui::GetStyle().Colors;
         auto time = ofGetElapsedTimef();
-        _fbo.begin();
-        ofPushStyle();
+        begin();
         ofSetRectMode(OF_RECTMODE_CENTER);
-        ofClear(ofColor(0,0,0, 0));
         ofNoFill();
         ofSetLineWidth(1);
         for(auto x = 0 ; x < _fbo.getWidth(); x+=4){
@@ -20,7 +18,6 @@ class demo : public animation::base {
             auto y = _fbo.getHeight()/2 + std::sin(x * time/1000)*_fbo.getHeight()/10;
             ofDrawRectangle(x,y,100, 100);
         }
-        ofPopStyle();
-        _fbo.end();
+        end();
     }
 };

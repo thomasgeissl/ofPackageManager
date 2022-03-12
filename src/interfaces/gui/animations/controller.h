@@ -12,6 +12,11 @@ namespace animation
             _animations.push_back(new demo());
         }
         void update(){
+            auto timestamp = ofGetElapsedTimeMillis();
+            if(timestamp - _timestamp > 10000){
+                _index = (int)(ofRandom(0, _animations.size()));
+                _timestamp = timestamp;
+            }
             _animations[_index]->update();
         }
         void draw()
@@ -31,8 +36,6 @@ namespace animation
                 ImGui::Image(textureID, glm::vec2(width*0.8, height*0.8));
             }
         }
-        std::vector<animation::base *> _animations;
-        int _index;
         std::string getCurrentLabel(){
             std::string label = "animation by ";
             return label + _animations[_index]->getAuthor();
@@ -40,5 +43,9 @@ namespace animation
         std::string getCurrentUrl(){
             return _animations[_index]->getUrl();
         }
+
+        std::vector<animation::base *> _animations;
+        int _index;
+        uint64_t _timestamp;
     };
 };

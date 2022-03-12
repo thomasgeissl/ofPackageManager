@@ -15,11 +15,24 @@ namespace animation
             fboSettings.textureTarget = GL_TEXTURE_2D;
             _fbo.allocate(fboSettings);
         }
+        void begin()
+        {
+            _fbo.begin();
+            ofClear(ofColor(0,0,0, 0));
+            ofPushStyle();
+        }
+        void end()
+        {
+            ofPopStyle();
+            _fbo.end();
+        }
         virtual void update() = 0;
-        std::string getAuthor(){
+        std::string getAuthor()
+        {
             return _author;
         }
-        std::string getUrl(){
+        std::string getUrl()
+        {
             return _url;
         }
         ofFbo _fbo;
