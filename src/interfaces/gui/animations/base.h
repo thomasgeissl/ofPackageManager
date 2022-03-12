@@ -15,10 +15,13 @@ namespace animation
             fboSettings.textureTarget = GL_TEXTURE_2D;
             _fbo.allocate(fboSettings);
         }
-        void begin()
+        void begin(bool clear = true)
         {
             _fbo.begin();
-            ofClear(ofColor(0,0,0, 0));
+            if (clear)
+            {
+                ofClear(ofColor(0, 0, 0, 0));
+            }
             ofPushStyle();
         }
         void end()

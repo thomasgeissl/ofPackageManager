@@ -12,10 +12,10 @@ class demo : public animation::base {
         begin();
         ofSetRectMode(OF_RECTMODE_CENTER);
         ofNoFill();
-        ofSetLineWidth(1);
+        ofSetLineWidth(2);
         for(auto x = 0 ; x < _fbo.getWidth(); x+=4){
-            ofSetColor(ofColor(0,ofMap(std::sin(x*time/200), -1, 1, 0, 255),255));
             auto y = _fbo.getHeight()/2 + std::sin(x * time/1000)*_fbo.getHeight()/10;
+            ofSetColor(ofColor(0,ofMap(std::sin(x*time/200), -1, 1, 0, 255),255));
             ofDrawRectangle(x,y,100, 100);
         }
         end();
