@@ -90,14 +90,14 @@ public:
         {
             if (argc == 2)
             {
-                _app.configure();
+                // _app.configure();
             }
             if (argc == 3)
             {
                 std::string option = argv[2];
                 if (option == "-g" || option == "--global")
                 {
-                    _app.configure(true);
+                    // _app.configure(true);
                 }
             }
         }
@@ -138,11 +138,6 @@ public:
         }
         else if (task == "install")
         {
-            // if (!_app.isConfigured())
-            // {
-            //     ofLogError("install") << "Please run the config task (either locally or globally), before installing packages.";
-            //     return false;
-            // }
             if (argc == 2)
             {
 
@@ -196,11 +191,6 @@ public:
         }
         else if (task == "search")
         {
-            if (!_app.isConfigured())
-            {
-                ofLogError() << "please run config task, before installing packages.";
-                return false;
-            }
             if (argc == 3)
             {
                 auto result = _app.searchPackageInDatabaseById(argv[2]);
@@ -234,11 +224,6 @@ public:
         }
         else if (task == "generate")
         {
-            if (!_app.isConfigured())
-            {
-                ofLogError() << "please run config task, before installing packages.";
-                return false;
-            }
             _app.generateProject(_app.getCwdPath());
         }
         else if (task.empty())

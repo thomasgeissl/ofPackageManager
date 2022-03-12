@@ -59,7 +59,7 @@ public:
 
             if (doesKeyExist(payload, "config"))
             {
-                _app.setConfig(payload["config"]);
+                // _app.setConfig(payload["config"]);
             }
             else
             {
