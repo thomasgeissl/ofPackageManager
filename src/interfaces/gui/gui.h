@@ -119,7 +119,7 @@ private:
     std::string _projectName;
     std::string _projectPath;
 
-    std::string _openFromWebText;
+    std::string _sfp;
     std::string _queryText;
     std::vector<ghRepo> _searchResults;
     ghRepo _selectedSearchResult;

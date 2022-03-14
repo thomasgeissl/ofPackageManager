@@ -151,10 +151,12 @@ std::vector<ofPackage> ofPackageManager::getMissingPackages()
 	std::vector<ofPackage> missingPackages;
 
 	auto requiredPackages = getPackagesListedInAddonsMakeFile();
-	for(auto & requiredPackage : requiredPackages){
-		auto globalPath = ofFilePath::join(getAddonsPath(),  requiredPackage.getPath());
-		auto localPath = ofFilePath::join(getProjectPath(),  requiredPackage.getPath());
-		if(!ofDirectory::doesDirectoryExist(globalPath) && !ofDirectory::doesDirectoryExist(localPath)  ){
+	for (auto &requiredPackage : requiredPackages)
+	{
+		auto globalPath = ofFilePath::join(getAddonsPath(), requiredPackage.getPath());
+		auto localPath = ofFilePath::join(getProjectPath(), requiredPackage.getPath());
+		if (!ofDirectory::doesDirectoryExist(globalPath) && !ofDirectory::doesDirectoryExist(localPath))
+		{
 			missingPackages.push_back(requiredPackage);
 		}
 	}
@@ -976,7 +978,8 @@ bool ofPackageManager::generateProject(std::string path, std::vector<ofPackage> 
 		std::string addonsMakeText = "";
 		auto project = getTargetProject(platform);
 		std::string templateName = "";
-		if(!template_.dir.path().empty()){
+		if (!template_.dir.path().empty())
+		{
 			templateName = template_.name;
 		}
 		project->create(projectPath, templateName);
@@ -1022,6 +1025,103 @@ bool ofPackageManager::recursivelyGenerateProjects(std::string path, std::vector
 		}
 	}
 	return true;
+}
+ofJson ofPackageManager::generateSingleFileProject(std::string path)
+{
+	ofJson sfp;
+	sfp["packages"] = ofJson::array();
+	for (auto package : getPackagesListedInAddonsMakeFile())
+	{
+		sfp["packages"].push_back(package.toString());
+	}
+	ofDirectory dir(path);
+	dir.listDir();
+	for (auto file : dir.getFiles())
+	{
+		if (file.getFileName() == "src" && file.isDirectory())
+		{
+			sfp["src"] = directoryToJson(file.getAbsolutePath());
+		}
+		ofLogNotice() << file.getFileName();
+	}
+	ofLogNotice() << sfp.dump(4);
+	ofSetClipboardString(sfp.dump(4));
+	return sfp;
+}
+ofJson ofPackageManager::directoryToJson(string path)
+{
+	ofDirectory dir(path);
+	dir.listDir();
+	ofJson content = ofJson::array();
+	for (auto file : dir.getFiles())
+	{
+		ofJson node;
+		node["fileName"] = file.getFileName();
+		if (file.isDirectory())
+		{
+			node["data"] = directoryToJson(file.getAbsolutePath());
+		}
+		else
+		{
+			std::ifstream t(file.getAbsolutePath());
+			std::stringstream buffer;
+			buffer << t.rdbuf();
+			node["data"] = buffer.str();
+		}
+		content.push_back(node);
+	}
+	return content;
+}
+bool ofPackageManager::jsonToDirectory(ofJson json, std::string path)
+{
+	bool success = true;
+	for (auto fileJson : json)
+	{
+		if (fileJson["data"].is_array())
+		{
+			ofDirectory directory(ofFilePath::join(path, fileJson["fileName"]));
+			directory.create();
+			if(!jsonToDirectory(fileJson["data"], directory.getAbsolutePath())){
+				success = false;
+			}
+		}
+		else
+		{
+			ofFile file(ofFilePath::join(path, fileJson["fileName"]), ofFile::ReadWrite);
+			file.create();
+			ofBuffer buffer;
+			std::string data = fileJson["data"];
+			buffer.set(data.c_str(), data.size());
+			file.writeFromBuffer(buffer);
+			file.close();
+		}
+	}
+	return success;
+}
+bool ofPackageManager::createFromSingleFileProject(ofJson sfp, std::string path)
+{
+	ofDirectory directory(path);
+	if (!directory.exists())
+	{
+		directory.create();
+	}
+	std::string addonsMake;
+	for (std::string package : sfp["packages"])
+	{
+		addonsMake += package;
+		addonsMake += "\n";
+	}
+	ofFile addonsMakeFile(ofFilePath::join(path, "addons.make"), ofFile::ReadWrite);
+	if (!addonsMakeFile.exists())
+	{
+		addonsMakeFile.create();
+	}
+	ofBuffer buffer;
+	buffer.set(addonsMake.c_str(), addonsMake.size());
+	addonsMakeFile.writeFromBuffer(buffer);
+	addonsMakeFile.close();
+
+	return jsonToDirectory(sfp["src"], ofFilePath::join(path, "src"));
 }
 std::vector<ofTargetPlatform> ofPackageManager::getPlatforms()
 {

@@ -76,8 +76,14 @@ public:
 
 	bool generateProject(std::string path, std::vector<ofPackage> packages = {}, std::vector<ofTargetPlatform> platforms = {}, baseProject::Template = baseProject::Template());
 	bool recursivelyGenerateProjects(std::string path, std::vector<ofTargetPlatform> platforms = {}, baseProject::Template = baseProject::Template());
+	ofJson generateSingleFileProject(std::string path);
+	ofJson directoryToJson(std::string path);
+	bool jsonToDirectory(ofJson data, std::string path);
+	bool createFromSingleFileProject(ofJson sfp, std::string path);
+
 	std::vector<ofTargetPlatform> getPlatforms();
 	std::map<ofTargetPlatform, std::vector<baseProject::Template>> getTemplates();
+
 
 private:
 	bool _silent;

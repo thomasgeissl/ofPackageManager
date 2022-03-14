@@ -592,7 +592,16 @@ void gui::drawRecentProjects()
                 ofFile file(path, ofFile::ReadWrite);
                 recentProjects >> file;
             }
-            std::string buttonId = "configure##";
+            ImGui::SameLine();
+
+            std::string buttonId = "open directory##";
+            buttonId += p._path;
+            if (Button(buttonId.c_str()))
+            {
+                openViaOfSystem(p._path);
+            }
+
+            buttonId = "configure##";
             buttonId += p._path;
             ImGui::SameLine();
             if (Button(buttonId.c_str()))
@@ -613,14 +622,15 @@ void gui::drawHome()
     auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
     if (ImGui::BeginChild("home", ImVec2(-1, -footerHeight - padding)))
     {
-    _animations.draw();
+        _animations.draw();
         ImGui::EndChild();
     }
     if (ImGui::BeginChild("homeActions"))
     {
         auto label = _animations.getCurrentLabel();
         auto url = _animations.getCurrentUrl();
-        if(!label.empty() && !url.empty() && MinButton(label, ImGui::GetContentRegionAvail())){
+        if (!label.empty() && !url.empty() && MinButton(label, ImGui::GetContentRegionAvail()))
+        {
             ofLaunchBrowser(url);
         }
         ImGui::EndChild();
@@ -809,54 +819,65 @@ void gui::drawUpdate()
     if (ImGui::BeginChild("update", ImVec2(-1, -footerHeight - padding)))
     {
         auto indentation = 24;
-        ImGui::Text("choose a project from your local file system");
-        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
-        ImGui::Indent(indentation);
+        // ImGui::Text("choose a project from your local file system");
+        // ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
         PathChooser(_projectPath, _app.getMyAppsPath());
-        ImGui::Unindent(indentation);
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 48);
-        ImGui::Text("or paste a public git url in here to clone the project");
-        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
-        char name[256] = "";
-        strcpy(name, _openFromWebText.c_str());
-        ImGui::Indent(indentation);
-        ImGui::PushItemWidth(ImGui::GetContentRegionAvailWidth());
-        if (ImGui::InputText("##cloneUrl", name, IM_ARRAYSIZE(name)))
+
+        static char sfp[16 * 1024];
+        strcpy(sfp, _sfp.c_str());
+        ImGui::Text("git url or sfp (single file project)");
+        if (ImGui::InputTextMultiline("##source", sfp, IM_ARRAYSIZE(sfp), ImVec2(-FLT_MIN, ImGui::GetTextLineHeight() * 16), 0))
         {
-            _openFromWebText = name;
+            _sfp = sfp;
         }
-        ImGui::PopItemWidth();
-        if (Button("choose destination and clone", ImVec2(0, 0), false, _openFromWebText.empty()))
+        if (Button("choose destination and import", ImVec2(0, 0), false, _sfp.empty()))
         {
-            auto result = ofSystemLoadDialog("path to projects", true, _app.getMyAppsPath());
+            std::string defaultName = "sfp_";
+            defaultName += ofGetTimestampString();
+            if (!ofJson::accept(sfp)){
+                defaultName = ofFilePath::getBaseName(sfp);
+            }
+            auto result = ofSystemSaveDialog(defaultName, "project path");
             if (result.bSuccess)
             {
                 auto path = result.getPath();
-                if (ofDirectory::doesDirectoryExist(path))
+                if (!ofDirectory::doesDirectoryExist(path))
                 {
-                    std::string projectName = ofFilePath::getBaseName(_openFromWebText);
-                    std::string projectPath = ofFilePath::join(path, projectName);
-                    ofxGit::repository repo(projectPath);
-                    if (repo.clone(_openFromWebText))
+                    std::string projectPath = path;
+                    std::string projectName = ofFilePath::getFileName(path);
+
+                    if (ofJson::accept(_sfp))
                     {
-                        _projectName = projectName;
-                        _projectPath = projectPath;
-                        _notifications.add("successfully cloned project. it is ready to be configured.");
+                        if(_app.createFromSingleFileProject(ofJson::parse(_sfp), projectPath)){
+                            _projectPath = projectPath;
+                            _projectName = projectName;
+                            _notifications.add("successfully import SFP. it is ready to be configured.");
+                        }else{
+                            _notifications.add("sorry, could not import SFP.");
+                        }
                     }
                     else
                     {
-                        _notifications.add("sorry, could not clone project.");
+                        // TODO: check if git url
+                        ofxGit::repository repo(projectPath);
+                        if (repo.clone(ofTrim(_sfp)))
+                        {
+                            _projectName = projectName;
+                            _projectPath = projectPath;
+                            _notifications.add("successfully cloned project. it is ready to be configured.");
+                        }
+                        else
+                        {
+                            _notifications.add("sorry, could not clone project.");
+                        }
                     }
                 }
             }
         }
-        ImGui::Unindent(indentation);
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 48);
-        ImGui::Text("or select one of your recent projects");
-        ImGui::Indent(indentation);
-        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
+        ImGui::Text("recent projects");
         drawRecentProjects();
-        ImGui::Unindent(indentation);
         ImGui::EndChild();
     }
     if (BeginActions(1))
@@ -988,12 +1009,19 @@ void gui::drawConfigureProject()
         }
         ImGui::EndChild();
     }
-    if (BeginActions(2))
+    if (BeginActions(3))
     {
         if (Button("install additional addons", ImVec2(buttonWidth, -1)))
         {
             _searchModalOpened = true;
         }
+        ImGui::SameLine();
+        if (Button("sfp to clipboard", ImVec2(buttonWidth, -1), false))
+        {
+            auto sfp = _app.generateSingleFileProject(_projectPath);
+            ofSetClipboardString(sfp.dump(4));
+        }
+        // Tooltip("creates a single file project and copies it to the clipboard.");
         ImGui::SameLine();
         if (Button("generate project", ImVec2(buttonWidth, -1), true))
         {
@@ -1375,6 +1403,9 @@ void gui::onManageGlobalPackagesEntered(ofxStateEnteredEventArgs &args)
 }
 void gui::onUpdateProjectStateEntered(ofxStateEnteredEventArgs &args)
 {
+    _sfp.clear();
+    _projectPath.clear();
+    _projectName.clear();
     updateRecentProjectsList();
 }
 
