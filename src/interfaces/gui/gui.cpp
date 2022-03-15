@@ -362,7 +362,34 @@ void gui::drawNotifications()
 void gui::drawConsole()
 {
     ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0, 0, 0, 1.0f));
-    ImGui::BeginChild("console", ImVec2(0, 0));
+
+    ImGui::BeginChild("console", ImVec2(0, 0), false, ImGuiWindowFlags_MenuBar);
+    if (ImGui::BeginMenuBar())
+    {
+        if (ImGui::BeginMenu("console"))
+        {
+            if (ImGui::MenuItem("close"))
+            {
+                _showConsole = false;
+            }
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("edit"))
+        {
+            if (ImGui::MenuItem("clear"))
+            {
+                // _consoleBuffer.clear();
+                _consoleBuffer.str("");
+            }
+            if (ImGui::MenuItem("copy to clipboard"))
+            {
+                ofSetClipboardString(_consoleBuffer.str());
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::EndMenuBar();
+    }
+
     ImGui::TextWrapped(_consoleBuffer.str().c_str());
     ImGui::EndChild();
     ImGui::PopStyleColor();
@@ -835,7 +862,8 @@ void gui::drawUpdate()
         {
             std::string defaultName = "sfp_";
             defaultName += ofGetTimestampString();
-            if (!ofJson::accept(sfp)){
+            if (!ofJson::accept(sfp))
+            {
                 defaultName = ofFilePath::getBaseName(sfp);
             }
             auto result = ofSystemSaveDialog(defaultName, "project path");
@@ -849,11 +877,14 @@ void gui::drawUpdate()
 
                     if (ofJson::accept(_sfp))
                     {
-                        if(_app.createFromSingleFileProject(ofJson::parse(_sfp), projectPath)){
+                        if (_app.createFromSingleFileProject(ofJson::parse(_sfp), projectPath))
+                        {
                             _projectPath = projectPath;
                             _projectName = projectName;
                             _notifications.add("successfully import SFP. it is ready to be configured.");
-                        }else{
+                        }
+                        else
+                        {
                             _notifications.add("sorry, could not import SFP.");
                         }
                     }
