@@ -28,6 +28,7 @@ gui::gui(ofPackageManager app) : ofBaseApp(), _app(app),
                                  _preferencesModalOpened(false),
                                  _searchModalOpened(false),
                                  _deletePackageModalOpened(false),
+                                 _closeCurrentModal(false),
                                  _projectDirectoryPath(app.getMyAppsPath()),
                                  _version(_app.getVersion()),
                                  _mostRecentVersion(_app.getNewestAvailableVersion()),
@@ -88,6 +89,7 @@ void gui::setup()
     ofSetWindowTitle("ofPackageManager");
     ofSetFrameRate(60);
     ofSetBackgroundColor(16, 16, 16);
+    ofSetEscapeQuitsApp(false);
 
     _gui.setup(nullptr, false);
     _gui.setTheme(new Theme());
@@ -274,7 +276,7 @@ ImVec2 gui::drawMainMenu()
         }
         if (ImGui::BeginMenu("View"))
         {
-            if (ImGui::MenuItem("fullscreen", getShortCutLabel("f").c_str(), &_fullscreen))
+            if (ImGui::MenuItem("fullscreen", getShortCutLabel("f", true, true).c_str(), &_fullscreen))
             {
                 ofToggleFullscreen();
             }
@@ -399,6 +401,10 @@ void gui::drawModals()
     auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
     if (BeginModal("about"))
     {
+        if(_closeCurrentModal){
+            ImGui::CloseCurrentPopup();
+            _closeCurrentModal = false;
+        }
         if (ImGui::BeginChild("modalContent", ImVec2(-1, -footerHeight - padding)))
         {
             std::string version = "ofPackageManager version: ";
@@ -444,6 +450,10 @@ void gui::drawModals()
     }
     if (BeginModal("preferences"))
     {
+        if(_closeCurrentModal){
+            ImGui::CloseCurrentPopup();
+            _closeCurrentModal = false;
+        }
         if (ImGui::BeginChild("modalContent", ImVec2(-1, -footerHeight - padding)))
         {
             ImGui::Text("TODO");
@@ -462,6 +472,10 @@ void gui::drawModals()
     }
     if (BeginModal("search"))
     {
+        if(_closeCurrentModal){
+            ImGui::CloseCurrentPopup();
+            _closeCurrentModal = false;
+        }
         if (ImGui::BeginChild("modalContent", ImVec2(-1, -footerHeight - padding)))
         {
             char name[128] = "";
@@ -587,6 +601,9 @@ void gui::drawModals()
 
         ImGui::EndPopup();
     }
+
+    // reset in case no modal was open
+    _closeCurrentModal = false;
 }
 void gui::drawRecentProjects()
 {
@@ -1253,6 +1270,10 @@ void gui::keyReleased(int key)
 #ifdef TARGET_LINUX
     commandKeyPressed = ofGetKeyPressed(OF_KEY_CTRL);
 #endif
+    if (key == OF_KEY_ESC) 
+    {
+        _closeCurrentModal = true;
+    }
     if (!commandKeyPressed)
     {
         return;
@@ -1274,8 +1295,19 @@ void gui::keyReleased(int key)
     }
     case 'f':
     {
-        _fullscreen = !_fullscreen;
-        ofToggleFullscreen();
+        if (shiftKeyPressed)
+        {
+            _fullscreen = !_fullscreen;
+            ofToggleFullscreen();
+        }
+        else
+        {
+            if (_stateMachine.isCurrentState(_manageGlobalPackagesState) ||
+                _stateMachine.isCurrentState(_configureProjectState))
+            {
+                _searchModalOpened = true;
+            }
+        }
         break;
     }
     case 'n':

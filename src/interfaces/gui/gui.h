@@ -149,6 +149,7 @@ private:
     bool _preferencesModalOpened;
     bool _searchModalOpened;
     bool _deletePackageModalOpened;
+    bool _closeCurrentModal;
 
     // console
     std::stringstream _consoleBuffer;
