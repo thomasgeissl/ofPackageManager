@@ -628,6 +628,11 @@ void gui::drawModals()
 }
 void gui::drawRecentProjects()
 {
+    if (_recentProjects.size() == 0)
+    {
+        return;
+    }
+    ImGui::Text("recent projects");
     if (ImGui::BeginTable("recentProjectsTable", 2, tableFlags))
     {
         ImGui::TableSetupColumn("name", ImGuiTableColumnFlags_WidthStretch);
@@ -963,7 +968,6 @@ void gui::drawUpdate()
             }
         }
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 48);
-        ImGui::Text("recent projects");
         drawRecentProjects();
         ImGui::EndChild();
     }
