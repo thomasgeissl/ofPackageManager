@@ -77,5 +77,6 @@ void Theme::setup()
 	style->GrabRounding = 0.0f;
 	style->ScrollbarRounding = 0.0f;
 	style->TabRounding = 0.0f;
-	style->PopupRounding = 8.0f;
+	style->PopupRounding = 0.0f;
+	style->PopupBorderSize = 1.0f;
 }

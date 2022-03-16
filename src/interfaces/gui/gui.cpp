@@ -94,16 +94,19 @@ void gui::setup()
     _gui.setup(nullptr, false);
     _gui.setTheme(new Theme());
 
-    static const ImWchar icon_ranges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
     ImGuiIO &io = ImGui::GetIO();
+
+    // io.Fonts->AddFontFromFileTTF(ofToDataPath("Roboto-Light.ttf").c_str(), 13.f, &config);
+    // _gui.addFont("Roboto-Regular.ttf", 16.0f, nullptr);
+    // io.Fonts->AddFontFromMemoryTTF((void *)tahoma, sizeof(tahoma), 13.f, nullptr);
+
     ImFontConfig config;
-    config.FontDataOwnedByAtlas = false;
-    config.GlyphMinAdvanceX = 13.0f;
-    // io.Fonts->AddFontDefault();
-    config.MergeMode = false;
-    io.Fonts->AddFontFromMemoryTTF((void *)tahoma, sizeof(tahoma), 13.f, &config);
     config.MergeMode = true;
-    io.Fonts->AddFontFromMemoryTTF((void *)fa_solid_900, sizeof(fa_solid_900), 13.f, &config, icon_ranges);
+    config.GlyphMinAdvanceX = 13.0f; // Use if you want to make the icon monospaced
+
+    static const ImWchar icon_ranges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
+    _gui.addFont("fa-solid-900.ttf", 13.0f, &config, icon_ranges);
+    // io.Fonts->AddFontFromMemoryTTF((void *)fa_solid_900, sizeof(fa_solid_900), 13.f, &config, icon_ranges);
 
     _originalBuffer = std::cout.rdbuf(_consoleBuffer.rdbuf());
     updatePackagesLists();
@@ -304,25 +307,25 @@ void gui::drawSideBar()
     auto availableHeight = ImGui::GetWindowHeight() - ImGui::GetCursorPosY() + style.ItemSpacing.y;
     auto buttonSize = ImVec2(ImGui::GetContentRegionAvailWidth(), availableHeight / numberOfButtons - style.ItemSpacing.y);
     // auto buttonSize = ImVec2(ImGui::GetContentRegionAvailWidth(), footerHeight);
-    if (MenuButton("home", buttonSize, _stateMachine.isCurrentState(_homeState)))
+    if (MenuButton(ICON_FA_HOME " home", buttonSize, _stateMachine.isCurrentState(_homeState)))
     {
         _stateMachine.trigger("home");
     }
-    if (MenuButton("manage addons", buttonSize, _stateMachine.isCurrentState(_manageGlobalPackagesState)))
+    if (MenuButton(ICON_FA_LIST " manage addons", buttonSize, _stateMachine.isCurrentState(_manageGlobalPackagesState)))
     {
         _stateMachine.trigger("manageGlobalPackages");
     }
-    if (MenuButton("new project", buttonSize, _stateMachine.isCurrentState(_createState)))
+    if (MenuButton(ICON_FA_FOLDER_PLUS " new project", buttonSize, _stateMachine.isCurrentState(_createState)))
     {
         _stateMachine.trigger("create");
     }
-    if (MenuButton("open project", buttonSize, _stateMachine.isCurrentState(_updateState)))
+    if (MenuButton(ICON_FA_FOLDER_OPEN " open project", buttonSize, _stateMachine.isCurrentState(_updateState)))
     {
         _stateMachine.trigger("update");
     }
     if (_showAdvancedOptions)
     {
-        if (MenuButton("update multiple projects", buttonSize, _stateMachine.isCurrentState(_updateMultipleState)))
+        if (MenuButton(ICON_FA_FOLDER " update multiple projects", buttonSize, _stateMachine.isCurrentState(_updateMultipleState)))
         {
             _stateMachine.trigger("updateMultiple");
         }
@@ -368,7 +371,7 @@ void gui::drawConsole()
     ImGui::BeginChild("console", ImVec2(0, 0), false, ImGuiWindowFlags_MenuBar);
     if (ImGui::BeginMenuBar())
     {
-        if (ImGui::BeginMenu("console"))
+        if (ImGui::BeginMenu(ICON_FA_TERMINAL))
         {
             if (ImGui::MenuItem("close"))
             {
@@ -401,7 +404,8 @@ void gui::drawModals()
     auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
     if (BeginModal("about"))
     {
-        if(_closeCurrentModal){
+        if (_closeCurrentModal)
+        {
             ImGui::CloseCurrentPopup();
             _closeCurrentModal = false;
         }
@@ -450,7 +454,8 @@ void gui::drawModals()
     }
     if (BeginModal("preferences"))
     {
-        if(_closeCurrentModal){
+        if (_closeCurrentModal)
+        {
             ImGui::CloseCurrentPopup();
             _closeCurrentModal = false;
         }
@@ -472,7 +477,8 @@ void gui::drawModals()
     }
     if (BeginModal("search"))
     {
-        if(_closeCurrentModal){
+        if (_closeCurrentModal)
+        {
             ImGui::CloseCurrentPopup();
             _closeCurrentModal = false;
         }
@@ -519,20 +525,24 @@ void gui::drawModals()
                         ImGui::Text(ofToString(repo._forks).c_str());
                         ImGui::TableSetColumnIndex(3);
 
-                        std::string id = "open website##";
-                        id += repo._url;
-                        if (Button(id.c_str()))
+                        std::string buttonId = ICON_FA_EXTERNAL_LINK "##";
+                        buttonId += repo._url;
+                        if (Button(buttonId.c_str()))
                         {
-                            ofLaunchBrowser(repo._url);
+                            std::string website = repo._url;
+                            ofLaunchBrowser(website);
                         }
+                        Tooltip("opens addon's website in web browser");
+
                         ImGui::SameLine();
+                        std::string id = ICON_FA_DOWNLOAD "##";
                         if (_stateMachine.isCurrentState(_manageGlobalPackagesState))
                         {
-                            id = "install globally##";
+                            id += "install globally_";
                         }
                         else
                         {
-                            id = "install##";
+                            id += "install_";
                         }
                         auto isMissing = false;
                         for (auto &missingPackage : _missingPackages)
@@ -567,7 +577,18 @@ void gui::drawModals()
                         }
                         if (isMissing)
                         {
-                            Tooltip("will install globally, since it is a missing dependency");
+                            Tooltip("installs addon globally, since it is a missing dependency");
+                        }
+                        else
+                        {
+                            if (_stateMachine.isCurrentState(_manageGlobalPackagesState))
+                            {
+                                Tooltip("installs addon globally");
+                            }
+                            else
+                            {
+                                Tooltip("installs addon locally");
+                            }
                         }
                         i++;
                     }
@@ -609,7 +630,7 @@ void gui::drawRecentProjects()
 {
     if (ImGui::BeginTable("recentProjectsTable", 2, tableFlags))
     {
-        ImGui::TableSetupColumn("path", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupColumn("name", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableSetupColumn("actions", ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableHeadersRow();
         auto index = 0;
@@ -617,10 +638,19 @@ void gui::drawRecentProjects()
         {
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
-            ImGui::TextWrapped(ofFilePath::getBaseName(p._path).c_str());
+            std::string buttonId = ofFilePath::getBaseName(p._path);
+            buttonId += "##";
+            buttonId += p._path;
+            if (Button(buttonId.c_str(), ImVec2(0, 0), false))
+            {
+                _projectPath = p._path;
+                _projectName = ofFilePath::getBaseName(p._path);
+                _stateMachine.trigger("configure");
+            }
+            // ImGui::TextWrapped(ofFilePath::getBaseName(p._path).c_str());
             Tooltip(p._path.c_str());
             ImGui::TableSetColumnIndex(1);
-            std::string removeButtonId = "remove from list##";
+            std::string removeButtonId = ICON_FA_TRASH "##";
             removeButtonId += p._path;
             if (Button(removeButtonId.c_str()))
             {
@@ -636,24 +666,26 @@ void gui::drawRecentProjects()
                 ofFile file(path, ofFile::ReadWrite);
                 recentProjects >> file;
             }
+            Tooltip("removes project from the list");
             ImGui::SameLine();
 
-            std::string buttonId = "open directory##";
-            buttonId += p._path;
-            if (Button(buttonId.c_str()))
+            std::string openButtonId = ICON_FA_FOLDER "##";
+            openButtonId += p._path;
+            if (Button(openButtonId.c_str()))
             {
                 openViaOfSystem(p._path);
             }
+            Tooltip("opens directory in os' file browser");
 
-            buttonId = "configure##";
-            buttonId += p._path;
-            ImGui::SameLine();
-            if (Button(buttonId.c_str()))
-            {
-                _projectPath = p._path;
-                _projectName = ofFilePath::getBaseName(p._path);
-                _stateMachine.trigger("configure");
-            }
+            // buttonId = ICON_FA_COG"##";
+            // buttonId += p._path;
+            // ImGui::SameLine();
+            // if (Button(buttonId.c_str(), ImVec2(0,0), true))
+            // {
+            //     _projectPath = p._path;
+            //     _projectName = ofFilePath::getBaseName(p._path);
+            //     _stateMachine.trigger("configure");
+            // }
             index++;
         }
 
@@ -701,16 +733,18 @@ void gui::drawManageGlobalPackages()
                 ImGui::TableSetColumnIndex(1);
                 ImGui::Text("oF");
                 ImGui::TableSetColumnIndex(2);
-                std::string buttonId = "open directory##";
+                std::string buttonId = ICON_FA_FOLDER "##";
                 buttonId += corePackage.second._package.toString();
                 if (Button(buttonId.c_str()))
                 {
                     openViaOfSystem(ofFilePath::join(_app.getAddonsPath(), corePackage.second._package.getPath()));
                 }
+                Tooltip("opens directory in os' file browser");
                 ImGui::SameLine();
-                if (Button("remove##disabled", ImVec2(0, 0), false, true))
+                if (Button(ICON_FA_TRASH "##disabled", ImVec2(0, 0), false, true))
                 {
                 }
+                Tooltip("core addons cannot be deleted");
             }
             if (_globalPackages.size() > 0)
             {
@@ -727,12 +761,13 @@ void gui::drawManageGlobalPackages()
                 Tooltip(package.second._package.toString());
                 ImGui::TableSetColumnIndex(1);
                 ImGui::TableSetColumnIndex(2);
-                std::string buttonId = "open directory##";
+                std::string buttonId = ICON_FA_FOLDER "##";
                 buttonId += package.second._package.toString();
                 if (Button(buttonId.c_str()))
                 {
                     openViaOfSystem(ofFilePath::join(_app.getAddonsPath(), package.second._package.getPath()));
                 }
+                Tooltip("opens directory in os' file browser");
                 // ImGui::SameLine();
                 // buttonId = "upgrade##";
                 // buttonId += package.second._package.toString();
@@ -740,7 +775,7 @@ void gui::drawManageGlobalPackages()
 
                 // }
                 ImGui::SameLine();
-                buttonId = "remove##";
+                buttonId = ICON_FA_TRASH "##";
                 buttonId += package.second._package.toString();
                 // TODO: probably makes sense to add a confirmation modal
                 if (Button(buttonId.c_str()))
@@ -752,6 +787,7 @@ void gui::drawManageGlobalPackages()
                         // _globalPackages.erase(package.first);
                     }
                 }
+                Tooltip("removes directory from global addons");
             }
             if (_showAvailablePackages)
             {
@@ -772,20 +808,22 @@ void gui::drawManageGlobalPackages()
                         std::string author = it.value()["author"];
                         ImGui::Text(author.c_str());
                         ImGui::TableSetColumnIndex(2);
-                        std::string buttonId = "open website##";
+                        std::string buttonId = ICON_FA_EXTERNAL_LINK "##";
                         buttonId += gitUrl;
                         if (Button(buttonId.c_str()))
                         {
                             std::string website = it.value()["website"];
                             ofLaunchBrowser(website);
                         }
+                        Tooltip("opens addon's website in web browser");
                         ImGui::SameLine();
-                        buttonId = "install##";
+                        buttonId = ICON_FA_DOWNLOAD " ##";
                         buttonId += gitUrl;
                         if (Button(buttonId.c_str()))
                         {
                             _app.installPackageById(it.key(), "latest", _app.getAddonsPath());
                         }
+                        Tooltip("installs addon globally");
                     }
                 }
             }
@@ -810,6 +848,7 @@ void gui::drawManageGlobalPackages()
             }
         }
         ImGui::SameLine();
+        // if (Button(ICON_FA_SEARCH" install additional addons", ImVec2(buttonWidth, -1)))
         if (Button("install additional addons", ImVec2(buttonWidth, -1)))
         {
             _searchModalOpened = true;
@@ -996,10 +1035,13 @@ void gui::drawConfigureProject()
         ImGui::Text(_projectPath.c_str());
         ImGui::PopStyleColor();
         ImGui::SameLine();
-        if (Button("open directory##projectDir"))
+        std::string openButtonId = ICON_FA_FOLDER "##";
+        openButtonId += _projectPath;
+        if (Button(openButtonId.c_str()))
         {
             openViaOfSystem(_projectPath);
         }
+        Tooltip("opens directory in os' file browser");
 
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
 
@@ -1064,12 +1106,14 @@ void gui::drawConfigureProject()
             _searchModalOpened = true;
         }
         ImGui::SameLine();
-        if (Button("sfp to clipboard", ImVec2(buttonWidth, -1), false))
+        std::string buttonId = "sfp to clipboard";
+        // buttonId += ICON_FA_CLIPBOARD;
+        if (Button(buttonId, ImVec2(buttonWidth, -1), false))
         {
             auto sfp = _app.generateSingleFileProject(_projectPath);
             ofSetClipboardString(sfp.dump(4));
         }
-        // Tooltip("creates a single file project and copies it to the clipboard.");
+        // Tooltip("exports a single file project to the clipboard.");
         ImGui::SameLine();
         if (Button("generate project", ImVec2(buttonWidth, -1), true))
         {
@@ -1270,7 +1314,7 @@ void gui::keyReleased(int key)
 #ifdef TARGET_LINUX
     commandKeyPressed = ofGetKeyPressed(OF_KEY_CTRL);
 #endif
-    if (key == OF_KEY_ESC) 
+    if (key == OF_KEY_ESC)
     {
         _closeCurrentModal = true;
     }
@@ -1478,4 +1522,5 @@ void gui::onConfigureStateEntered(ofxStateEnteredEventArgs &args)
     updatePackagesLists(true);
     updateSelectedPackages();
     updateMissingPackages();
+    // TODO: clean search params and results
 }
