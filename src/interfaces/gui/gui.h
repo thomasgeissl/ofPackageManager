@@ -9,11 +9,11 @@
 #include "./notifications.h"
 #include "./animations/controller.h"
 
-
-class project {
-    public:
-    project(std::string path) : _path(path){
-
+class project
+{
+public:
+    project(std::string path) : _path(path)
+    {
     }
     std::string _path;
 };
@@ -26,7 +26,8 @@ public:
         _package = package;
         _selected = selected;
     }
-    bool isSelected(){
+    bool isSelected()
+    {
         return _selected;
     }
     ofPackage _package;
@@ -41,7 +42,8 @@ public:
         _target = target;
         _selected = selected;
     }
-    bool isSelected(){
+    bool isSelected()
+    {
         return _selected;
     }
     ofTargetPlatform _target;
@@ -56,7 +58,8 @@ public:
         _template = template_;
         _selected = selected;
     }
-    bool isSelected(){
+    bool isSelected()
+    {
         return _selected;
     }
     friend bool operator==(const selectableTemplate &left, const selectableTemplate &right)
@@ -114,6 +117,7 @@ private:
     void onUpdateProjectStateEntered(ofxStateEnteredEventArgs &args);
     void onConfigureStateEntered(ofxStateEnteredEventArgs &args);
 
+
     std::string _projectDirectoryPath;
     std::string _multipleProjectsDirectoryPath;
     std::string _projectName;
@@ -153,7 +157,7 @@ private:
 
     // console
     std::stringstream _consoleBuffer;
-    std::streambuf * _originalBuffer;
+    std::streambuf *_originalBuffer;
 
     // versions
     ofVersion _version;

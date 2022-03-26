@@ -486,16 +486,34 @@ void gui::drawModals()
         {
             char name[128] = "";
             strcpy(name, _queryText.c_str());
-            ImGui::PushItemWidth(ImGui::GetContentRegionAvailWidth());
+            ImGui::PushItemWidth(ImGui::GetContentRegionAvailWidth() - buttonWidth / 2 - 2 * ImGui::GetStyle().ItemInnerSpacing.x);
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(8, 16));
-            if (ImGui::InputText("##querytext", name, IM_ARRAYSIZE(name), ImGuiInputTextFlags_EnterReturnsTrue))
+            if (ImGui::InputText("##querytext", name, IM_ARRAYSIZE(name), 0))
             {
+
                 _queryText = name;
-                _searchResults = _app.searchPackageOnGithubByName2(name);
-                _selectedSearchResult = ghRepo();
+            }
+            if (ImGui::IsItemFocused())
+            {
+                if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter)))
+                {
+                    _searchResults = _app.searchPackageOnGithubByName2(_queryText);
+                    _selectedSearchResult = ghRepo();
+                }
+            }
+            if (ImGui::IsWindowAppearing())
+            {
+                ImGui::SetKeyboardFocusHere(-1);
             }
             ImGui::PopStyleVar();
             ImGui::PopItemWidth();
+            auto textFieldSize = ImGui::GetItemRectSize();
+            ImGui::SameLine();
+            if (Button(ICON_FA_SEARCH, ImVec2(buttonWidth / 2, textFieldSize.y), true))
+            {
+                _searchResults = _app.searchPackageOnGithubByName2(_queryText);
+                _selectedSearchResult = ghRepo();
+            }
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
 
             if (_searchResults.size() > 0)
@@ -1304,8 +1322,7 @@ void gui::drawPlatformAndTemplateChooser()
     ImGui::PopItemWidth();
 }
 
-void gui::keyPressed(int key) {}
-void gui::keyReleased(int key)
+void gui::keyPressed(int key)
 {
     auto commandKeyPressed = false;
     auto shiftKeyPressed = ofGetKeyPressed(OF_KEY_SHIFT);
@@ -1321,6 +1338,9 @@ void gui::keyReleased(int key)
     if (key == OF_KEY_ESC)
     {
         _closeCurrentModal = true;
+    }
+    if (key == OF_KEY_RETURN)
+    {
     }
     if (!commandKeyPressed)
     {
@@ -1374,6 +1394,9 @@ void gui::keyReleased(int key)
         break;
     }
     }
+}
+void gui::keyReleased(int key)
+{
 }
 void gui::mouseMoved(int x, int y) {}
 void gui::mouseDragged(int x, int y, int button) {}
