@@ -8,7 +8,7 @@
 static int footerHeight = 64;
 static int consoleHeight = 200;
 static int buttonWidth = 200;
-static ImGuiTableFlags tableFlags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable;
+static ImGuiTableFlags tableFlags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable;
 
 gui::gui(ofPackageManager app) : ofBaseApp(), _app(app),
                                  _homeState(ofxState::create("home")),
@@ -71,6 +71,9 @@ gui::gui(ofPackageManager app) : ofBaseApp(), _app(app),
     _stateMachine.addTransition(_updateMultipleState, "update", _updateState);
     _stateMachine.addTransition(_updateMultipleState, "updateMultiple", _updateMultipleState);
 
+
+    // _console._closeEvent.addListener(this, &gui::onConsoleClose);
+    ofAddListener(_console._closeEvent, this, &gui::onConsoleClose);
     // TODO: add support for lambda functions to ofxStateMachine
     // _homeState->addEnteredListener([&]{ofLogNotice() << "home entered";});
     _homeState->addEnteredListener(this, &gui::onHomeStateEntered);
@@ -108,14 +111,13 @@ void gui::setup()
     _gui.addFont("fa-solid-900.ttf", 13.0f, &config, icon_ranges);
     // io.Fonts->AddFontFromMemoryTTF((void *)fa_solid_900, sizeof(fa_solid_900), 13.f, &config, icon_ranges);
 
-    _originalBuffer = std::cout.rdbuf(_consoleBuffer.rdbuf());
     updatePackagesLists();
     updateRecentProjectsList();
 }
 
 void gui::exit()
 {
-    std::cout.rdbuf(_originalBuffer);
+    _console.exit();
 }
 
 void gui::update()
@@ -196,7 +198,7 @@ void gui::draw()
 
                 if (_showConsole)
                 {
-                    drawConsole();
+                    _console.draw(consoleHeight);
                 }
             }
             ImGui::EndChild();
@@ -366,38 +368,7 @@ void gui::drawNotifications()
 }
 void gui::drawConsole()
 {
-    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0, 0, 0, 1.0f));
-
-    ImGui::BeginChild("console", ImVec2(0, 0), false, ImGuiWindowFlags_MenuBar);
-    if (ImGui::BeginMenuBar())
-    {
-        if (ImGui::BeginMenu(ICON_FA_TERMINAL))
-        {
-            if (ImGui::MenuItem("close"))
-            {
-                _showConsole = false;
-            }
-            ImGui::EndMenu();
-        }
-        if (ImGui::BeginMenu("edit"))
-        {
-            if (ImGui::MenuItem("clear"))
-            {
-                // _consoleBuffer.clear();
-                _consoleBuffer.str("");
-            }
-            if (ImGui::MenuItem("copy to clipboard"))
-            {
-                ofSetClipboardString(_consoleBuffer.str());
-            }
-            ImGui::EndMenu();
-        }
-        ImGui::EndMenuBar();
-    }
-
-    ImGui::TextWrapped(_consoleBuffer.str().c_str());
-    ImGui::EndChild();
-    ImGui::PopStyleColor();
+    
 }
 void gui::drawModals()
 {
@@ -536,6 +507,7 @@ void gui::drawModals()
                         // {
                         //     _selectedSearchResult = repo;
                         // }
+                        ImGui::AlignTextToFramePadding();
                         ImGui::Text(repo._name.c_str());
                         ImGui::TableSetColumnIndex(1);
                         ImGui::Text(ofToString(repo._stars).c_str());
@@ -743,7 +715,18 @@ void gui::drawManageGlobalPackages()
         if (ImGui::BeginTable("globalPackagesTable", 3, tableFlags))
         {
             ImGui::TableSetupColumn("name", ImGuiTableColumnFlags_WidthStretch);
-            ImGui::TableSetupColumn("author", ImGuiTableColumnFlags_WidthFixed);
+            auto authorLength = 0;
+            // TODO: do this only once or figure out what flags to use for the table to adapt column width to content changes
+            for (auto it : ofJson::iterator_wrapper(_packagesDatabase))
+            {
+                std::string author = it.value()["author"];
+                authorLength = std::max(authorLength, (int)author.size());
+            }
+            std::string authorHeader = "author";
+            std::string suffix(authorLength - authorHeader.size(), ' ');
+            authorHeader += suffix;
+
+            ImGui::TableSetupColumn(authorHeader.c_str(), ImGuiTableColumnFlags_WidthFixed);
             ImGui::TableSetupColumn("actions", ImGuiTableColumnFlags_WidthFixed);
             ImGui::TableHeadersRow();
 
@@ -1550,4 +1533,7 @@ void gui::onConfigureStateEntered(ofxStateEnteredEventArgs &args)
     updateSelectedPackages();
     updateMissingPackages();
     // TODO: clean search params and results
+}
+void gui::onConsoleClose(){
+    _showConsole = false;
 }

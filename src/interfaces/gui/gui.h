@@ -8,6 +8,7 @@
 #include "../../ghRepo.h"
 #include "./notifications.h"
 #include "./animations/controller.h"
+#include "./console.h"
 
 class project
 {
@@ -103,6 +104,7 @@ private:
     ofxImGui::Gui _gui;
     notifications _notifications;
     animation::controller _animations;
+    console _console;
 
     // statemachine
     ofxStateMachine _stateMachine;
@@ -116,6 +118,7 @@ private:
     void onManageGlobalPackagesEntered(ofxStateEnteredEventArgs &args);
     void onUpdateProjectStateEntered(ofxStateEnteredEventArgs &args);
     void onConfigureStateEntered(ofxStateEnteredEventArgs &args);
+    void onConsoleClose();
 
 
     std::string _projectDirectoryPath;
@@ -155,9 +158,6 @@ private:
     bool _deletePackageModalOpened;
     bool _closeCurrentModal;
 
-    // console
-    std::stringstream _consoleBuffer;
-    std::streambuf *_originalBuffer;
 
     // versions
     ofVersion _version;
@@ -178,4 +178,5 @@ private:
     void drawConfigureProject();
     void drawMissingPackages();
     void drawPlatformAndTemplateChooser();
+
 };
