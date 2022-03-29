@@ -7,6 +7,7 @@ curl -O https://openframeworks.cc/versions/v${OFVERSION}/of_v${OFVERSION}_linux6
 tar -zxf of_v${OFVERSION}_linux64gcc6_release.tar.gz
 rm of_v${OFVERSION}_linux64gcc6_release.tar.gz
 sudo of_v${OFVERSION}_linux64gcc6_release/scripts/linux/ubuntu/install_dependencies.sh -y
+sudo of_v${OFVERSION}_linux64gcc6_release/scripts/linux/ubuntu/install_codecs.sh -y
 cd of_v${OFVERSION}_linux64gcc6_release/apps
 mkdir packageManager
 cd packageManager
