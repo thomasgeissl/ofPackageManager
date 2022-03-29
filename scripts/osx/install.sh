@@ -1,5 +1,5 @@
 #!/bin/sh
-OFVERSION=0.11.0
+OFVERSION=0.11.2
 GHUSER=thomasgeissl
 GHREPO=ofPackageManager
 
@@ -16,7 +16,7 @@ cd scripts
 
 ./install_dependencies.sh
 cd ..
-make
+make -j4
 cd scripts
 ./fix_dylib.sh
 cd ../..
