@@ -901,7 +901,10 @@ void gui::drawCreate()
             }
             else if (projectDir.exists())
             {
-                ImGui::TextColored(ImVec4(0.8, 0.8, 0.8, 1.0), "a project named ... exists already.");
+                std::string message = "a project named ";
+                message += _projectName;
+                message += " already exists.";
+                ImGui::TextColored(ImVec4(0.8, 0.8, 0.8, 1.0), message.c_str());
             }
         }
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
