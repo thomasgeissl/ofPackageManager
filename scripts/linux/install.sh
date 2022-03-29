@@ -1,5 +1,5 @@
 #!/bin/sh
-OFVERSION=0.11.0
+OFVERSION=0.11.2
 GHUSER=thomasgeissl
 GHREPO=ofPackageManager
 
