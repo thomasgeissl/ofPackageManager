@@ -17,4 +17,4 @@ cd scripts
 
 ./install_dependencies.sh
 cd ..
-make
+make -j4
