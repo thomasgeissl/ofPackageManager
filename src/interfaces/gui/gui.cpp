@@ -71,7 +71,6 @@ gui::gui(ofPackageManager app) : ofBaseApp(), _app(app),
     _stateMachine.addTransition(_updateMultipleState, "update", _updateState);
     _stateMachine.addTransition(_updateMultipleState, "updateMultiple", _updateMultipleState);
 
-
     // _console._closeEvent.addListener(this, &gui::onConsoleClose);
     ofAddListener(_console._closeEvent, this, &gui::onConsoleClose);
     // TODO: add support for lambda functions to ofxStateMachine
@@ -368,7 +367,6 @@ void gui::drawNotifications()
 }
 void gui::drawConsole()
 {
-    
 }
 void gui::drawModals()
 {
@@ -759,6 +757,7 @@ void gui::drawManageGlobalPackages()
                 ImGui::Text("---");
             }
 
+            std::string removedPackage = "";
             for (auto &package : _globalPackages)
             {
                 ImGui::TableNextRow();
@@ -789,11 +788,14 @@ void gui::drawManageGlobalPackages()
                     if (ofDirectory::removeDirectory(ofFilePath::join(_app.getAddonsPath(), package.second._package.getPath()), true, false))
                     {
                         _notifications.add("successfully removed " + package.first);
-                        _notifications.add("TODO: list still needs to be updated");
-                        // _globalPackages.erase(package.first);
+                        removedPackage = package.first;
                     }
                 }
                 Tooltip("removes directory from global addons");
+            }
+            if (!removedPackage.empty())
+            {
+                _globalPackages.erase(removedPackage);
             }
             if (_showAvailablePackages)
             {
@@ -827,7 +829,19 @@ void gui::drawManageGlobalPackages()
                         buttonId += gitUrl;
                         if (Button(buttonId.c_str()))
                         {
-                            _app.installPackageById(it.key(), "latest", _app.getAddonsPath());
+                            auto package = _app.installPackageById(it.key(), "latest", _app.getAddonsPath());
+                            if (package.empty())
+                            {
+                                std::string message = "could not install ";
+                                message += it.key().c_str();
+                                _notifications.add(message);
+                            }
+                            else
+                            {
+                                std::string message = "successfully installed ";
+                                message += package.toString();
+                                _notifications.add(message);
+                            }
                         }
                         Tooltip("installs addon globally");
                     }
@@ -867,23 +881,31 @@ void gui::drawCreate()
     auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
     if (ImGui::BeginChild("create", ImVec2(-1, -footerHeight - padding)))
     {
-        PathChooser(_projectDirectoryPath, _app.getMyAppsPath());
+        ImGui::Text("project name");
         char name[128];
         strcpy(name, _projectName.c_str());
-        if (ImGui::InputText("project name", name, IM_ARRAYSIZE(name)))
+        ImGui::PushItemWidth(ImGui::GetContentRegionAvailWidth() - 2 * ImGui::GetStyle().ItemInnerSpacing.x);
+        if (ImGui::InputText("##project name", name, IM_ARRAYSIZE(name)))
         {
             _projectName = std::string(name);
             _projectPath = ofFilePath::join(_projectDirectoryPath, _projectName);
         }
+        ImGui::PopItemWidth();
         ofDirectory projectDirectory = ofDirectory(_projectDirectoryPath);
         ofDirectory projectDir = ofDirectory(_projectPath);
         if (projectDirectory.exists())
         {
-            if (projectDir.exists())
+            if (_projectName.empty())
             {
-                ImGui::TextColored(ImVec4(1.0, 0, 0, 1.0), "seems like your project exits already");
+                ImGui::TextColored(ImVec4(0.8, 0.8, 0.8, 1.0), "project name must not be empty.");
+            }
+            else if (projectDir.exists())
+            {
+                ImGui::TextColored(ImVec4(0.8, 0.8, 0.8, 1.0), "a project named ... exists already.");
             }
         }
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
+        PathChooser(_projectDirectoryPath, _app.getMyAppsPath());
         ImGui::EndChild();
     }
 
@@ -1117,6 +1139,7 @@ void gui::drawConfigureProject()
         {
             auto sfp = _app.generateSingleFileProject(_projectPath);
             ofSetClipboardString(sfp.dump(4));
+            _notifications.add("successfully copied the project to the clipboard.");
         }
         // Tooltip("exports a single file project to the clipboard.");
         ImGui::SameLine();
@@ -1167,6 +1190,7 @@ void gui::drawConfigureProject()
             else
             {
                 _notifications.add("sorry, could not generate project. the output in the console might help to figure out what's going wrong.");
+                _showConsole = true;
             }
         }
         EndActions();
@@ -1534,6 +1558,7 @@ void gui::onConfigureStateEntered(ofxStateEnteredEventArgs &args)
     updateMissingPackages();
     // TODO: clean search params and results
 }
-void gui::onConsoleClose(){
+void gui::onConsoleClose()
+{
     _showConsole = false;
 }

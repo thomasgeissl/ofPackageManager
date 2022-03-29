@@ -60,6 +60,9 @@ public:
     {
         std::cout.rdbuf(_originalBuffer);
     }
+    std::string execute(std::string command){
+        return ofSystem(command);
+    }
     std::stringstream _consoleBuffer;
     std::streambuf *_originalBuffer;
     ofEvent<void> _closeEvent;
