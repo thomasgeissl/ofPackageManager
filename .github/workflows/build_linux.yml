@@ -6,7 +6,7 @@ jobs:
   build:
     runs-on: ubuntu-18.04
     steps:
-    - name: install
     - uses: actions/checkout@v2
+    - name: install
       run: ./scripts/linux/install.sh
 
