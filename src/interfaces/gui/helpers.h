@@ -2,7 +2,7 @@
 
 bool Button(std::string text, ImVec2 size = ImVec2(0, 0), bool primary = false, bool disabled = false)
 {
-    text = ofToUpper(text);
+    // text = ofToUpper(text);
     auto framePaddingHeight = 8;
     // ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(20, framePaddingHeight));
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8);
