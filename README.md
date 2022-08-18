@@ -2,8 +2,7 @@
 
 ## Description
 
-ofPackageManager is an experimental package manager for openFrameworks. It is compatible with version 0.10.0 or higher and it does not support windows yet.
-The current command line interface is very similar to npm, but I am open for suggestions.
+ofPackageManager is a package manager for openFrameworks.
 
 ## Build status
 [![Build Status](https://travis-ci.com/thomasgeissl/ofPackageManager.svg?branch=master)](https://travis-ci.com/thomasgeissl/ofPackageManager)

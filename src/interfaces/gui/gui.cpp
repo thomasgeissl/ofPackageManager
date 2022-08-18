@@ -9,9 +9,17 @@ static int footerHeight = 64;
 static int consoleHeight = 200;
 static int buttonWidth = 200;
 static ImGuiTableFlags tableFlags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable;
+static bool endsWith(const std::string& str, const std::string& suffix)
+{
+    return str.size() >= suffix.size() && 0 == str.compare(str.size()-suffix.size(), suffix.size(), suffix);
+}
+
+static bool startsWith(const std::string& str, const std::string& prefix)
+{
+    return str.size() >= prefix.size() && 0 == str.compare(0, prefix.size(), prefix);
+}
 
 gui::gui(ofPackageManager app) : ofBaseApp(), _app(app),
-                                 _homeState(ofxState::create("home")),
                                  _manageGlobalPackagesState(ofxState::create("manage addons")),
                                  _createState(ofxState::create("create")),
                                  _updateState(ofxState::create("update")),
@@ -28,6 +36,7 @@ gui::gui(ofPackageManager app) : ofBaseApp(), _app(app),
                                  _preferencesModalOpened(false),
                                  _searchModalOpened(false),
                                  _deletePackageModalOpened(false),
+                                 _importModelOpened(false),
                                  _closeCurrentModal(false),
                                  _projectDirectoryPath(app.getMyAppsPath()),
                                  _version(_app.getVersion()),
@@ -35,37 +44,26 @@ gui::gui(ofPackageManager app) : ofBaseApp(), _app(app),
                                  _templates(_app.getTemplates()),
                                  _packagesDatabase(_app.getPackagesDatabase())
 {
-    _stateMachine.setInitialState(_homeState);
-    _stateMachine.addTransition(_homeState, "create", _createState);
-    _stateMachine.addTransition(_homeState, "manageGlobalPackages", _manageGlobalPackagesState);
-    _stateMachine.addTransition(_homeState, "update", _updateState);
-    _stateMachine.addTransition(_homeState, "updateMultiple", _updateMultipleState);
-    _stateMachine.addTransition(_homeState, "configure", _configureProjectState);
-
-    _stateMachine.addTransition(_manageGlobalPackagesState, "home", _homeState);
+    _stateMachine.setInitialState(_updateState);
     _stateMachine.addTransition(_manageGlobalPackagesState, "create", _createState);
     _stateMachine.addTransition(_manageGlobalPackagesState, "update", _updateState);
     _stateMachine.addTransition(_manageGlobalPackagesState, "updateMultiple", _updateMultipleState);
 
     _stateMachine.addTransition(_createState, "configure", _configureProjectState);
-    _stateMachine.addTransition(_createState, "home", _homeState);
     _stateMachine.addTransition(_createState, "manageGlobalPackages", _manageGlobalPackagesState);
     _stateMachine.addTransition(_createState, "update", _updateState);
     _stateMachine.addTransition(_createState, "updateMultiple", _updateMultipleState);
 
     _stateMachine.addTransition(_updateState, "configure", _configureProjectState);
-    _stateMachine.addTransition(_updateState, "home", _homeState);
     _stateMachine.addTransition(_updateState, "manageGlobalPackages", _manageGlobalPackagesState);
     _stateMachine.addTransition(_updateState, "create", _createState);
     _stateMachine.addTransition(_updateState, "updateMultiple", _updateMultipleState);
 
-    _stateMachine.addTransition(_configureProjectState, "home", _homeState);
     _stateMachine.addTransition(_configureProjectState, "manageGlobalPackages", _manageGlobalPackagesState);
     _stateMachine.addTransition(_configureProjectState, "create", _createState);
     _stateMachine.addTransition(_configureProjectState, "update", _updateState);
     _stateMachine.addTransition(_configureProjectState, "updateMultiple", _updateMultipleState);
 
-    _stateMachine.addTransition(_updateMultipleState, "home", _homeState);
     _stateMachine.addTransition(_updateMultipleState, "manageGlobalPackages", _manageGlobalPackagesState);
     _stateMachine.addTransition(_updateMultipleState, "create", _createState);
     _stateMachine.addTransition(_updateMultipleState, "update", _updateState);
@@ -74,8 +72,6 @@ gui::gui(ofPackageManager app) : ofBaseApp(), _app(app),
     // _console._closeEvent.addListener(this, &gui::onConsoleClose);
     ofAddListener(_console._closeEvent, this, &gui::onConsoleClose);
     // TODO: add support for lambda functions to ofxStateMachine
-    // _homeState->addEnteredListener([&]{ofLogNotice() << "home entered";});
-    _homeState->addEnteredListener(this, &gui::onHomeStateEntered);
     _manageGlobalPackagesState->addEnteredListener(this, &gui::onManageGlobalPackagesEntered);
     _updateState->addEnteredListener(this, &gui::onUpdateProjectStateEntered);
     _configureProjectState->addEnteredListener(this, &gui::onConfigureStateEntered);
@@ -99,7 +95,6 @@ void gui::setup()
     ImGuiIO &io = ImGui::GetIO();
 
     // io.Fonts->AddFontFromFileTTF(ofToDataPath("Roboto-Light.ttf").c_str(), 13.f, &config);
-    // _gui.addFont("Roboto-Regular.ttf", 16.0f, nullptr);
     // io.Fonts->AddFontFromMemoryTTF((void *)tahoma, sizeof(tahoma), 13.f, nullptr);
 
     ImFontConfig config;
@@ -108,6 +103,7 @@ void gui::setup()
 
     static const ImWchar icon_ranges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
     _gui.addFont("fa-solid-900.ttf", 13.0f, &config, icon_ranges);
+    _gui.addFont("Roboto-Regular.ttf", 16.0f, nullptr);
     // io.Fonts->AddFontFromMemoryTTF((void *)fa_solid_900, sizeof(fa_solid_900), 13.f, &config, icon_ranges);
 
     updatePackagesLists();
@@ -124,11 +120,7 @@ void gui::update()
     auto frameNum = ofGetFrameNum();
     _notifications.update();
 
-    if (_stateMachine.isCurrentState(_homeState))
-    {
-        _animations.update();
-    }
-    else if ((_stateMachine.isCurrentState(_manageGlobalPackagesState) || _stateMachine.isCurrentState(_configureProjectState)) && frameNum % 60 * 10 == 0)
+    if ((_stateMachine.isCurrentState(_manageGlobalPackagesState) || _stateMachine.isCurrentState(_configureProjectState)) && frameNum % 60 * 10 == 0)
     {
         updatePackagesLists();
     }
@@ -150,10 +142,6 @@ void gui::draw()
         {
             if (ImGui::BeginChild("main", ImVec2(0, _showConsole ? -consoleHeight : 0)))
             {
-                if (_stateMachine.isCurrentState(_homeState))
-                {
-                    drawHome();
-                }
                 if (_stateMachine.isCurrentState(_manageGlobalPackagesState))
                 {
                     drawManageGlobalPackages();
@@ -223,12 +211,24 @@ void gui::draw()
             _deletePackageModalOpened = false;
             ImGui::OpenPopup("deletePackage");
         }
+        if (_importModelOpened)
+        {
+            _importModelOpened = false;
+            auto clipboard = ofGetClipboardString();
+            if (ofJson::accept(clipboard)){
+                _sfp = clipboard;
+            }else if(endsWith(clipboard, ".git")){
+                _sfp = clipboard;
+            }
+
+            ImGui::OpenPopup("import");
+        }
         drawModals();
         drawNotifications();
         ImGui::End();
     }
 
-    _gui.end();
+    
     _gui.draw();
 }
 
@@ -307,25 +307,12 @@ void gui::drawSideBar()
     auto style = ImGui::GetStyle();
     auto numberOfButtons = _showAdvancedOptions ? 4 : 3;
     auto availableHeight = ImGui::GetWindowHeight() - ImGui::GetCursorPosY() + style.ItemSpacing.y;
-    auto buttonSize = ImVec2(ImGui::GetContentRegionAvailWidth()-2*24, footerHeight);
-    ImGui::SetCursorPosX(ImGui::GetCursorPosX()+24);
-    // auto buttonSize = ImVec2(-1, footerHeight);
-    // auto buttonSize = ImVec2(ImGui::GetContentRegionAvailWidth(), footerHeight);
-    // if (MenuButton(ICON_FA_HOME " home", buttonSize, _stateMachine.isCurrentState(_homeState)))
-    // {
-    //     _stateMachine.trigger("home");
-    // }
- 
-    // if (MenuButton(ICON_FA_FOLDER_PLUS " new project", buttonSize, _stateMachine.isCurrentState(_createState)))
-    // {
-    //     _stateMachine.trigger("create");
-    // }
-    ImGui::SetCursorPosX(ImGui::GetCursorPosX()+24);
+    auto buttonSize = ImVec2(ImGui::GetContentRegionAvailWidth(), footerHeight);
+
     if (MenuButton(ICON_FA_FOLDER_OPEN " projects", buttonSize, _stateMachine.isCurrentState(_updateState)))
     {
         _stateMachine.trigger("update");
     }
-    ImGui::SetCursorPosX(ImGui::GetCursorPosX()+24);
     if (_showAdvancedOptions)
     {
         if (MenuButton(ICON_FA_FOLDER " update multiple projects", buttonSize, _stateMachine.isCurrentState(_updateMultipleState)))
@@ -333,7 +320,6 @@ void gui::drawSideBar()
             _stateMachine.trigger("updateMultiple");
         }
     }
-    ImGui::SetCursorPosX(ImGui::GetCursorPosX()+24);
     if (MenuButton(ICON_FA_LIST " manage addons", buttonSize, _stateMachine.isCurrentState(_manageGlobalPackagesState)))
     {
         _stateMachine.trigger("manageGlobalPackages");
@@ -379,6 +365,7 @@ void gui::drawConsole()
 void gui::drawModals()
 {
     auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
+    auto isImportModal = false;
     if (BeginModal("about"))
     {
         if (_closeCurrentModal)
@@ -451,6 +438,27 @@ void gui::drawModals()
             EndActions();
         }
         ImGui::EndPopup();
+    }
+    if (BeginModal("import"))
+    {
+        isImportModal = true;
+        if (_closeCurrentModal)
+        {
+            ImGui::CloseCurrentPopup();
+            _closeCurrentModal = false;
+        }
+        if (ImGui::BeginChild("modalContent", ImVec2(-1, -footerHeight - padding)))
+        {
+            static char sfp[16 * 1024];
+            strcpy(sfp, _sfp.c_str());
+            ImGui::Text("git url or sfp (single file project)");
+            if (ImGui::InputTextMultiline("##source", sfp, IM_ARRAYSIZE(sfp), ImVec2(-FLT_MIN, -1), 0))
+            {
+                _sfp = sfp;
+            }
+            
+        }
+        ImGui::EndChild();
     }
     if (BeginModal("search"))
     {
@@ -592,6 +600,7 @@ void gui::drawModals()
                     ImGui::PopStyleVar();
                 }
             }
+
             if (!_selectedSearchResult._name.empty())
             {
                 ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
@@ -606,18 +615,71 @@ void gui::drawModals()
             }
             ImGui::EndChild();
         }
-        // TODO: tag selector
-        if (BeginActions(1))
-        {
-            if (Button("close", ImVec2(buttonWidth, -1)))
-            {
-                ImGui::CloseCurrentPopup();
-            }
-            EndActions();
-        }
 
-        ImGui::EndPopup();
+        EndModal(buttonWidth);
     }
+    // TODO: tag selector
+    auto numberOfButtons = isImportModal ? 2 : 1;
+    if (BeginActions(numberOfButtons))
+    {
+        if (Button("close", ImVec2(buttonWidth, -1)))
+        {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+
+        if (isImportModal && Button("choose destination and import", ImVec2(buttonWidth, -1), true, _sfp.empty()))
+            {
+                std::string defaultName = "sfp_";
+                defaultName += ofGetTimestampString();
+                if (!ofJson::accept(_sfp))
+                {
+                    defaultName = ofFilePath::getBaseName(_sfp);
+                }
+                auto result = ofSystemSaveDialog(defaultName, "project path");
+                if (result.bSuccess)
+                {
+                    auto path = result.getPath();
+                    if (!ofDirectory::doesDirectoryExist(path))
+                    {
+                        std::string projectPath = path;
+                        std::string projectName = ofFilePath::getFileName(path);
+
+                        if (ofJson::accept(_sfp))
+                        {
+                            if (_app.createFromSingleFileProject(ofJson::parse(_sfp), projectPath))
+                            {
+                                _projectPath = projectPath;
+                                _projectName = projectName;
+                                _notifications.add("successfully import SFP. it is ready to be configured.");
+                            }
+                            else
+                            {
+                                _notifications.add("sorry, could not import SFP.");
+                            }
+                        }
+                        else
+                        {
+                            // TODO: check if git url
+                            ofxGit::repository repo(projectPath);
+                            if (repo.clone(ofTrim(_sfp)))
+                            {
+                                _projectName = projectName;
+                                _projectPath = projectPath;
+                                _notifications.add("successfully cloned project. it is ready to be configured.");
+                            }
+                            else
+                            {
+                                _notifications.add("sorry, could not clone project.");
+                            }
+                        }
+                    }
+                }
+            }
+        EndActions();
+    }
+
+    ImGui::EndPopup();
 
     // reset in case no modal was open
     _closeCurrentModal = false;
@@ -693,25 +755,6 @@ void gui::drawRecentProjects()
     }
 }
 
-void gui::drawHome()
-{
-    auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
-    if (ImGui::BeginChild("home", ImVec2(-1, -footerHeight - padding)))
-    {
-        _animations.draw();
-        ImGui::EndChild();
-    }
-    if (ImGui::BeginChild("homeActions"))
-    {
-        auto label = _animations.getCurrentLabel();
-        auto url = _animations.getCurrentUrl();
-        if (!label.empty() && !url.empty() && MinButton(label, ImGui::GetContentRegionAvail()))
-        {
-            ofLaunchBrowser(url);
-        }
-        ImGui::EndChild();
-    }
-}
 void gui::drawManageGlobalPackages()
 {
     auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
@@ -939,72 +982,10 @@ void gui::drawUpdate()
     auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
     if (ImGui::BeginChild("update", ImVec2(-1, -footerHeight - padding)))
     {
-        auto indentation = 24;
-        // ImGui::Text("choose a project from your local file system");
-        // ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
-        // PathChooser(_projectPath, _app.getMyAppsPath());
-        // ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 48);
-
-        // static char sfp[16 * 1024];
-        // strcpy(sfp, _sfp.c_str());
-        // ImGui::Text("git url or sfp (single file project)");
-        // if (ImGui::InputTextMultiline("##source", sfp, IM_ARRAYSIZE(sfp), ImVec2(-FLT_MIN, ImGui::GetTextLineHeight() * 16), 0))
-        // {
-        //     _sfp = sfp;
-        // }
-        // if (Button("choose destination and import", ImVec2(0, 0), false, _sfp.empty()))
-        // {
-        //     std::string defaultName = "sfp_";
-        //     defaultName += ofGetTimestampString();
-        //     if (!ofJson::accept(sfp))
-        //     {
-        //         defaultName = ofFilePath::getBaseName(sfp);
-        //     }
-        //     auto result = ofSystemSaveDialog(defaultName, "project path");
-        //     if (result.bSuccess)
-        //     {
-        //         auto path = result.getPath();
-        //         if (!ofDirectory::doesDirectoryExist(path))
-        //         {
-        //             std::string projectPath = path;
-        //             std::string projectName = ofFilePath::getFileName(path);
-
-        //             if (ofJson::accept(_sfp))
-        //             {
-        //                 if (_app.createFromSingleFileProject(ofJson::parse(_sfp), projectPath))
-        //                 {
-        //                     _projectPath = projectPath;
-        //                     _projectName = projectName;
-        //                     _notifications.add("successfully import SFP. it is ready to be configured.");
-        //                 }
-        //                 else
-        //                 {
-        //                     _notifications.add("sorry, could not import SFP.");
-        //                 }
-        //             }
-        //             else
-        //             {
-        //                 // TODO: check if git url
-        //                 ofxGit::repository repo(projectPath);
-        //                 if (repo.clone(ofTrim(_sfp)))
-        //                 {
-        //                     _projectName = projectName;
-        //                     _projectPath = projectPath;
-        //                     _notifications.add("successfully cloned project. it is ready to be configured.");
-        //                 }
-        //                 else
-        //                 {
-        //                     _notifications.add("sorry, could not clone project.");
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-        // ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 48);
         drawRecentProjects();
         ImGui::EndChild();
     }
-    if (BeginActions(2))
+    if (BeginActions(3))
     {
         ofDirectory projectDir = ofDirectory(_projectPath);
 
@@ -1024,6 +1005,12 @@ void gui::drawUpdate()
 
         //     _stateMachine.trigger("configure");
         // }
+        if (Button("import", ImVec2(buttonWidth, -1)))
+        {
+            _importModelOpened = true;
+        }
+        Tooltip("imports a public repository or a sfp (single file project)");
+        ImGui::SameLine();
         if (Button("open", ImVec2(buttonWidth, -1)))
         {
             ofFileDialogResult result = ofSystemLoadDialog("open project", true);
@@ -1035,9 +1022,17 @@ void gui::drawUpdate()
                 _stateMachine.trigger("configure");
             }
         }
+        Tooltip("opens a project from the filesystem");
         ImGui::SameLine();
         if (Button("new", ImVec2(buttonWidth, -1), true))
         {
+            ofFileDialogResult result = ofSystemSaveDialog("", "");
+            if (result.bSuccess)
+            {
+                std::string path = result.getPath();
+                _projectPath = path;
+                _projectName = ofFilePath::getBaseName(_projectPath);
+            }
             _app.setProjectPath(_projectPath);
             auto dataPath = ofFilePath::getAbsolutePath(".");
             auto packages = _app.getPackagesListedInAddonsMakeFile();
@@ -1052,6 +1047,7 @@ void gui::drawUpdate()
 
             _stateMachine.trigger("configure");
         }
+        Tooltip("creates a new project");
         EndActions();
     }
 }
@@ -1092,12 +1088,7 @@ void gui::drawConfigureProject()
     {
         ImGui::PushStyleColor(ImGuiCol_ChildBg, ImGui::GetStyle().Colors[ImGuiCol_ButtonActive]);
         auto font = ImGui::GetFont();
-        auto originalScale = font->Scale;
-        font->Scale = 1.5f;
-        ImGui::PushFont(font);
         ImGui::TextColored(ImGui::GetStyle().Colors[ImGuiCol_ButtonActive], _projectName.c_str());
-        font->Scale = originalScale;
-        ImGui::PopFont();
         ImGui::Text(_projectPath.c_str());
         ImGui::PopStyleColor();
         ImGui::SameLine();

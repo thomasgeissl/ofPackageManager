@@ -7,7 +7,6 @@
 #include "generators/projectGenerator/ofProjectGenerator.h"
 #include "../../ghRepo.h"
 #include "./notifications.h"
-#include "./animations/controller.h"
 #include "./console.h"
 
 class project
@@ -103,7 +102,6 @@ private:
     ofPackageManager _app;
     ofxImGui::Gui _gui;
     notifications _notifications;
-    animation::controller _animations;
     console _console;
 
     // statemachine
@@ -157,6 +155,7 @@ private:
     bool _searchModalOpened;
     bool _deletePackageModalOpened;
     bool _closeCurrentModal;
+    bool _importModelOpened;
 
 
     // versions
@@ -170,7 +169,6 @@ private:
     void drawConsole();
     void drawModals();
     void drawRecentProjects();
-    void drawHome();
     void drawManageGlobalPackages();
     void drawCreate();
     void drawUpdate();
@@ -178,5 +176,4 @@ private:
     void drawConfigureProject();
     void drawMissingPackages();
     void drawPlatformAndTemplateChooser();
-
 };
