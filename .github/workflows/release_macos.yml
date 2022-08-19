@@ -1,6 +1,7 @@
 name: build-macos
 
-on: [push, pull_request]
+on:
+  push: [tags]
 jobs:
   build-osx:
     runs-on: macos-10.15
@@ -8,3 +9,5 @@ jobs:
     - uses: actions/checkout@v2
     - name: install
       run: ./scripts/osx/install.sh
+    - name: package
+      run: ./scripts/osx/package.sh

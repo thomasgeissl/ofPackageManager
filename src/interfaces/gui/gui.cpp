@@ -9,12 +9,12 @@ static int footerHeight = 64;
 static int consoleHeight = 200;
 static int buttonWidth = 200;
 static ImGuiTableFlags tableFlags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_Resizable;
-static bool endsWith(const std::string& str, const std::string& suffix)
+static bool endsWith(const std::string &str, const std::string &suffix)
 {
-    return str.size() >= suffix.size() && 0 == str.compare(str.size()-suffix.size(), suffix.size(), suffix);
+    return str.size() >= suffix.size() && 0 == str.compare(str.size() - suffix.size(), suffix.size(), suffix);
 }
 
-static bool startsWith(const std::string& str, const std::string& prefix)
+static bool startsWith(const std::string &str, const std::string &prefix)
 {
     return str.size() >= prefix.size() && 0 == str.compare(0, prefix.size(), prefix);
 }
@@ -80,6 +80,15 @@ gui::gui(ofPackageManager app) : ofBaseApp(), _app(app),
     for (auto platform : _app.getPlatforms())
     {
         _platforms.push_back(selectableTarget(platform, ofGetTargetPlatform() == platform));
+    }
+
+    if (!ofFile::doesFileExist("recentProjects.json", true))
+    {
+        auto path = ofToDataPath("recentProjects.json");
+        ofFile file(path, ofFile::ReadWrite);
+        file.create();
+        ofJson recentProjects = ofJson::array();
+        recentProjects >> file;
     }
 }
 void gui::setup()
@@ -215,9 +224,12 @@ void gui::draw()
         {
             _importModelOpened = false;
             auto clipboard = ofGetClipboardString();
-            if (ofJson::accept(clipboard)){
+            if (ofJson::accept(clipboard))
+            {
                 _sfp = clipboard;
-            }else if(endsWith(clipboard, ".git")){
+            }
+            else if (endsWith(clipboard, ".git"))
+            {
                 _sfp = clipboard;
             }
 
@@ -228,7 +240,6 @@ void gui::draw()
         ImGui::End();
     }
 
-    
     _gui.draw();
 }
 
@@ -456,7 +467,6 @@ void gui::drawModals()
             {
                 _sfp = sfp;
             }
-            
         }
         ImGui::EndChild();
     }
@@ -629,53 +639,53 @@ void gui::drawModals()
         ImGui::SameLine();
 
         if (isImportModal && Button("choose destination and import", ImVec2(buttonWidth, -1), true, _sfp.empty()))
+        {
+            std::string defaultName = "sfp_";
+            defaultName += ofGetTimestampString();
+            if (!ofJson::accept(_sfp))
             {
-                std::string defaultName = "sfp_";
-                defaultName += ofGetTimestampString();
-                if (!ofJson::accept(_sfp))
+                defaultName = ofFilePath::getBaseName(_sfp);
+            }
+            auto result = ofSystemSaveDialog(defaultName, "project path");
+            if (result.bSuccess)
+            {
+                auto path = result.getPath();
+                if (!ofDirectory::doesDirectoryExist(path))
                 {
-                    defaultName = ofFilePath::getBaseName(_sfp);
-                }
-                auto result = ofSystemSaveDialog(defaultName, "project path");
-                if (result.bSuccess)
-                {
-                    auto path = result.getPath();
-                    if (!ofDirectory::doesDirectoryExist(path))
-                    {
-                        std::string projectPath = path;
-                        std::string projectName = ofFilePath::getFileName(path);
+                    std::string projectPath = path;
+                    std::string projectName = ofFilePath::getFileName(path);
 
-                        if (ofJson::accept(_sfp))
+                    if (ofJson::accept(_sfp))
+                    {
+                        if (_app.createFromSingleFileProject(ofJson::parse(_sfp), projectPath))
                         {
-                            if (_app.createFromSingleFileProject(ofJson::parse(_sfp), projectPath))
-                            {
-                                _projectPath = projectPath;
-                                _projectName = projectName;
-                                _notifications.add("successfully import SFP. it is ready to be configured.");
-                            }
-                            else
-                            {
-                                _notifications.add("sorry, could not import SFP.");
-                            }
+                            _projectPath = projectPath;
+                            _projectName = projectName;
+                            _notifications.add("successfully import SFP. it is ready to be configured.");
                         }
                         else
                         {
-                            // TODO: check if git url
-                            ofxGit::repository repo(projectPath);
-                            if (repo.clone(ofTrim(_sfp)))
-                            {
-                                _projectName = projectName;
-                                _projectPath = projectPath;
-                                _notifications.add("successfully cloned project. it is ready to be configured.");
-                            }
-                            else
-                            {
-                                _notifications.add("sorry, could not clone project.");
-                            }
+                            _notifications.add("sorry, could not import SFP.");
+                        }
+                    }
+                    else
+                    {
+                        // TODO: check if git url
+                        ofxGit::repository repo(projectPath);
+                        if (repo.clone(ofTrim(_sfp)))
+                        {
+                            _projectName = projectName;
+                            _projectPath = projectPath;
+                            _notifications.add("successfully cloned project. it is ready to be configured.");
+                        }
+                        else
+                        {
+                            _notifications.add("sorry, could not clone project.");
                         }
                     }
                 }
             }
+        }
         EndActions();
     }
 
@@ -1019,6 +1029,7 @@ void gui::drawUpdate()
                 std::string path = result.getPath();
                 _projectPath = path;
                 _projectName = ofFilePath::getBaseName(_projectPath);
+                addToRecentProjects(_projectPath);
                 _stateMachine.trigger("configure");
             }
         }
