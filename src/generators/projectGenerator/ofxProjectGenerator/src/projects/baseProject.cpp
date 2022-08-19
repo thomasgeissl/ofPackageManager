@@ -19,10 +19,8 @@ baseProject::baseProject(string _target){
     target = _target;
 }
 
-const std::string templatesFolder = "scripts/templates/";
-
 std::string baseProject::getPlatformTemplateDir(){
-    return ofFilePath::join(getOFRoot(),templatesFolder + target);
+    return ofFilePath::join(getOFRoot(),"scripts/templates/" + target);
 }
 
 void recursiveTemplateCopy(const ofDirectory & templateDir, ofDirectory & projectDir){
@@ -96,8 +94,7 @@ std::unique_ptr<baseProject::Template> baseProject::parseTemplate(const ofDirect
 
 vector<baseProject::Template> baseProject::listAvailableTemplates(std::string target){
     vector<baseProject::Template> templates;
-	
-    ofDirectory templatesDir(ofFilePath::join(getOFRoot(),templatesFolder));
+    ofDirectory templatesDir(ofFilePath::join(getOFRoot(),"scripts/templates"));
     for(auto & f: templatesDir.getSorted()){
         if(f.isDirectory()){
             auto templateConfig = parseTemplate(ofDirectory(f));
@@ -134,7 +131,7 @@ bool baseProject::create(string path, std::string templateName){
     if(!ret) return false;
 
     if(templateName!=""){
-        ofDirectory templateDir(ofFilePath::join(getOFRoot(),templatesFolder + templateName));
+        ofDirectory templateDir(ofFilePath::join(getOFRoot(),"scripts/templates/" + templateName));
         templateDir.setShowHidden(true);
         auto templateConfig = parseTemplate(templateDir);
         if(templateConfig){
