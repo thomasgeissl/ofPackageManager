@@ -953,7 +953,7 @@ std::string ofPackageManager::findOfPathOutwardly(std::string path, int maxLevel
 	return ofPath;
 }
 
-bool ofPackageManager::generateProject(std::string path, std::vector<ofPackage> packages, std::vector<ofTargetPlatform> platforms, baseProject::Template template_)
+bool ofPackageManager::generateProject(std::string path, std::vector<ofPackage> packages, std::vector<ofTargetPlatform> platforms, baseProject::Template template_, std::vector<std::string> additionalSources)
 {
 	auto projectPath = path.empty() ? getCwdPath() : path;
 	if (platforms.empty())
@@ -988,6 +988,10 @@ bool ofPackageManager::generateProject(std::string path, std::vector<ofPackage> 
 			project->addAddon(package.getPath());
 			addonsMakeText += package.toString();
 			addonsMakeText += "\n";
+		}
+		for (auto source : additionalSources)
+		{
+			project->addSrcRecursively(source);
 		}
 		if (project->save())
 		{

@@ -74,7 +74,7 @@ public:
 	std::string findOfPathInwardly(std::string path, int depth);
 	std::string findOfPathOutwardly(std::string path, int maxLevel = 8);
 
-	bool generateProject(std::string path, std::vector<ofPackage> packages = {}, std::vector<ofTargetPlatform> platforms = {}, baseProject::Template = baseProject::Template());
+	bool generateProject(std::string path, std::vector<ofPackage> packages = {}, std::vector<ofTargetPlatform> platforms = {}, baseProject::Template = baseProject::Template(), std::vector<std::string> additionalSources = {});
 	bool recursivelyGenerateProjects(std::string path, std::vector<ofTargetPlatform> platforms = {}, baseProject::Template = baseProject::Template());
 	ofJson generateSingleFileProject(std::string path);
 	ofJson directoryToJson(std::string path);
