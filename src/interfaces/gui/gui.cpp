@@ -42,6 +42,7 @@ gui::gui(ofPackageManager app) : ofBaseApp(), _app(app),
                                  _version(_app.getVersion()),
                                  _mostRecentVersion(_app.getNewestAvailableVersion()),
                                  _templates(_app.getTemplates()),
+                                 _selectedTemplate(baseProject::Template()),
                                  _packagesDatabase(_app.getPackagesDatabase())
 {
     _stateMachine.setInitialState(_updateState);
@@ -1156,6 +1157,52 @@ void gui::drawConfigureProject()
 
             if (_showAdvancedOptions)
             {
+                if (ImGui::CollapsingHeader("additional sources"))
+                {
+                    ImGui::Indent(indentation);
+                    if (Button("add"))
+                    {
+                        ofFileDialogResult result = ofSystemLoadDialog("open project", true);
+                        if (result.bSuccess)
+                        {
+                            std::string path = result.getPath();
+                            _additionalSources.push_back(path);
+                        }
+                    }
+                    if (ImGui::BeginTable("additionalSourcesTable", 2, tableFlags))
+                    {
+                        ImGui::TableSetupColumn("path", ImGuiTableColumnFlags_WidthStretch);
+                        ImGui::TableSetupColumn("actions", ImGuiTableColumnFlags_WidthFixed);
+                        for (auto source : _additionalSources)
+                        {
+                            ImGui::TableNextRow();
+                            ImGui::TableSetColumnIndex(0);
+                            ImGui::Text(source.c_str());
+                            ImGui::TableSetColumnIndex(1);
+                            std::string buttonId = ICON_FA_FOLDER "##";
+                            buttonId += source;
+                            if (Button(buttonId.c_str()))
+                            {
+                                openViaOfSystem(source);
+                            }
+                            Tooltip("opens directory in os' file browser");
+
+                            // }
+                            ImGui::SameLine();
+                            buttonId = ICON_FA_TRASH "##";
+                            buttonId += source;
+                            if (Button(buttonId.c_str()))
+                            {
+                                std::vector<std::string>::iterator position = std::find(_additionalSources.begin(), _additionalSources.end(), source);
+                                if (position != _additionalSources.end()) // == myVector.end() means the element was not found
+                                    _additionalSources.erase(position);
+                            }
+                            Tooltip("removes additional source");
+                        }
+                        ImGui::EndTable();
+                    }
+                    ImGui::Unindent(indentation);
+                }
                 if (ImGui::CollapsingHeader("platforms, templates"))
                 {
                     ImGui::Indent(indentation);
@@ -1224,7 +1271,7 @@ void gui::drawConfigureProject()
                 }
             }
 
-            if (_app.generateProject(_projectPath, ofPackages, platforms))
+            if (_app.generateProject(_projectPath, ofPackages, platforms, _selectedTemplate, _additionalSources))
             {
                 _notifications.add("successfully generated project");
             }

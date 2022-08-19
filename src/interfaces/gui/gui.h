@@ -139,6 +139,7 @@ private:
     std::map<ofTargetPlatform, std::vector<baseProject::Template> > _templates;
     std::vector<project> _recentProjects;
     std::vector<ofPackage> _missingPackages;
+    std::vector<std::string> _additionalSources;
 
     // view options
     bool _fullscreen;
