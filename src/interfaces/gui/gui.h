@@ -96,7 +96,7 @@ public:
     void updateRecentProjectsList();
     void updateMissingPackages();
     void updatePreferences();
-    void savePreferences(bool showAdvancedOptions);
+    void savePreferences(bool showAdvancedOptions, bool showConsole);
 
     void openViaOfSystem(std::string path);
     void addToRecentProjects(std::string path);
@@ -146,6 +146,7 @@ private:
 
     // preferences
     bool _showAdvancedOptionsPreference;
+    bool _showConsolePreference;
 
     // view options
     bool _fullscreen;

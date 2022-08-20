@@ -384,7 +384,7 @@ void gui::drawModals()
     auto isImportModal = drawImportModal();
     drawSearchModal();
 
-        // TODO: tag selector
+    // TODO: tag selector
     auto numberOfButtons = isImportModal ? 2 : 1;
     if (BeginActions(numberOfButtons))
     {
@@ -522,8 +522,13 @@ bool gui::drawPreferencesModal()
         {
             if (ImGui::Checkbox("show advanced options", &_showAdvancedOptionsPreference))
             {
-                savePreferences(_showAdvancedOptionsPreference);
+                savePreferences(_showAdvancedOptionsPreference, _showConsolePreference);
                 _showAdvancedOptions = _showAdvancedOptionsPreference;
+            }
+            if (ImGui::Checkbox("show console", &_showConsolePreference))
+            {
+                savePreferences(_showAdvancedOptionsPreference, _showConsolePreference);
+                _showConsole = _showConsolePreference;
             }
             ImGui::Text("detected oF path: ");
             ImGui::SameLine();
@@ -1622,9 +1627,14 @@ void gui::updatePreferences()
             _showAdvancedOptionsPreference = data["showAdvancedOptions"].get<bool>();
             _showAdvancedOptions = data["showAdvancedOptions"].get<bool>();
         }
+        if (data.contains("showConsole"))
+        {
+            _showConsolePreference = data["showConsole"].get<bool>();
+            _showConsole = data["showConsole"].get<bool>();
+        }
     }
 }
-void gui::savePreferences(bool showAdvancedOptions)
+void gui::savePreferences(bool showAdvancedOptions, bool showConsole)
 {
     if (!ofFile::doesFileExist("preferences.json", true))
     {
@@ -1636,6 +1646,7 @@ void gui::savePreferences(bool showAdvancedOptions)
     ofFile file(filePath, ofFile::ReadWrite);
     ofJson preferences = ofJson::object();
     preferences["showAdvancedOptions"] = showAdvancedOptions;
+    preferences["showConsole"] = showConsole;
     preferences >> file;
 }
 void gui::openViaOfSystem(std::string path)
