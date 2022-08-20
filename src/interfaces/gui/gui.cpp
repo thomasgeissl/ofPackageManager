@@ -21,8 +21,7 @@ static bool startsWith(const std::string &str, const std::string &prefix)
 
 gui::gui(ofPackageManager app) : ofBaseApp(), _app(app),
                                  _manageGlobalPackagesState(ofxState::create("manage addons")),
-                                 _createState(ofxState::create("create")),
-                                 _updateState(ofxState::create("update")),
+                                 _projectsState(ofxState::create("projects")),
                                  _updateMultipleState(ofxState::create("updateMultiple")),
                                  _configureProjectState(ofxState::create("configureProject")),
                                  _fullscreen(false),
@@ -45,38 +44,27 @@ gui::gui(ofPackageManager app) : ofBaseApp(), _app(app),
                                  _selectedTemplate(baseProject::Template()),
                                  _packagesDatabase(_app.getPackagesDatabase())
 {
-    _stateMachine.setInitialState(_updateState);
-    _stateMachine.addTransition(_manageGlobalPackagesState, "create", _createState);
-    _stateMachine.addTransition(_manageGlobalPackagesState, "update", _updateState);
+    _stateMachine.setInitialState(_projectsState);
+    _stateMachine.addTransition(_manageGlobalPackagesState, "projects", _projectsState);
     _stateMachine.addTransition(_manageGlobalPackagesState, "updateMultiple", _updateMultipleState);
 
-    _stateMachine.addTransition(_createState, "configure", _configureProjectState);
-    _stateMachine.addTransition(_createState, "manageGlobalPackages", _manageGlobalPackagesState);
-    _stateMachine.addTransition(_createState, "update", _updateState);
-    _stateMachine.addTransition(_createState, "updateMultiple", _updateMultipleState);
-
-    _stateMachine.addTransition(_updateState, "configure", _configureProjectState);
-    _stateMachine.addTransition(_updateState, "manageGlobalPackages", _manageGlobalPackagesState);
-    _stateMachine.addTransition(_updateState, "create", _createState);
-    _stateMachine.addTransition(_updateState, "updateMultiple", _updateMultipleState);
+    _stateMachine.addTransition(_projectsState, "configure", _configureProjectState);
+    _stateMachine.addTransition(_projectsState, "manageGlobalPackages", _manageGlobalPackagesState);
+    _stateMachine.addTransition(_projectsState, "updateMultiple", _updateMultipleState);
 
     _stateMachine.addTransition(_configureProjectState, "manageGlobalPackages", _manageGlobalPackagesState);
-    _stateMachine.addTransition(_configureProjectState, "create", _createState);
-    _stateMachine.addTransition(_configureProjectState, "update", _updateState);
+    _stateMachine.addTransition(_configureProjectState, "projects", _projectsState);
     _stateMachine.addTransition(_configureProjectState, "updateMultiple", _updateMultipleState);
 
     _stateMachine.addTransition(_updateMultipleState, "manageGlobalPackages", _manageGlobalPackagesState);
-    _stateMachine.addTransition(_updateMultipleState, "create", _createState);
-    _stateMachine.addTransition(_updateMultipleState, "update", _updateState);
+    _stateMachine.addTransition(_updateMultipleState, "projects", _projectsState);
     _stateMachine.addTransition(_updateMultipleState, "updateMultiple", _updateMultipleState);
 
     // _console._closeEvent.addListener(this, &gui::onConsoleClose);
     ofAddListener(_console._closeEvent, this, &gui::onConsoleClose);
-    // TODO: add support for lambda functions to ofxStateMachine
     _configureProjectState->addEnteredListener(this, &gui::onConfigureProjectStateEntered);
     _manageGlobalPackagesState->addEnteredListener(this, &gui::onManageGlobalPackagesEntered);
-    _updateState->addEnteredListener(this, &gui::onUpdateProjectStateEntered);
-    _configureProjectState->addEnteredListener(this, &gui::onConfigureStateEntered);
+    _projectsState->addEnteredListener(this, &gui::onProjectsStateEntered);
     _stateMachine.start();
 
     for (auto platform : _app.getPlatforms())
@@ -158,13 +146,9 @@ void gui::draw()
                 {
                     drawManageGlobalPackages();
                 }
-                else if (_stateMachine.isCurrentState(_createState))
+                else if (_stateMachine.isCurrentState(_projectsState))
                 {
-                    drawCreate();
-                }
-                else if (_stateMachine.isCurrentState(_updateState))
-                {
-                    drawUpdate();
+                    drawProjects();
                 }
                 else if (_stateMachine.isCurrentState(_configureProjectState))
                 {
@@ -271,11 +255,13 @@ ImVec2 gui::drawMainMenu()
         {
             if (ImGui::MenuItem("New", getShortCutLabel("n").c_str()))
             {
-                _stateMachine.trigger("create");
+                _stateMachine.trigger("projects");
+                createNewProject();
             }
             if (ImGui::MenuItem("Open", getShortCutLabel("o").c_str()))
             {
-                _stateMachine.trigger("update");
+                _stateMachine.trigger("projects");
+                openProject();
             }
             if (ImGui::BeginMenu("Open Recent"))
             {
@@ -323,9 +309,9 @@ void gui::drawSideBar()
     auto availableHeight = ImGui::GetWindowHeight() - ImGui::GetCursorPosY() + style.ItemSpacing.y;
     auto buttonSize = ImVec2(ImGui::GetContentRegionAvailWidth(), footerHeight);
 
-    if (MenuButton(ICON_FA_FOLDER_OPEN " projects", buttonSize, _stateMachine.isCurrentState(_updateState)))
+    if (MenuButton(ICON_FA_FOLDER_OPEN " projects", buttonSize, _stateMachine.isCurrentState(_projectsState)))
     {
-        _stateMachine.trigger("update");
+        _stateMachine.trigger("projects");
     }
     if (_showAdvancedOptions)
     {
@@ -978,61 +964,12 @@ void gui::drawManageGlobalPackages()
         EndActions();
     }
 }
-void gui::drawCreate()
-{
-    auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
-    if (ImGui::BeginChild("create", ImVec2(-1, -footerHeight - padding)))
-    {
-        ImGui::Text("project name");
-        char name[128];
-        strcpy(name, _projectName.c_str());
-        ImGui::PushItemWidth(ImGui::GetContentRegionAvailWidth() - 2 * ImGui::GetStyle().ItemInnerSpacing.x);
-        if (ImGui::InputText("##project name", name, IM_ARRAYSIZE(name)))
-        {
-            _projectName = std::string(name);
-            _projectPath = ofFilePath::join(_projectDirectoryPath, _projectName);
-        }
-        ImGui::PopItemWidth();
-        ofDirectory projectDirectory = ofDirectory(_projectDirectoryPath);
-        ofDirectory projectDir = ofDirectory(_projectPath);
-        if (projectDirectory.exists())
-        {
-            if (_projectName.empty())
-            {
-                ImGui::TextColored(ImVec4(0.8, 0.8, 0.8, 1.0), "project name must not be empty.");
-            }
-            else if (projectDir.exists())
-            {
-                std::string message = "a project named ";
-                message += _projectName;
-                message += " already exists.";
-                ImGui::TextColored(ImVec4(0.8, 0.8, 0.8, 1.0), message.c_str());
-            }
-        }
-        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
-        PathChooser(_projectDirectoryPath, _app.getMyAppsPath());
-        ImGui::EndChild();
-    }
 
-    if (BeginActions(1))
-    {
-        ofDirectory projectDirectory = ofDirectory(_projectDirectoryPath);
-        ofDirectory projectDir = ofDirectory(_projectPath);
-        if (Button("create and configure", ImVec2(buttonWidth, -1), true, !projectDirectory.exists() || projectDir.exists()))
-        {
-            auto dataPath = ofFilePath::getAbsolutePath(".");
-            _app.generateProject(_projectPath);
-            addToRecentProjects(_projectPath);
-            _stateMachine.trigger("configure");
-        }
-        EndActions();
-    }
-}
-void gui::drawUpdate()
+void gui::drawProjects()
 {
     auto style = ImGui::GetStyle();
     auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
-    if (ImGui::BeginChild("update", ImVec2(-1, -footerHeight - padding)))
+    if (ImGui::BeginChild("projects", ImVec2(-1, -footerHeight - padding)))
     {
         drawRecentProjects();
         ImGui::EndChild();
@@ -1040,23 +977,6 @@ void gui::drawUpdate()
     if (BeginActions(3))
     {
         ofDirectory projectDir = ofDirectory(_projectPath);
-
-        // if (Button("configure", ImVec2(buttonWidth, -1), false, _projectPath.empty() || !projectDir.exists()))
-        // {
-        //     _app.setProjectPath(_projectPath);
-        //     auto dataPath = ofFilePath::getAbsolutePath(".");
-        //     auto packages = _app.getPackagesListedInAddonsMakeFile();
-        //     for (auto package : packages)
-        //     {
-        //         ofLogNotice() << package.toString();
-        //     }
-        //     _app.generateProject(_projectPath, packages);
-        //     _projectName = ofFilePath::getBaseName(_projectPath);
-
-        //     addToRecentProjects(_projectPath);
-
-        //     _stateMachine.trigger("configure");
-        // }
         if (Button("import", ImVec2(buttonWidth, -1)))
         {
             _importModelOpened = true;
@@ -1065,40 +985,13 @@ void gui::drawUpdate()
         ImGui::SameLine();
         if (Button("open", ImVec2(buttonWidth, -1)))
         {
-            ofFileDialogResult result = ofSystemLoadDialog("open project", true);
-            if (result.bSuccess)
-            {
-                std::string path = result.getPath();
-                _projectPath = path;
-                _projectName = ofFilePath::getBaseName(_projectPath);
-                addToRecentProjects(_projectPath);
-                _stateMachine.trigger("configure");
-            }
+            openProject();
         }
         Tooltip("opens a project from the filesystem");
         ImGui::SameLine();
         if (Button("new", ImVec2(buttonWidth, -1), true))
         {
-            ofFileDialogResult result = ofSystemSaveDialog("", "");
-            if (result.bSuccess)
-            {
-                std::string path = result.getPath();
-                _projectPath = path;
-                _projectName = ofFilePath::getBaseName(_projectPath);
-            }
-            _app.setProjectPath(_projectPath);
-            auto dataPath = ofFilePath::getAbsolutePath(".");
-            auto packages = _app.getPackagesListedInAddonsMakeFile();
-            for (auto package : packages)
-            {
-                ofLogNotice() << package.toString();
-            }
-            _app.generateProject(_projectPath, packages);
-            _projectName = ofFilePath::getBaseName(_projectPath);
-
-            addToRecentProjects(_projectPath);
-
-            _stateMachine.trigger("configure");
+            createNewProject();
         }
         Tooltip("creates a new project");
         EndActions();
@@ -1517,12 +1410,14 @@ void gui::keyPressed(int key)
     }
     case 'n':
     {
-        _stateMachine.trigger("create");
+        _stateMachine.trigger("projects");
+        createNewProject();
         break;
     }
     case 'o':
     {
-        _stateMachine.trigger("update");
+        _stateMachine.trigger("projects");
+        openProject();
         break;
     }
     case 'q':
@@ -1690,6 +1585,11 @@ void gui::addToRecentProjects(std::string path)
 
 void gui::onConfigureProjectStateEntered(ofxStateEnteredEventArgs &args)
 {
+    _app.setProjectPath(_projectPath);
+    updatePackagesLists(true);
+    updateSelectedPackages();
+    updateMissingPackages();
+    // TODO: clean search params and results
     for (auto &package : _corePackages)
     {
         package.second._selected = false;
@@ -1713,7 +1613,7 @@ void gui::onManageGlobalPackagesEntered(ofxStateEnteredEventArgs &args)
 {
     _missingPackages.clear();
 }
-void gui::onUpdateProjectStateEntered(ofxStateEnteredEventArgs &args)
+void gui::onProjectsStateEntered(ofxStateEnteredEventArgs &args)
 {
     _sfp.clear();
     _projectPath.clear();
@@ -1721,15 +1621,48 @@ void gui::onUpdateProjectStateEntered(ofxStateEnteredEventArgs &args)
     updateRecentProjectsList();
 }
 
-void gui::onConfigureStateEntered(ofxStateEnteredEventArgs &args)
-{
-    _app.setProjectPath(_projectPath);
-    updatePackagesLists(true);
-    updateSelectedPackages();
-    updateMissingPackages();
-    // TODO: clean search params and results
-}
 void gui::onConsoleClose()
 {
     _showConsole = false;
+}
+
+bool gui::createNewProject()
+{
+    // TODO: set default location
+    ofFileDialogResult result = ofSystemSaveDialog("", "");
+    if (result.bSuccess)
+    {
+        std::string path = result.getPath();
+        _projectPath = path;
+        _projectName = ofFilePath::getBaseName(_projectPath);
+        _app.setProjectPath(_projectPath);
+        auto dataPath = ofFilePath::getAbsolutePath(".");
+        auto packages = _app.getPackagesListedInAddonsMakeFile();
+        for (auto package : packages)
+        {
+            ofLogNotice() << package.toString();
+        }
+        _app.generateProject(_projectPath, packages);
+        _projectName = ofFilePath::getBaseName(_projectPath);
+
+        addToRecentProjects(_projectPath);
+
+        _stateMachine.trigger("configure");
+        return true;
+    }
+    return false;
+}
+bool gui::openProject()
+{
+    ofFileDialogResult result = ofSystemLoadDialog("open project", true);
+    if (result.bSuccess)
+    {
+        std::string path = result.getPath();
+        _projectPath = path;
+        _projectName = ofFilePath::getBaseName(_projectPath);
+        addToRecentProjects(_projectPath);
+        _stateMachine.trigger("configure");
+        return true;
+    }
+    return false;
 }

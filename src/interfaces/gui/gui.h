@@ -109,16 +109,13 @@ private:
 
     // statemachine
     ofxStateMachine _stateMachine;
-    ofxState::pointer _homeState;
     ofxState::pointer _manageGlobalPackagesState;
-    ofxState::pointer _createState;
-    ofxState::pointer _updateState;
+    ofxState::pointer _projectsState;
     ofxState::pointer _updateMultipleState;
     ofxState::pointer _configureProjectState;
     void onConfigureProjectStateEntered(ofxStateEnteredEventArgs &args);
     void onManageGlobalPackagesEntered(ofxStateEnteredEventArgs &args);
-    void onUpdateProjectStateEntered(ofxStateEnteredEventArgs &args);
-    void onConfigureStateEntered(ofxStateEnteredEventArgs &args);
+    void onProjectsStateEntered(ofxStateEnteredEventArgs &args);
     void onConsoleClose();
 
 
@@ -143,6 +140,10 @@ private:
     std::vector<project> _recentProjects;
     std::vector<ofPackage> _missingPackages;
     std::vector<std::string> _additionalSources;
+
+
+    bool createNewProject();
+    bool openProject();
 
     // preferences
     bool _showAdvancedOptionsPreference;
@@ -182,8 +183,7 @@ private:
     bool drawSearchModal();
     void drawRecentProjects();
     void drawManageGlobalPackages();
-    void drawCreate();
-    void drawUpdate();
+    void drawProjects();
     void drawUpdateMultipleProjects();
     void drawConfigureProject();
     void drawMissingPackages();
