@@ -2,6 +2,7 @@
 #include "./gui.h"
 #include "./Theme.h"
 #include "./helpers.h"
+// #include "../../helpers.h"
 #include "./fonts/tahoma.h"
 #include "./fonts/fa_solid_900.h"
 #include "./fonts/font_awesome_5.h"
@@ -410,9 +411,9 @@ void gui::drawModals()
                             _notifications.add("sorry, could not import SFP.");
                         }
                     }
-                    else
+                    // else if (isGitUrl(ofTrim(_sfp)))
+                    else if (ofTrim(_sfp).substr(0, 4) == "git@" || ofTrim(_sfp).substr(0, 4) == "http")
                     {
-                        // TODO: check if git url
                         ofxGit::repository repo(projectPath);
                         if (repo.clone(ofTrim(_sfp)))
                         {
@@ -424,6 +425,10 @@ void gui::drawModals()
                         {
                             _notifications.add("sorry, could not clone project.");
                         }
+                    }
+                    else
+                    {
+                        _notifications.add("sorry, that's neither a valid sfp or git url");
                     }
                 }
             }

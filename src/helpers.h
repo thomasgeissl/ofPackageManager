@@ -1,3 +1,4 @@
+#pragma once
 #include "ofUtils.h"
 
 std::string generateGithubUrl(std::string github)
