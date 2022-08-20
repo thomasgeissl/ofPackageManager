@@ -94,6 +94,7 @@ public:
     void updateSelectedPackages();
     void updateRecentProjectsList();
     void updateMissingPackages();
+    void updatePreferences();
 
     void openViaOfSystem(std::string path);
     void addToRecentProjects(std::string path);
@@ -112,7 +113,7 @@ private:
     ofxState::pointer _updateState;
     ofxState::pointer _updateMultipleState;
     ofxState::pointer _configureProjectState;
-    void onHomeStateEntered(ofxStateEnteredEventArgs &args);
+    void onConfigureProjectStateEntered(ofxStateEnteredEventArgs &args);
     void onManageGlobalPackagesEntered(ofxStateEnteredEventArgs &args);
     void onUpdateProjectStateEntered(ofxStateEnteredEventArgs &args);
     void onConfigureStateEntered(ofxStateEnteredEventArgs &args);

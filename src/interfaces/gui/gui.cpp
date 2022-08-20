@@ -73,6 +73,7 @@ gui::gui(ofPackageManager app) : ofBaseApp(), _app(app),
     // _console._closeEvent.addListener(this, &gui::onConsoleClose);
     ofAddListener(_console._closeEvent, this, &gui::onConsoleClose);
     // TODO: add support for lambda functions to ofxStateMachine
+    _configureProjectState->addEnteredListener(this, &gui::onConfigureProjectStateEntered);
     _manageGlobalPackagesState->addEnteredListener(this, &gui::onManageGlobalPackagesEntered);
     _updateState->addEnteredListener(this, &gui::onUpdateProjectStateEntered);
     _configureProjectState->addEnteredListener(this, &gui::onConfigureStateEntered);
@@ -91,6 +92,7 @@ gui::gui(ofPackageManager app) : ofBaseApp(), _app(app),
         ofJson recentProjects = ofJson::array();
         recentProjects >> file;
     }
+    updatePreferences();
 }
 void gui::setup()
 {
@@ -1571,6 +1573,17 @@ void gui::updateMissingPackages()
 {
     _missingPackages = _app.getMissingPackages();
 }
+void gui::updatePreferences()
+{
+    auto path = ofToDataPath("preferences.json");
+    ofFile file(path, ofFile::ReadOnly);
+    ofJson data;
+    if (file.exists())
+    {
+        file >> data;
+        // TODO: set advanced options
+    }
+}
 void gui::openViaOfSystem(std::string path)
 {
     std::string command;
@@ -1610,7 +1623,7 @@ void gui::addToRecentProjects(std::string path)
     recentProjects >> file;
 }
 
-void gui::onHomeStateEntered(ofxStateEnteredEventArgs &args)
+void gui::onConfigureProjectStateEntered(ofxStateEnteredEventArgs &args)
 {
     for (auto &package : _corePackages)
     {
@@ -1624,7 +1637,11 @@ void gui::onHomeStateEntered(ofxStateEnteredEventArgs &args)
     {
         package.second._selected = false;
     }
-    // TODO: reset platforms
+    for (auto platform : _platforms)
+    {
+        platform._selected = platform._target == ofGetTargetPlatform();
+    }
+    _additionalSources = {};
     _selectedTemplate = baseProject::Template();
 }
 void gui::onManageGlobalPackagesEntered(ofxStateEnteredEventArgs &args)
