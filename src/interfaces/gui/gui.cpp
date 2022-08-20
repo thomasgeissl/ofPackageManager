@@ -1172,12 +1172,13 @@ void gui::drawConfigureProject()
                     if (ImGui::BeginTable("additionalSourcesTable", 2, tableFlags))
                     {
                         ImGui::TableSetupColumn("path", ImGuiTableColumnFlags_WidthStretch);
-                        ImGui::TableSetupColumn("actions", ImGuiTableColumnFlags_WidthFixed);
+                        ImGui::TableSetupColumn("actions", ImGuiTableColumnFlags_WidthFixed, 64);
                         for (auto source : _additionalSources)
                         {
                             ImGui::TableNextRow();
                             ImGui::TableSetColumnIndex(0);
                             ImGui::Text(source.c_str());
+                            Tooltip(source.c_str());
                             ImGui::TableSetColumnIndex(1);
                             std::string buttonId = ICON_FA_FOLDER "##";
                             buttonId += source;
