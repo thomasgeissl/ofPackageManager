@@ -69,6 +69,7 @@ public:
     baseProject::Template _template;
     bool _selected;
 };
+
 class gui : public ofBaseApp
 {
 public:
@@ -95,6 +96,7 @@ public:
     void updateRecentProjectsList();
     void updateMissingPackages();
     void updatePreferences();
+    void savePreferences(bool showAdvancedOptions);
 
     void openViaOfSystem(std::string path);
     void addToRecentProjects(std::string path);
@@ -142,6 +144,9 @@ private:
     std::vector<ofPackage> _missingPackages;
     std::vector<std::string> _additionalSources;
 
+    // preferences
+    bool _showAdvancedOptionsPreference;
+
     // view options
     bool _fullscreen;
     bool _showAdvancedOptions;
@@ -170,6 +175,10 @@ private:
     void drawSideBar();
     void drawConsole();
     void drawModals();
+    bool drawAboutModal();
+    bool drawPreferencesModal();
+    bool drawImportModal();
+    bool drawSearchModal();
     void drawRecentProjects();
     void drawManageGlobalPackages();
     void drawCreate();

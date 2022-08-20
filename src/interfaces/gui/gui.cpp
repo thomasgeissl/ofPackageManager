@@ -379,9 +379,84 @@ void gui::drawConsole()
 void gui::drawModals()
 {
     auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
-    auto isImportModal = false;
+    drawAboutModal();
+    drawPreferencesModal();
+    auto isImportModal = drawImportModal();
+    drawSearchModal();
+
+        // TODO: tag selector
+    auto numberOfButtons = isImportModal ? 2 : 1;
+    if (BeginActions(numberOfButtons))
+    {
+        if (Button("close", ImVec2(buttonWidth, -1)))
+        {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+
+        if (isImportModal && Button("choose destination and import", ImVec2(buttonWidth, -1), true, _sfp.empty()))
+        {
+            std::string defaultName = "sfp_";
+            defaultName += ofGetTimestampString();
+            if (!ofJson::accept(_sfp))
+            {
+                defaultName = ofFilePath::getBaseName(_sfp);
+            }
+            auto result = ofSystemSaveDialog(defaultName, "project path");
+            if (result.bSuccess)
+            {
+                auto path = result.getPath();
+                if (!ofDirectory::doesDirectoryExist(path))
+                {
+                    std::string projectPath = path;
+                    std::string projectName = ofFilePath::getFileName(path);
+
+                    if (ofJson::accept(_sfp))
+                    {
+                        if (_app.createFromSingleFileProject(ofJson::parse(_sfp), projectPath))
+                        {
+                            _projectPath = projectPath;
+                            _projectName = projectName;
+                            _notifications.add("successfully import SFP. it is ready to be configured.");
+                        }
+                        else
+                        {
+                            _notifications.add("sorry, could not import SFP.");
+                        }
+                    }
+                    else
+                    {
+                        // TODO: check if git url
+                        ofxGit::repository repo(projectPath);
+                        if (repo.clone(ofTrim(_sfp)))
+                        {
+                            _projectName = projectName;
+                            _projectPath = projectPath;
+                            _notifications.add("successfully cloned project. it is ready to be configured.");
+                        }
+                        else
+                        {
+                            _notifications.add("sorry, could not clone project.");
+                        }
+                    }
+                }
+            }
+        }
+        EndActions();
+    }
+
+    ImGui::EndPopup();
+
+    // reset in case no modal was open
+    _closeCurrentModal = false;
+}
+bool gui::drawAboutModal()
+{
+    auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
+    auto active = false;
     if (BeginModal("about"))
     {
+        active = true;
         if (_closeCurrentModal)
         {
             ImGui::CloseCurrentPopup();
@@ -430,6 +505,12 @@ void gui::drawModals()
 
         EndModal(buttonWidth);
     }
+    return active;
+}
+bool gui::drawPreferencesModal()
+{
+    auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
+    auto active = false;
     if (BeginModal("preferences"))
     {
         if (_closeCurrentModal)
@@ -439,7 +520,13 @@ void gui::drawModals()
         }
         if (ImGui::BeginChild("modalContent", ImVec2(-1, -footerHeight - padding)))
         {
-            ImGui::Text("TODO");
+            if (ImGui::Checkbox("show advanced options", &_showAdvancedOptionsPreference))
+            {
+                savePreferences(_showAdvancedOptionsPreference);
+                _showAdvancedOptions = _showAdvancedOptionsPreference;
+            }
+            ImGui::Text("detected oF path: ");
+            ImGui::SameLine();
             ImGui::Text(_app.getOfPath().c_str());
             ImGui::EndChild();
         }
@@ -453,9 +540,15 @@ void gui::drawModals()
         }
         ImGui::EndPopup();
     }
+    return active;
+}
+bool gui::drawImportModal()
+{
+    auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
+    auto active = false;
     if (BeginModal("import"))
     {
-        isImportModal = true;
+        active = true;
         if (_closeCurrentModal)
         {
             ImGui::CloseCurrentPopup();
@@ -473,6 +566,11 @@ void gui::drawModals()
         }
         ImGui::EndChild();
     }
+    return active;
+}
+bool gui::drawSearchModal()
+{
+    auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
     if (BeginModal("search"))
     {
         if (_closeCurrentModal)
@@ -631,71 +729,7 @@ void gui::drawModals()
 
         EndModal(buttonWidth);
     }
-    // TODO: tag selector
-    auto numberOfButtons = isImportModal ? 2 : 1;
-    if (BeginActions(numberOfButtons))
-    {
-        if (Button("close", ImVec2(buttonWidth, -1)))
-        {
-            ImGui::CloseCurrentPopup();
-        }
-        ImGui::SameLine();
-
-        if (isImportModal && Button("choose destination and import", ImVec2(buttonWidth, -1), true, _sfp.empty()))
-        {
-            std::string defaultName = "sfp_";
-            defaultName += ofGetTimestampString();
-            if (!ofJson::accept(_sfp))
-            {
-                defaultName = ofFilePath::getBaseName(_sfp);
-            }
-            auto result = ofSystemSaveDialog(defaultName, "project path");
-            if (result.bSuccess)
-            {
-                auto path = result.getPath();
-                if (!ofDirectory::doesDirectoryExist(path))
-                {
-                    std::string projectPath = path;
-                    std::string projectName = ofFilePath::getFileName(path);
-
-                    if (ofJson::accept(_sfp))
-                    {
-                        if (_app.createFromSingleFileProject(ofJson::parse(_sfp), projectPath))
-                        {
-                            _projectPath = projectPath;
-                            _projectName = projectName;
-                            _notifications.add("successfully import SFP. it is ready to be configured.");
-                        }
-                        else
-                        {
-                            _notifications.add("sorry, could not import SFP.");
-                        }
-                    }
-                    else
-                    {
-                        // TODO: check if git url
-                        ofxGit::repository repo(projectPath);
-                        if (repo.clone(ofTrim(_sfp)))
-                        {
-                            _projectName = projectName;
-                            _projectPath = projectPath;
-                            _notifications.add("successfully cloned project. it is ready to be configured.");
-                        }
-                        else
-                        {
-                            _notifications.add("sorry, could not clone project.");
-                        }
-                    }
-                }
-            }
-        }
-        EndActions();
-    }
-
-    ImGui::EndPopup();
-
-    // reset in case no modal was open
-    _closeCurrentModal = false;
+    auto active = false;
 }
 void gui::drawRecentProjects()
 {
@@ -1581,8 +1615,28 @@ void gui::updatePreferences()
     if (file.exists())
     {
         file >> data;
-        // TODO: set advanced options
+        // ofLogNotice() << data.dump(4);
+
+        if (data.contains("showAdvancedOptions"))
+        {
+            _showAdvancedOptionsPreference = data["showAdvancedOptions"].get<bool>();
+            _showAdvancedOptions = data["showAdvancedOptions"].get<bool>();
+        }
     }
+}
+void gui::savePreferences(bool showAdvancedOptions)
+{
+    if (!ofFile::doesFileExist("preferences.json", true))
+    {
+        auto path = ofToDataPath("preferences.json");
+        ofFile file(path, ofFile::ReadWrite);
+        file.create();
+    }
+    auto filePath = ofToDataPath("preferences.json");
+    ofFile file(filePath, ofFile::ReadWrite);
+    ofJson preferences = ofJson::object();
+    preferences["showAdvancedOptions"] = showAdvancedOptions;
+    preferences >> file;
 }
 void gui::openViaOfSystem(std::string path)
 {
