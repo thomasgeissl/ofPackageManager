@@ -103,9 +103,10 @@ void gui::setup()
     config.GlyphMinAdvanceX = 13.0f; // Use if you want to make the icon monospaced
 
     static const ImWchar icon_ranges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
-    _gui.addFont("fa-solid-900.ttf", 13.0f, &config, icon_ranges);
-    _gui.addFont("Roboto-Regular.ttf", 16.0f, nullptr);
-    // io.Fonts->AddFontFromMemoryTTF((void *)fa_solid_900, sizeof(fa_solid_900), 13.f, &config, icon_ranges);
+    auto font = _gui.addFont(ofToDataPath("Roboto-Regular.ttf"), 16.0f, &config, io.Fonts->GetGlyphRangesDefault());
+    _gui.addFont(ofToDataPath("fa-solid-900.ttf"), 13.0f, &config, icon_ranges);
+    // ImGui::PushFont(font);
+
 
     updatePackagesLists();
     updateRecentProjectsList();
