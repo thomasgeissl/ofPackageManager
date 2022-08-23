@@ -12,8 +12,17 @@ public:
 	}
 	std::string toString()
 	{
-		if(_checkout.empty() || _url.empty()) return _path;
-		return _path + "#" + _url + "@" + _checkout;
+		if (_checkout.empty() || _url.empty())
+			return _path;
+		return getPossixPath() + "#" + _url + "@" + _checkout;
+	}
+	std::string getPossixPath()
+	{
+#ifdef TARGET_WIN32
+		return std::replace(_path.begin(), _path.end(), '\\', '/');
+#else
+		return _path;
+#endif
 	}
 	std::string getPath()
 	{

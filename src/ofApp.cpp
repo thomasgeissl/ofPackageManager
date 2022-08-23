@@ -36,15 +36,7 @@ bool ofPackageManager::addPackageToAddonsMakeFile(ofPackage package)
 		addonsMakeFile.create();
 	}
 
-	auto stringToAdd = package.getPath();
-	if (!package.getUrl().empty())
-	{
-		stringToAdd += " #" + package.getUrl();
-		if (!package.getCheckout().empty())
-		{
-			stringToAdd += "@" + package.getCheckout();
-		}
-	}
+	auto stringToAdd = package.toString();
 
 	ofBuffer fileBuffer = addonsMakeFile.readToBuffer();
 	std::string content;
