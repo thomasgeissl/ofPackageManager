@@ -49,6 +49,7 @@ public:
         }
 
         ImGui::TextUnformatted(_consoleBuffer.str().c_str());
+        // ImGui::DebugTextEncoding(_consoleBuffer.str().c_str());
         if (_autoScroll)
         {
             ImGui::SetScrollHereY(1.0f);

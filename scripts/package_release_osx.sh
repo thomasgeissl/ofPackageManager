@@ -4,6 +4,7 @@ cd ..
 make -j4
 cd scripts
 ./fix_dylib.sh
+./osx/sign.sh
 ./test.sh
 rm -rf ./test
 
