@@ -566,9 +566,11 @@ bool gui::drawImportModal()
 }
 bool gui::drawSearchModal()
 {
+    auto active = false;
     auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
     if (BeginModal("search"))
     {
+        active = true;
         if (_closeCurrentModal)
         {
             ImGui::CloseCurrentPopup();
@@ -725,7 +727,7 @@ bool gui::drawSearchModal()
 
         EndModal(buttonWidth);
     }
-    auto active = false;
+    return active;
 }
 void gui::drawRecentProjects()
 {
