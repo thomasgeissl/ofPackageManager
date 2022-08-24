@@ -1361,7 +1361,7 @@ void gui::drawPlatformAndTemplateChooser()
         }
     }
 
-    // sorry. it was quite late when i wrote this, probably the most inefficent way to find templates which are available for all selcted platforms
+    // sorry. it was quite late when i wrote this, probably the most inefficient way to find templates which are available for all selected platforms
     // also, this should not be done every frame
     std::vector<baseProject::Template> filteredTemplates;
 

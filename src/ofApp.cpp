@@ -300,8 +300,7 @@ ofPackage ofPackageManager::installPackageByUrl(std::string url, std::string che
 		if (repoDirectory.exists())
 		{
 			IFNOTSILENT(
-				if (_clu.getBoolAnswer(destinationPath + "/" + name + " already exists. Do you want to pull and checkout the specified commit?", true))
-				{
+				if (_clu.getBoolAnswer(destinationPath + "/" + name + " already exists. Do you want to pull and checkout the specified commit?", true)) {
 					ofLogNotice("TODO") << "Unfortunately it is not yet implemented due to missing ofxGit::repo::pull";
 					// TODO: pull and checkout, pull still does not work in ofxGit2
 				});
@@ -482,7 +481,7 @@ std::vector<ofPackage> ofPackageManager::getPackagesListedInAddonsMakeFile()
 			default:
 				break;
 			}
-			packages.push_back(ofPackage(ofTrim(path), ofTrim(url), ofTrim(checkout))); //path vs name
+			packages.push_back(ofPackage(ofTrim(path), ofTrim(url), ofTrim(checkout))); // path vs name
 		}
 	}
 	return packages;
@@ -519,8 +518,7 @@ ofJson ofPackageManager::searchPackageInDatabaseById(std::string name)
 	}
 
 	IFNOTSILENT(
-		if (matchedKeys.size() > 0)
-		{
+		if (matchedKeys.size() > 0) {
 			std::cout << outputString << endl;
 
 			if (!addPackageToAddonsMakeFile(maybeInstallOneOfThesePackages(result)))
@@ -534,8 +532,7 @@ ofJson ofPackageManager::searchPackageInDatabaseById(std::string name)
 					}
 				}
 			}
-		} else
-		{
+		} else {
 			std::cout << "Unfortunately this package was not found in the database." << endl;
 			if (_clu.getBoolAnswer("But it is probably available on github. Wanna give it a try?"))
 			{
@@ -604,7 +601,7 @@ bool ofPackageManager::installDependenciesFromAddonConfig(std::string path, std:
 				// check if right side contains a comment
 				auto parts = ofSplitString(rightSide, "#");
 				if (parts.size() > 1)
-				{ //contains a comment
+				{ // contains a comment
 					auto key = parts[1];
 					ofLogNotice("install key") << key;
 					if (!isCorePackage(key))
@@ -945,6 +942,11 @@ std::string ofPackageManager::findOfPathOutwardly(std::string path, int maxLevel
 	return ofPath;
 }
 
+bool ofPackageManager::generateProject(std::vector<ofTargetPlatform> platforms, baseProject::Template template_, std::vector<std::string> additionalSources)
+{
+	ofLogNotice() << "generate proejct";
+	return generateProject(getCwdPath(), getPackagesListedInAddonsMakeFile(), platforms, template_, additionalSources);
+}
 bool ofPackageManager::generateProject(std::string path, std::vector<ofPackage> packages, std::vector<ofTargetPlatform> platforms, baseProject::Template template_, std::vector<std::string> additionalSources)
 {
 	auto projectPath = path.empty() ? getCwdPath() : path;
@@ -1077,7 +1079,8 @@ bool ofPackageManager::jsonToDirectory(ofJson json, std::string path)
 		{
 			ofDirectory directory(ofFilePath::join(path, fileJson["fileName"]));
 			directory.create();
-			if(!jsonToDirectory(fileJson["data"], directory.getAbsolutePath())){
+			if (!jsonToDirectory(fileJson["data"], directory.getAbsolutePath()))
+			{
 				success = false;
 			}
 		}
@@ -1133,10 +1136,10 @@ std::vector<ofTargetPlatform> ofPackageManager::getPlatforms()
 	platforms.push_back(OF_TARGET_ANDROID);
 	return platforms;
 }
-std::map<ofTargetPlatform, std::vector<baseProject::Template> > ofPackageManager::getTemplates()
+std::map<ofTargetPlatform, std::vector<baseProject::Template>> ofPackageManager::getTemplates()
 {
 	setOFRoot(getOfPath());
-	std::map<ofTargetPlatform, std::vector<baseProject::Template> > templates;
+	std::map<ofTargetPlatform, std::vector<baseProject::Template>> templates;
 	for (auto platform : getPlatforms())
 	{
 		templates[platform] = getTargetProject(platform)->listAvailableTemplates(getTargetString(platform));

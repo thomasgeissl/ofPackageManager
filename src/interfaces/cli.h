@@ -224,7 +224,47 @@ public:
         }
         else if (task == "generate")
         {
-            _app.generateProject(_app.getCwdPath());
+            // TODO: get platforms and template
+            std::vector<std::string> args;
+            for (auto i = 2; i < argc; i++)
+            {
+                args.push_back(argv[i]);
+            }
+            auto availablePlatforms = _app.getPlatforms();
+            std::vector<std::string> availablePlatformStrings = {};
+            std::vector<ofTargetPlatform> platforms = {};
+            std::vector<std::string> additionalSources = {};
+            std::vector<std::string> templateStrings = {};
+            for (auto platform : availablePlatforms)
+            {
+                availablePlatformStrings.push_back(getTargetString(platform));
+            }
+            for (auto arg : args)
+            {
+                // get platforms
+                auto isPlatform = false;
+                auto isTemplate = false;
+                for (auto platform : availablePlatforms)
+                {
+                    if (getTargetString(platform) == arg)
+                    {
+                        isPlatform = true;
+                        platforms.push_back(platform);
+                    }
+                }
+                // TODO: get template
+                if (!isPlatform && !isTemplate)
+                {
+                    // TODO: check if file or directory exists
+                    auto absolutePath = ofFilePath::join(_app.getCwdPath(), arg);
+                    if (ofFile::doesFileExist(absolutePath) || ofDirectory::doesDirectoryExist(absolutePath))
+                    {
+                        additionalSources.push_back(arg);
+                    }
+                }
+            }
+
+            _app.generateProject(platforms, baseProject::Template(), additionalSources);
         }
         else if (task.empty())
         {
