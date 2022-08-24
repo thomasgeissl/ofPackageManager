@@ -107,7 +107,6 @@ void gui::setup()
     _gui.addFont(ofToDataPath("fa-solid-900.ttf"), 13.0f, &config, icon_ranges);
     // ImGui::PushFont(font);
 
-
     updatePackagesLists();
     updateRecentProjectsList();
 }
@@ -201,6 +200,8 @@ void gui::draw()
         }
         if (_searchModalOpened)
         {
+            _queryText = "";
+            _searchResults.clear();
             _searchModalOpened = false;
             ImGui::OpenPopup("search");
         }
@@ -405,6 +406,8 @@ void gui::drawModals()
                         {
                             _projectPath = projectPath;
                             _projectName = projectName;
+                            addToRecentProjects(_projectPath);
+                            _stateMachine.trigger("configure");
                             _notifications.add("successfully import SFP. it is ready to be configured.");
                         }
                         else
@@ -421,6 +424,8 @@ void gui::drawModals()
                             _projectName = projectName;
                             _projectPath = projectPath;
                             _notifications.add("successfully cloned project. it is ready to be configured.");
+                            addToRecentProjects(_projectPath);
+                            _stateMachine.trigger("configure");
                         }
                         else
                         {
@@ -611,9 +616,72 @@ bool gui::drawSearchModal()
             }
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 24);
 
-            if (_searchResults.size() > 0)
+            if (_searchResults.size() == 0)
             {
-                if (ImGui::BeginTable("table1", 4, tableFlags))
+                if (ImGui::BeginTable("searchSuggestionsTable", 3, tableFlags))
+                {
+                    ImGui::TableSetupColumn("name", ImGuiTableColumnFlags_WidthStretch);
+                    ImGui::TableSetupColumn("author", ImGuiTableColumnFlags_WidthFixed);
+                    ImGui::TableSetupColumn("actions", ImGuiTableColumnFlags_WidthFixed);
+                    ImGui::TableHeadersRow();
+                    for (auto it : ofJson::iterator_wrapper(_packagesDatabase))
+                    {
+                        // TODO: filter
+                        if (_globalPackages.count(it.key()) == 0 && (_queryText.empty() || ofIsStringInString(ofToLower(it.key()), ofToLower(_queryText))))
+                        {
+                            ImGui::TableNextRow();
+                            ImGui::TableSetColumnIndex(0);
+                            ImGui::Text(it.key().c_str());
+                            std::string gitUrl = it.value()["git"];
+                            Tooltip(gitUrl.c_str());
+                            ImGui::TableSetColumnIndex(1);
+                            std::string author = it.value()["author"];
+                            ImGui::Text(author.c_str());
+                            ImGui::TableSetColumnIndex(2);
+                            std::string buttonId = ICON_FA_EXTERNAL_LINK "##";
+                            buttonId += gitUrl;
+                            if (Button(buttonId.c_str()))
+                            {
+                                std::string website = it.value()["website"];
+                                ofLaunchBrowser(website);
+                            }
+                            Tooltip("opens addon's website in web browser");
+                            ImGui::SameLine();
+                            buttonId = ICON_FA_DOWNLOAD " ##";
+                            buttonId += gitUrl;
+                            if (Button(buttonId.c_str()))
+                            {
+                                std::string destinationPath = "";                             // locally by default
+                                if (_stateMachine.isCurrentState(_manageGlobalPackagesState)) // || isMissing)
+                                {
+                                    destinationPath = _app.getAddonsPath();
+                                }
+                                auto package = _app.installPackageById(it.key(), "latest", destinationPath);
+                                if (package.empty())
+                                {
+                                    std::string message = "could not install ";
+                                    message += it.key().c_str();
+                                    _notifications.add(message);
+                                }
+                                else
+                                {
+                                    std::string message = "successfully installed ";
+                                    message += package.toString();
+                                    _notifications.add(message);
+                                }
+                            }
+                            Tooltip("installs addon globally");
+                        }
+                    }
+
+                    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(16, 8));
+                    ImGui::PopStyleVar();
+                    ImGui::EndTable();
+                }
+            }
+            else
+            {
+                if (ImGui::BeginTable("searchResultsTable", 4, tableFlags))
                 {
                     ImGui::TableSetupColumn("name", ImGuiTableColumnFlags_WidthStretch);
                     ImGui::TableSetupColumn("stars", ImGuiTableColumnFlags_WidthFixed);
