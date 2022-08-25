@@ -896,7 +896,6 @@ void gui::drawManageGlobalPackages()
             ImGui::TableSetupColumn("actions", ImGuiTableColumnFlags_WidthFixed);
             ImGui::TableHeadersRow();
 
-            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(16, 8));
             for (auto corePackage : _corePackages)
             {
                 ImGui::TableNextRow();
