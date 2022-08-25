@@ -657,7 +657,9 @@ bool gui::drawSearchModal()
                                     _notifications.add(message);
                                 }
                             }
-                            Tooltip("installs addon globally");
+                            std::string text = "installs addon ";
+                            text += _stateMachine.isCurrentState(_manageGlobalPackagesState) ? "globally" : "locally";
+                            Tooltip(text);
                         }
                     }
 
