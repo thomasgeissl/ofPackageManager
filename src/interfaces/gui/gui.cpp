@@ -367,86 +367,10 @@ void gui::drawConsole()
 }
 void gui::drawModals()
 {
-    auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
-    auto isAnyModalOpen = drawAboutModal();
-    isAnyModalOpen = drawPreferencesModal() || isAnyModalOpen;
-    auto isImportModal = drawImportModal();
-    isAnyModalOpen = isImportModal || isAnyModalOpen;
-    isAnyModalOpen = drawSearchModal() || isAnyModalOpen;
-    if(!isAnyModalOpen){
-        return;
-    }
-
-    // TODO: tag selector
-    auto numberOfButtons = isImportModal ? 2 : 1;
-    if (BeginActions(numberOfButtons))
-    {
-        if (Button("close", ImVec2(buttonWidth, -1)))
-        {
-            ImGui::CloseCurrentPopup();
-        }
-        ImGui::SameLine();
-
-        if (isImportModal && Button("choose destination and import", ImVec2(buttonWidth, -1), true, _sfp.empty()))
-        {
-            std::string defaultName = "sfp_";
-            defaultName += ofGetTimestampString();
-            if (!ofJson::accept(_sfp))
-            {
-                defaultName = ofFilePath::getBaseName(_sfp);
-            }
-            auto result = ofSystemSaveDialog(defaultName, "project path");
-            if (result.bSuccess)
-            {
-                auto path = result.getPath();
-                if (!ofDirectory::doesDirectoryExist(path))
-                {
-                    std::string projectPath = path;
-                    std::string projectName = ofFilePath::getFileName(path);
-
-                    if (ofJson::accept(_sfp))
-                    {
-                        if (_app.createFromSingleFileProject(ofJson::parse(_sfp), projectPath))
-                        {
-                            _projectPath = projectPath;
-                            _projectName = projectName;
-                            addToRecentProjects(_projectPath);
-                            _stateMachine.trigger("configure");
-                            _notifications.add("successfully import SFP. it is ready to be configured.");
-                        }
-                        else
-                        {
-                            _notifications.add("sorry, could not import SFP.");
-                        }
-                    }
-                    // else if (isGitUrl(ofTrim(_sfp)))
-                    else if (ofTrim(_sfp).substr(0, 4) == "git@" || ofTrim(_sfp).substr(0, 4) == "http")
-                    {
-                        ofxGit::repository repo(projectPath);
-                        if (repo.clone(ofTrim(_sfp)))
-                        {
-                            _projectName = projectName;
-                            _projectPath = projectPath;
-                            _notifications.add("successfully cloned project. it is ready to be configured.");
-                            addToRecentProjects(_projectPath);
-                            _stateMachine.trigger("configure");
-                        }
-                        else
-                        {
-                            _notifications.add("sorry, could not clone project.");
-                        }
-                    }
-                    else
-                    {
-                        _notifications.add("sorry, that's neither a valid sfp or git url");
-                    }
-                }
-            }
-        }
-        EndActions();
-    }
-
-    ImGui::EndPopup();
+    drawAboutModal();
+    drawPreferencesModal();
+    drawImportModal();
+    drawSearchModal();
 
     // reset in case no modal was open
     _closeCurrentModal = false;
@@ -504,7 +428,7 @@ bool gui::drawAboutModal()
             ImGui::EndChild();
         }
 
-        EndModal(buttonWidth);
+        EndModal(true, buttonWidth);
     }
     return active;
 }
@@ -536,15 +460,8 @@ bool gui::drawPreferencesModal()
             ImGui::Text(_app.getOfPath().c_str());
             ImGui::EndChild();
         }
-        if (BeginActions(1))
-        {
-            if (Button("close", ImVec2(buttonWidth, -1)))
-            {
-                ImGui::CloseCurrentPopup();
-            }
-            EndActions();
-        }
-        ImGui::EndPopup();
+
+        EndModal(true, buttonWidth);
     }
     return active;
 }
@@ -569,8 +486,74 @@ bool gui::drawImportModal()
             {
                 _sfp = sfp;
             }
+            ImGui::EndChild();
         }
-        ImGui::EndChild();
+        if (BeginActions(2))
+        {
+            if (Button("close", ImVec2(buttonWidth, -1)))
+            {
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SameLine();
+            if (Button("choose destination and import", ImVec2(buttonWidth, -1), true, _sfp.empty()))
+            {
+                std::string defaultName = "sfp_";
+                defaultName += ofGetTimestampString();
+                if (!ofJson::accept(_sfp))
+                {
+                    defaultName = ofFilePath::getBaseName(_sfp);
+                }
+                auto result = ofSystemSaveDialog(defaultName, "project path");
+                if (result.bSuccess)
+                {
+                    auto path = result.getPath();
+                    if (!ofDirectory::doesDirectoryExist(path))
+                    {
+                        std::string projectPath = path;
+                        std::string projectName = ofFilePath::getFileName(path);
+
+                        if (ofJson::accept(_sfp))
+                        {
+                            if (_app.createFromSingleFileProject(ofJson::parse(_sfp), projectPath))
+                            {
+                                _projectPath = projectPath;
+                                _projectName = projectName;
+                                addToRecentProjects(_projectPath);
+                                _stateMachine.trigger("configure");
+                                _notifications.add("successfully import SFP. it is ready to be configured.");
+                            }
+                            else
+                            {
+                                _notifications.add("sorry, could not import SFP.");
+                            }
+                        }
+                        // else if (isGitUrl(ofTrim(_sfp)))
+                        else if (ofTrim(_sfp).substr(0, 4) == "git@" || ofTrim(_sfp).substr(0, 4) == "http")
+                        {
+                            ofxGit::repository repo(projectPath);
+                            if (repo.clone(ofTrim(_sfp)))
+                            {
+                                _projectName = projectName;
+                                _projectPath = projectPath;
+                                _notifications.add("successfully cloned project. it is ready to be configured.");
+                                addToRecentProjects(_projectPath);
+                                _stateMachine.trigger("configure");
+                            }
+                            else
+                            {
+                                _notifications.add("sorry, could not clone project.");
+                            }
+                        }
+                        else
+                        {
+                            _notifications.add("sorry, that's neither a valid sfp or git url");
+                        }
+                    }
+                }
+            }
+            EndActions();
+        }
+        EndModal(false);
     }
     return active;
 }
@@ -678,8 +661,6 @@ bool gui::drawSearchModal()
                         }
                     }
 
-                    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(16, 8));
-                    ImGui::PopStyleVar();
                     ImGui::EndTable();
                 }
             }
@@ -693,7 +674,7 @@ bool gui::drawSearchModal()
                     ImGui::TableSetupColumn("actions", ImGuiTableColumnFlags_WidthFixed);
                     ImGui::TableHeadersRow();
 
-                    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(16, 8));
+                    // ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(16, 8));
                     auto i = 0;
                     for (auto &repo : _searchResults)
                     {
@@ -778,8 +759,8 @@ bool gui::drawSearchModal()
                         }
                         i++;
                     }
+                    // ImGui::PopStyleVar();
                     ImGui::EndTable();
-                    ImGui::PopStyleVar();
                 }
             }
 
@@ -798,7 +779,7 @@ bool gui::drawSearchModal()
             ImGui::EndChild();
         }
 
-        EndModal(buttonWidth);
+        EndModal(true, buttonWidth);
     }
     return active;
 }

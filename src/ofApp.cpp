@@ -944,7 +944,6 @@ std::string ofPackageManager::findOfPathOutwardly(std::string path, int maxLevel
 
 bool ofPackageManager::generateProject(std::vector<ofTargetPlatform> platforms, baseProject::Template template_, std::vector<std::string> additionalSources)
 {
-	ofLogNotice() << "generate proejct";
 	return generateProject(getCwdPath(), getPackagesListedInAddonsMakeFile(), platforms, template_, additionalSources);
 }
 bool ofPackageManager::generateProject(std::string path, std::vector<ofPackage> packages, std::vector<ofTargetPlatform> platforms, baseProject::Template template_, std::vector<std::string> additionalSources)

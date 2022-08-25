@@ -148,15 +148,15 @@ bool BeginModal(std::string title)
     }
     return false;
 }
-void EndModal(int buttonWidth)
+void EndModal(bool withCloseButton, int buttonWidth = -1)
 {
-    if (BeginActions(1))
+    if (withCloseButton && BeginActions(1))
     {
         if (Button("close", ImVec2(buttonWidth, -1)))
         {
             ImGui::CloseCurrentPopup();
         }
-        ImGui::EndChild();
+        EndActions();
     }
     ImGui::EndPopup();
 }
