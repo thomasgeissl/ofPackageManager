@@ -368,10 +368,14 @@ void gui::drawConsole()
 void gui::drawModals()
 {
     auto padding = ImGui::GetStyle().ItemInnerSpacing.y;
-    drawAboutModal();
-    drawPreferencesModal();
+    auto isAnyModalOpen = drawAboutModal();
+    isAnyModalOpen = drawPreferencesModal() || isAnyModalOpen;
     auto isImportModal = drawImportModal();
-    drawSearchModal();
+    isAnyModalOpen = isImportModal || isAnyModalOpen;
+    isAnyModalOpen = drawSearchModal() || isAnyModalOpen;
+    if(!isAnyModalOpen){
+        return;
+    }
 
     // TODO: tag selector
     auto numberOfButtons = isImportModal ? 2 : 1;
