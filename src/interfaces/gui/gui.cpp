@@ -307,7 +307,7 @@ void gui::drawSideBar()
     auto style = ImGui::GetStyle();
     auto numberOfButtons = _showAdvancedOptions ? 4 : 3;
     auto availableHeight = ImGui::GetWindowHeight() - ImGui::GetCursorPosY() + style.ItemSpacing.y;
-    auto buttonSize = ImVec2(ImGui::GetContentRegionAvailWidth()-2*24, footerHeight);
+    auto buttonSize = ImVec2(ImGui::GetContentRegionAvail().x-2*24, footerHeight);
     ImGui::SetCursorPosX(ImGui::GetCursorPosX()+24);
     // auto buttonSize = ImVec2(-1, footerHeight);
     // auto buttonSize = ImVec2(ImGui::GetContentRegionAvailWidth(), footerHeight);
@@ -463,7 +463,7 @@ void gui::drawModals()
         {
             char name[128] = "";
             strcpy(name, _queryText.c_str());
-            ImGui::PushItemWidth(ImGui::GetContentRegionAvailWidth() - buttonWidth / 2 - 2 * ImGui::GetStyle().ItemInnerSpacing.x);
+            ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x - buttonWidth / 2 - 2 * ImGui::GetStyle().ItemInnerSpacing.x);
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(8, 16));
             if (ImGui::InputText("##querytext", name, IM_ARRAYSIZE(name), 0))
             {
@@ -891,7 +891,7 @@ void gui::drawCreate()
         ImGui::Text("project name");
         char name[128];
         strcpy(name, _projectName.c_str());
-        ImGui::PushItemWidth(ImGui::GetContentRegionAvailWidth() - 2 * ImGui::GetStyle().ItemInnerSpacing.x);
+        ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x - 2 * ImGui::GetStyle().ItemInnerSpacing.x);
         if (ImGui::InputText("##project name", name, IM_ARRAYSIZE(name)))
         {
             _projectName = std::string(name);
@@ -1335,7 +1335,7 @@ void gui::drawPlatformAndTemplateChooser()
         }
     }
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 16);
-    ImGui::PushItemWidth(ImGui::GetContentRegionAvailWidth());
+    ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x);
     if (ImGui::BeginCombo("##template", _selectedTemplate.description.empty() ? "default template" : _selectedTemplate.description.c_str(), 0))
     {
         auto is_selected = _selectedTemplate.description.empty();

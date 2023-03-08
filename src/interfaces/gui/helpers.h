@@ -127,7 +127,7 @@ bool BeginActions(int numberOfButtons, int buttonWidth = 200)
     if (ImGui::BeginChild("actions", ImVec2(0, 0)))
     {
         auto style = ImGui::GetStyle();
-        ImGui::SetCursorPosX(ImGui::GetContentRegionAvailWidth() - numberOfButtons * buttonWidth - (numberOfButtons - 1) * style.ItemSpacing.x);
+        ImGui::SetCursorPosX(ImGui::GetContentRegionAvail().x - numberOfButtons * buttonWidth - (numberOfButtons - 1) * style.ItemSpacing.x);
         return true;
     }
     return false;
