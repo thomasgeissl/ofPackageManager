@@ -784,7 +784,7 @@ void ofPackageManager::setProjectPath(std::string path)
 void ofPackageManager::setSilent(bool value)
 {
 	_silent = value;
-	ofxGit::repository::setSilent(value);
+	// ofxGit::repository::setSilent(value);
 }
 
 std::string ofPackageManager::getAbsolutePath(std::string path)

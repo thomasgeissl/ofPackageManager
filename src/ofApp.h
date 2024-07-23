@@ -1,7 +1,8 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofxGit2.h"
+// #include "ofxGit2.h"
+#include "ofxSimpleGit.h"
 #include "ofxCommandLineUtils.h"
 
 #include "defines.h"
