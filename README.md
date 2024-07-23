@@ -4,9 +4,6 @@
 
 ofPackageManager is a package manager for openFrameworks.
 
-## Build status
-[![Build Status](https://travis-ci.com/thomasgeissl/ofPackageManager.svg?branch=master)](https://travis-ci.com/thomasgeissl/ofPackageManager)
-
 ## Installation
 
 ### OSX
@@ -21,14 +18,6 @@ brew install ofpackagemanager
 # brew upgrade ofpackagemanager
 ```
 
-#### manually
-
-Or copy this line and paste it in your terminal. It will download the most recent version of the package manager and add it to your path.
-
-```
-bash -c "$(curl -sSL https://raw.githubusercontent.com/thomasgeissl/ofPackageManager/master/scripts/osx/downloadAndAddToPath.sh)"
-```
-
 ### Windows
 
 On Windows you have to install the `exe` manually.
@@ -41,20 +30,11 @@ On Windows you have to install the `exe` manually.
 
 ### Building
 
-- You can download a fresh version of openFrameworks, as well as ofPackageManager and its depedencies via the following commands.
-  cd into your preferred installation directory, e.g. `mkdir ~/.ofPackageManager && cd ~/.ofPackageManager`
-
-```
-sh -c "$(curl -sSL https://raw.githubusercontent.com/thomasgeissl/ofPackageManager/master/scripts/install.sh)"
-```
-
-- Or you can clone it manually: `git clone https://github.com/thomasgeissl/ofPackageManager.git`. Its dependencies can be cloned via the provided `install_dependencies.sh` script or the online version of the package manager.
+- clone the app into openFrameworks/apps/myApp: `git clone https://github.com/thomasgeissl/ofPackageManager.git`. Its dependencies can be cloned via the provided `install_dependencies.sh` script or the online version of the package manager.
 
 It is recommended to add the path your bash profile. Have a look at the `add_to_path.sh`script.
 
 ## Usage
-
-Run the global configuration in order to install addons globally. `ofPackageManager config -g`
 
 ### Package management
 
@@ -76,7 +56,7 @@ Run the global configuration in order to install addons globally. `ofPackageMana
 - Help/man: `ofPackageManager help`
 - Print version: `ofPackageManager version`
 - Check for updates: `ofPackageManager doctor`
-- Upate packages database: `ofPackageManager update`
+- Update packages database: `ofPackageManager update`
 
 ## Best practices
 
@@ -85,7 +65,7 @@ Run the global configuration in order to install addons globally. `ofPackageMana
 - Configure the package manager locally if you want to use your own custom packages database for a project.
 - You can also use the bash-based online version if you do not have the package manager installed on your machine. e.g. `cd into/your/project/app` and execute the following to install its dependencies: `bash -c "$(curl -sSL https://raw.githubusercontent.com/thomasgeissl/ofPackageManager/master/scripts/ofPackageManager.sh)" install`
 
-## json interface
+## json interface (currently not maintained)
 
 ofPackageManager also accepts json commands, this can be useful if you wanna integrate it into another application. It is documented [here](https://github.com/thomasgeissl/ofPackageManager/blob/master/docs/json.md).
 
