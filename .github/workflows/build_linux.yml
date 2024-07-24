@@ -80,4 +80,5 @@ jobs:
         cd $APP_DIR
         rm -rf local_addons
         ./bin/$REPO_NAME install
+        ls -l local_addons
       shell: bash
