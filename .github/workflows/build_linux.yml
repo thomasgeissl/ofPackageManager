@@ -1,10 +1,10 @@
-name: build-linux64-and-arm
+name: Build and Setup OpenFrameworks
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main ]
 
 jobs:
   build:
@@ -25,9 +25,9 @@ jobs:
 
     - name: Download and extract OpenFrameworks
       run: |
-        wget http://openframeworks.cc/versions/v$OF_VERSION/of_v$OF_VERSION_linux64gcc6_release.tar.gz
-        tar -xf of_v$OF_VERSION_linux64gcc6_release.tar.gz -C $HOME
-        mv $HOME/of_v$OF_VERSION_linux64gcc6_release $OF_ROOT
+        wget https://github.com/openframeworks/openFrameworks/releases/download/0.12.0/of_v0.12.0_linux64gcc6_release.tar.gz
+        tar -xf of_v0.12.0_linux64gcc6_release.tar.gz -C $HOME
+        mv $HOME/of_v0.12.0_linux64gcc6_release $OF_ROOT
       shell: bash
 
     - name: Install required libraries
@@ -54,4 +54,3 @@ jobs:
         cd $APP_DIR
         make
       shell: bash
-
