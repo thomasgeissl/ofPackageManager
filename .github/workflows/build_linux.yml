@@ -72,5 +72,5 @@ jobs:
     - name: Build the project
       run: |
         cd $APP_DIR
-        make
+        make -j8
       shell: bash
