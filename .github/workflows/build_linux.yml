@@ -1,12 +1,57 @@
 name: build-linux64-and-arm
 
-on: [push, pull_request]
-    
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
 jobs:
   build:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v2
-    - name: install
-      run: ./scripts/linux/install.sh
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up environment variables
+      run: |
+        REPO_NAME=$(basename $GITHUB_REPOSITORY)
+        echo "OF_VERSION=0.12.0" >> $GITHUB_ENV
+        echo "OF_ROOT=$HOME/openFrameworks" >> $GITHUB_ENV
+        echo "APP_DIR=$OF_ROOT/apps/myApps/$REPO_NAME" >> $GITHUB_ENV
+        echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Download and extract OpenFrameworks
+      run: |
+        wget http://openframeworks.cc/versions/v$OF_VERSION/of_v$OF_VERSION_linux64gcc6_release.tar.gz
+        tar -xf of_v$OF_VERSION_linux64gcc6_release.tar.gz -C $HOME
+        mv $HOME/of_v$OF_VERSION_linux64gcc6_release $OF_ROOT
+      shell: bash
+
+    - name: Install required libraries
+      run: |
+        cd $OF_ROOT/scripts/linux/ubuntu
+        sudo ./install_dependencies.sh
+        sudo ./install_codecs.sh
+      shell: bash
+
+    - name: Move repository into OpenFrameworks apps directory
+      run: |
+        mkdir -p $OF_ROOT/apps/myApps
+        mv $GITHUB_WORKSPACE $APP_DIR
+      shell: bash
+
+    - name: Run ofPackageManager to install packages
+      run: |
+        cd $APP_DIR
+        bash -c "$(curl -sSL https://raw.githubusercontent.com/thomasgeissl/ofPackageManager/master/scripts/ofPackageManager.sh)" install
+      shell: bash
+
+    - name: Build the project
+      run: |
+        cd $APP_DIR
+        make
+      shell: bash
 
