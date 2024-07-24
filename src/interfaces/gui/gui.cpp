@@ -162,6 +162,7 @@ void gui::draw()
                     if (ImGui::Begin("styleEditor", &open))
                     {
                         ImGui::ShowStyleEditor();
+                        ImGui::End();
                     }
                 }
                 if (_showDemoWindow)
