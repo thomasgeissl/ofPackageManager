@@ -60,8 +60,10 @@ jobs:
 
     - name: Move repository into OpenFrameworks apps directory
       run: |
+        ls $OF_ROOT
         mkdir -p $OF_ROOT/apps/myApps
-        mv $GITHUB_WORKSPACE $APP_DIR
+        ls $OF_ROOT/apps/myApps
+        cp -R $GITHUB_WORKSPACE $APP_DIR
       shell: bash
 
     - name: Run ofPackageManager to install packages
