@@ -1425,7 +1425,7 @@ void gui::keyPressed(int key)
     commandKeyPressed = ofGetKeyPressed(OF_KEY_COMMAND);
 #endif
 #ifdef TARGET_WIN
-    commandKeyPressed = ofGetKeyPressed(OF_KEY_CTRL);
+    commandKeyPressed = ofGetKeyPressed(OF_KEY_CONTROL);
 #endif
 #ifdef TARGET_LINUX
     commandKeyPressed = ofGetKeyPressed(OF_KEY_CONTROL);
