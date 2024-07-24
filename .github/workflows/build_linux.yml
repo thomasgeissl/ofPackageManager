@@ -53,9 +53,6 @@ jobs:
         echo "OF_ROOT: $OF_ROOT"
         echo "APP_DIR: $APP_DIR"
         echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
-        ls $OF_ROOT
-        ls $APP_DIR
-        ls $GITHUB_WORKSPACE
       shell: bash
 
     - name: Move repository into OpenFrameworks apps directory
