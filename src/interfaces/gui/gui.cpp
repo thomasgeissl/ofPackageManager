@@ -1428,7 +1428,7 @@ void gui::keyPressed(int key)
     commandKeyPressed = ofGetKeyPressed(OF_KEY_CTRL);
 #endif
 #ifdef TARGET_LINUX
-    commandKeyPressed = ofGetKeyPressed(OF_KEY_CTRL);
+    commandKeyPressed = ofGetKeyPressed(OF_KEY_CONTROL);
 #endif
     if (key == OF_KEY_ESC)
     {
