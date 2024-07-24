@@ -12,10 +12,11 @@
 class project
 {
 public:
-    project(std::string path) : _path(path)
+    project(std::string path, std::string timestamp) : _path(path), _timestamp(timestamp)
     {
     }
     std::string _path;
+    std::string _timestamp;
 };
 class selectablePackage
 {

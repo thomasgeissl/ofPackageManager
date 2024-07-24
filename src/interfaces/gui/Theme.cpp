@@ -79,4 +79,5 @@ void Theme::setup()
 	style->TabRounding = 0.0f;
 	style->PopupRounding = 0.0f;
 	style->PopupBorderSize = 1.0f;
+	style->CellPadding.y = 8.0f;
 }

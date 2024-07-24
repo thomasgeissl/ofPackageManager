@@ -96,13 +96,15 @@ void gui::setup()
     ImGuiIO &io = ImGui::GetIO();
     ImFontConfig config;
     config.MergeMode = true;
-    config.GlyphMinAdvanceX = 13.0f; 
+    //    config.GlyphMinAdvanceX = 13.0f;
 
     static const ImWchar icon_ranges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
-    auto font = _gui.addFont(ofToDataPath("Roboto-Regular.ttf"), 16.0f, &config, io.Fonts->GetGlyphRangesDefault());
+    auto font = _gui.addFont(ofToDataPath("Roboto-Regular.ttf"), 13.0f, &config, io.Fonts->GetGlyphRangesDefault());
     auto iconFont = _gui.addFont(ofToDataPath("fa-solid-900.ttf"), 13.0f, &config, icon_ranges);
-        
-    //io.Fonts->Build();
+
+    //    io.Fonts->Build();
+    io.FontDefault = font;
+
     updatePackagesLists();
     updateRecentProjectsList();
 }
@@ -788,9 +790,10 @@ void gui::drawRecentProjects()
     {
         return;
     }
-    if (ImGui::BeginTable("recentProjectsTable", 2, tableFlags))
+    if (ImGui::BeginTable("recentProjectsTable", 3, tableFlags))
     {
         ImGui::TableSetupColumn("name", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupColumn("last opened", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableSetupColumn("actions", ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableHeadersRow();
         auto index = 0;
@@ -810,6 +813,9 @@ void gui::drawRecentProjects()
             // ImGui::TextWrapped(ofFilePath::getBaseName(p._path).c_str());
             Tooltip(p._path.c_str());
             ImGui::TableSetColumnIndex(1);
+            // TODO: format, e.g. via ofxAsap
+            ImGui::Text(p._timestamp.c_str());
+            ImGui::TableSetColumnIndex(2);
             std::string removeButtonId = ICON_FA_TRASH "##";
             removeButtonId += p._path;
             if (Button(removeButtonId.c_str()))
@@ -1558,7 +1564,14 @@ void gui::updateRecentProjectsList()
         _recentProjects.clear();
         for (auto p : data)
         {
-            _recentProjects.push_back(project(p["path"]));
+            try{
+
+            _recentProjects.push_back(project(
+                p["path"],
+                p["timestamp"].get<std::string>()));
+            }catch(std::exception e){
+                ofLogError() << e.what();
+            }
         }
     }
 }
@@ -1624,14 +1637,19 @@ void gui::addToRecentProjects(std::string path)
     ofJson recentProjects = ofJson::array();
     ofJson o;
     o["path"] = path;
+    o["timestamp"] = ofGetTimestampString();
     recentProjects.push_back(o);
     for (auto recentProject : _recentProjects)
     {
-        ofJson o;
-        o["path"] = recentProject._path;
-        recentProjects.push_back(o);
+        std::string otherPath = recentProject._path;
+        if (otherPath != path)
+        {
+            ofJson o;
+            o["path"] = recentProject._path;
+            o["timestamp"] = recentProject._timestamp;
+            recentProjects.push_back(o);
+        }
     }
-    // TODO: remove duplicates
 
     auto recentProjectsPath = ofToDataPath("recentProjects.json");
     ofFile file(recentProjectsPath, ofFile::ReadWrite);
