@@ -41,6 +41,13 @@ jobs:
         sudo ./install_codecs.sh
       shell: bash
 
+    - name: Log paths
+      run: |
+        echo "OF_ROOT: $OF_ROOT"
+        echo "APP_DIR: $APP_DIR"
+        echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+      shell: bash
+
     - name: Move repository into OpenFrameworks apps directory
       run: |
         mkdir -p $OF_ROOT/apps/myApps
