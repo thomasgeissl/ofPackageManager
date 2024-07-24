@@ -74,3 +74,10 @@ jobs:
         cd $APP_DIR
         make -j8
       shell: bash
+
+    - name: Test app (cli)
+      run: |
+        cd $APP_DIR
+        rm -rf local_addons
+        ./bin/$REPO_NAME install
+      shell: bash
