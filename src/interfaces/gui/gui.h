@@ -164,7 +164,7 @@ private:
     bool _searchModalOpened;
     bool _deletePackageModalOpened;
     bool _closeCurrentModal;
-    bool _importModelOpened;
+    bool _importModalOpened;
 
 
     // versions

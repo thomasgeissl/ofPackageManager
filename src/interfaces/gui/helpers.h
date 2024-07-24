@@ -46,12 +46,11 @@ bool Button(std::string text, ImVec2 size = ImVec2(0, 0), bool primary = false, 
     return pressed;
 }
 
-bool MenuButton(std::string text, ImVec2 size = ImVec2(0, 0), bool active = false)
+bool MenuButton(const char* icon, std::string text, ImVec2 size = ImVec2(0, 0), bool active = false)
 {
     auto style = ImGui::GetStyle();
     auto actionColor = style.Colors[ImGuiCol_ResizeGripActive];
     text = ofToUpper(text);
-    auto framePaddingHeight = 8;
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8);
     if (active)
     {
@@ -60,18 +59,34 @@ bool MenuButton(std::string text, ImVec2 size = ImVec2(0, 0), bool active = fals
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, style.Colors[ImGuiCol_Button]);
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
     }
+
     auto pressed = false;
-    if (ImGui::Button(text.c_str(), size))
+
+    // Calculate the combined text with icon
+    std::string buttonText = std::string(icon) + " " + text;
+
+    // Get the size of the button content
+    ImVec2 textSize = ImGui::CalcTextSize(buttonText.c_str());
+
+    // Adjust the button size to fit the icon and text if a size is not provided
+    if (size.x == 0) size.x = textSize.x + style.FramePadding.x * 2.0f;
+    if (size.y == 0) size.y = textSize.y + style.FramePadding.y * 2.0f;
+
+    // Render the button with the combined text
+    if (ImGui::Button(buttonText.c_str(), size))
     {
         pressed = true;
     }
+
     ImGui::PopStyleVar(1);
     if (active)
     {
         ImGui::PopStyleColor(4);
     }
+
     return pressed;
 }
+
 bool MinButton(std::string text, ImVec2 size = ImVec2(0, 0))
 {
     auto style = ImGui::GetStyle();

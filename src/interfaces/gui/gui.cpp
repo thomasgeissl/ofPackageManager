@@ -36,7 +36,7 @@ gui::gui(ofPackageManager app) : ofBaseApp(), _app(app),
                                  _preferencesModalOpened(false),
                                  _searchModalOpened(false),
                                  _deletePackageModalOpened(false),
-                                 _importModelOpened(false),
+                                 _importModalOpened(false),
                                  _closeCurrentModal(false),
                                  _projectDirectoryPath(app.getMyAppsPath()),
                                  _version(_app.getVersion()),
@@ -94,19 +94,15 @@ void gui::setup()
     _gui.setTheme(new Theme());
 
     ImGuiIO &io = ImGui::GetIO();
-
-    // io.Fonts->AddFontFromFileTTF(ofToDataPath("Roboto-Light.ttf").c_str(), 13.f, &config);
-    // io.Fonts->AddFontFromMemoryTTF((void *)tahoma, sizeof(tahoma), 13.f, nullptr);
-
     ImFontConfig config;
     config.MergeMode = true;
-    config.GlyphMinAdvanceX = 13.0f; // Use if you want to make the icon monospaced
+    config.GlyphMinAdvanceX = 13.0f; 
 
     static const ImWchar icon_ranges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
     auto font = _gui.addFont(ofToDataPath("Roboto-Regular.ttf"), 16.0f, &config, io.Fonts->GetGlyphRangesDefault());
-    _gui.addFont(ofToDataPath("fa-solid-900.ttf"), 13.0f, &config, icon_ranges);
-    // ImGui::PushFont(font);
-
+    auto iconFont = _gui.addFont(ofToDataPath("fa-solid-900.ttf"), 13.0f, &config, icon_ranges);
+        
+    //io.Fonts->Build();
     updatePackagesLists();
     updateRecentProjectsList();
 }
@@ -210,9 +206,9 @@ void gui::draw()
             _deletePackageModalOpened = false;
             ImGui::OpenPopup("deletePackage");
         }
-        if (_importModelOpened)
+        if (_importModalOpened)
         {
-            _importModelOpened = false;
+            _importModalOpened = false;
             auto clipboard = ofGetClipboardString();
             if (ofJson::accept(clipboard))
             {
@@ -312,18 +308,18 @@ void gui::drawSideBar()
     auto availableHeight = ImGui::GetWindowHeight() - ImGui::GetCursorPosY() + style.ItemSpacing.y;
     auto buttonSize = ImVec2(ImGui::GetContentRegionAvail().x, footerHeight);
 
-    if (MenuButton(ICON_FA_FOLDER_OPEN " projects", buttonSize, _stateMachine.isCurrentState(_projectsState)))
+    if (MenuButton(ICON_FA_FOLDER_OPEN, "projects", buttonSize, _stateMachine.isCurrentState(_projectsState)))
     {
         _stateMachine.trigger("projects");
     }
     if (_showAdvancedOptions)
     {
-        if (MenuButton(ICON_FA_FOLDER " update multiple projects", buttonSize, _stateMachine.isCurrentState(_updateMultipleState)))
+        if (MenuButton(ICON_FA_FOLDER, "update multiple projects", buttonSize, _stateMachine.isCurrentState(_updateMultipleState)))
         {
             _stateMachine.trigger("updateMultiple");
         }
     }
-    if (MenuButton(ICON_FA_LIST " manage addons", buttonSize, _stateMachine.isCurrentState(_manageGlobalPackagesState)))
+    if (MenuButton(ICON_FA_LIST, "manage addons", buttonSize, _stateMachine.isCurrentState(_manageGlobalPackagesState)))
     {
         _stateMachine.trigger("manageGlobalPackages");
     }
@@ -1041,7 +1037,7 @@ void gui::drawProjects()
         ofDirectory projectDir = ofDirectory(_projectPath);
         if (Button("import", ImVec2(buttonWidth, -1)))
         {
-            _importModelOpened = true;
+            _importModalOpened = true;
         }
         Tooltip("imports a public repository or a sfp (single file project)");
         ImGui::SameLine();
