@@ -17,10 +17,17 @@ jobs:
     - name: Set up environment variables
       run: |
         REPO_NAME=$(basename $GITHUB_REPOSITORY)
-        echo "OF_VERSION=0.12.0" >> $GITHUB_ENV
-        echo "OF_ROOT=$HOME/openFrameworks" >> $GITHUB_ENV
-        echo "APP_DIR=$OF_ROOT/apps/myApps/$REPO_NAME" >> $GITHUB_ENV
+        OF_VERSION=0.12.0
+        OF_ROOT="$HOME/openFrameworks"
+        APP_DIR="$OF_ROOT/apps/myApps/$REPO_NAME"
+        echo "OF_VERSION=$OF_VERSION" >> $GITHUB_ENV
+        echo "OF_ROOT=$OF_ROOT" >> $GITHUB_ENV
+        echo "APP_DIR=$APP_DIR" >> $GITHUB_ENV
         echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
+
+        # Optional: Log the variables for debugging
+        echo "OF_ROOT is set to $OF_ROOT"
+        echo "APP_DIR is set to $APP_DIR"
       shell: bash
 
     - name: Download and extract OpenFrameworks
@@ -46,6 +53,9 @@ jobs:
         echo "OF_ROOT: $OF_ROOT"
         echo "APP_DIR: $APP_DIR"
         echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+        ls $OF_ROOT
+        ls $APP_DIR
+        ls $GITHUB_WORKSPACE
       shell: bash
 
     - name: Move repository into OpenFrameworks apps directory
