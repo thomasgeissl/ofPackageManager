@@ -30,6 +30,10 @@ jobs:
         mv $HOME/of_v0.12.0_linux64gcc6_release $OF_ROOT
       shell: bash
 
+    - name: Update package list
+      run: sudo apt-get update
+      shell: bash
+
     - name: Install required libraries
       run: |
         cd $OF_ROOT/scripts/linux/ubuntu
