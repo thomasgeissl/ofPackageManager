@@ -29,15 +29,16 @@ On Windows you have to install the `exe` manually.
 
 ![](win-path.png)
 
-### Building
+## Building
 
-- clone the app into openFrameworks/apps/myApp: `git clone https://github.com/thomasgeissl/ofPackageManager.git`. Its dependencies can be cloned via the provided `install_dependencies.sh` script or the online version of the package manager.
-
-It is recommended to add the path your bash profile. Have a look at the `add_to_path.sh`script.
+- Clone the app into openFrameworks/apps/myApps: `git clone https://github.com/thomasgeissl/ofPackageManager.git`. 
+- Its dependencies can be cloned via the provided `install_dependencies.sh` script or the online version of the package manager.
+- On linux and OSX it should build with `make`
+- Or you can use the project generator to generate an IDE project
 
 ## Usage
 
-It ships with 3 different interfaces.
+It comes with 3 different interfaces.
 
 1. gui - similar to the project generator
 2. cli - similar to npm
@@ -66,22 +67,20 @@ It ships with 3 different interfaces.
 - Search package on github by name: `ofPackageManager search github ofxSyphon`
 - Search package on github by user: `ofPackageManager search github --user arturoc`
 
+
 - Info: `ofPackageManager info`
 - Help/man: `ofPackageManager help`
 - Print version: `ofPackageManager version`
 - Check for updates: `ofPackageManager doctor`
 - Update packages database: `ofPackageManager update`
 
+### json interface (currently not maintained)
+[More details on JSON Interface](./docs/jsonInterface.md)
+
 ## Best practices
 
 - Do not forget to add local_addons to your .gitignore: `echo "./local_addons" >> .gitignore`
-- Configure the package manager locally if you have more than one openFrameworks versions installed on your computer.
-- Configure the package manager locally if you want to use your own custom packages database for a project.
 - You can also use the bash-based online version if you do not have the package manager installed on your machine. e.g. `cd into/your/project/app` and execute the following to install its dependencies: `bash -c "$(curl -sSL https://raw.githubusercontent.com/thomasgeissl/ofPackageManager/master/scripts/ofPackageManager.sh)" install`
-
-## json interface (currently not maintained)
-
-ofPackageManager also accepts json commands, this can be useful if you wanna integrate it into another application. It is documented [here](https://github.com/thomasgeissl/ofPackageManager/blob/master/docs/json.md).
 
 ## License
 
