@@ -46,9 +46,10 @@ It ships with 3 different interfaces.
 ### gui
 - just double click the app or open it from the terminal without providing command line args
 
-| ![Install Addon](./docs/install_addon.png) | ![Open Project](./docs/open_project.png) |
-|:-------------------------------------------:|:---------------------------------------:|
-| Install Addon                               | Open Project                            |
+| ![Open Project](./docs/open_project.png) | ![Configure Project](./docs/configure_project.png) | ![Install Addon](./docs/install_addon.png) |
+|:----------------------------------------:|:--------------------------------------------------:|:------------------------------------------:|
+| Open Project                             | Configure Project                                 | Install Addon                              |
+
 
 
 ### cli
