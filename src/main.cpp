@@ -41,6 +41,11 @@ int main(int argc, char **argv)
 	std::string cwdPath = filesystem::current_path().string();
 	ofPackageManager app(cwdPath != "/" ? cwdPath : executablePath);
 	jsonInterface jsonI(app);
+	if (argc == 2 && std::string(argv[1]) == "test")
+	{
+		ofLogNotice() << "run tests";
+		return 0;
+	}
 	if (argc == 1)
 	{
 		ofSetupOpenGL(1024, 768, OF_WINDOW);
