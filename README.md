@@ -4,6 +4,7 @@
 
 ofPackageManager is a package manager for openFrameworks.
 
+
 ## Installation
 
 ### OSX
@@ -36,7 +37,21 @@ It is recommended to add the path your bash profile. Have a look at the `add_to_
 
 ## Usage
 
-### Package management
+It ships with 3 different interfaces.
+
+1. gui - similar to the project generator
+2. cli - similar to npm
+3. json - accepts commands in json format, can be used by third party tools (currently not maintained, most likely broken)
+
+### gui
+- just double click the app or open it from the terminal without providing command line args
+
+| ![Install Addon](./docs/install_addon.png) | ![Open Project](./docs/open_project.png) |
+|:-------------------------------------------:|:---------------------------------------:|
+| Install Addon                               | Open Project                            |
+
+
+### cli
 
 - Install package by id: `ofPackageManager install ofxMidi`
 - Install package by github name (user/repo): `ofPackageManager install arturoc/ofxAruco`
@@ -49,8 +64,6 @@ It is recommended to add the path your bash profile. Have a look at the `add_to_
 - Search package in database: `ofPackageManager search ofxHTTP`
 - Search package on github by name: `ofPackageManager search github ofxSyphon`
 - Search package on github by user: `ofPackageManager search github --user arturoc`
-
-### Package manager update/info
 
 - Info: `ofPackageManager info`
 - Help/man: `ofPackageManager help`
