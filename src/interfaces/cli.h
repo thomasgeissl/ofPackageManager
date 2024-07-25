@@ -279,7 +279,7 @@ public:
             ofLogNotice() << "Please, have a look at the man page: ofPackageManager help";
         }
         printGoodBye();
-        return false;
+        return true;
     }
 
 private:
